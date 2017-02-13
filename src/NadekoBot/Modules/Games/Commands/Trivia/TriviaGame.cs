@@ -122,11 +122,12 @@ namespace NadekoBot.Modules.Games.Trivia
                 {
                     GameActive = false;
                     NadekoBot.Client.MessageReceived -= PotentialGuess;
+                    await questionMessage.DeleteAsync().ConfigureAwait(false);
                 }
                 if (!triviaCancelSource.IsCancellationRequested)
                     try { await channel.SendErrorAsync("Trivia Game", $"**Time's up!** The correct answer was **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
                 await Task.Delay(2000).ConfigureAwait(false);
-            }
+                
         }
 
         public async Task EnsureStopped()
