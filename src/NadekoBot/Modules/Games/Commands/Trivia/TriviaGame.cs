@@ -122,11 +122,11 @@ namespace NadekoBot.Modules.Games.Trivia
                 {
                     GameActive = false;
                     NadekoBot.Client.MessageReceived -= PotentialGuess;
-                    await questionMessage.DeleteAsync().ConfigureAwait(false);
                 }
                 if (!triviaCancelSource.IsCancellationRequested)
                     try { await channel.SendErrorAsync("Trivia Game", $"**Time's up!** The correct answer was **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
                 await Task.Delay(2000).ConfigureAwait(false);
+                await questionMessage.DeleteAsync().ConfigureAwait(false);
                 
         }
 
@@ -173,6 +173,7 @@ namespace NadekoBot.Modules.Games.Trivia
                     {
                         Users.AddOrUpdate(guildUser, 1, (gu, old) => ++old);
                         guess = true;
+                        umsg
                     }
                 }
                 finally { _guessLock.Release(); }
