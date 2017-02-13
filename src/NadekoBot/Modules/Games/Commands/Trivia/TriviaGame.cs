@@ -173,7 +173,6 @@ namespace NadekoBot.Modules.Games.Trivia
                     {
                         Users.AddOrUpdate(guildUser, 1, (gu, old) => ++old);
                         guess = true;
-                        umsg
                     }
                 }
                 finally { _guessLock.Release(); }
