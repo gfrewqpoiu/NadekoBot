@@ -48,7 +48,7 @@ namespace NadekoBot.Modules.Games
             {
                 var channel = (ITextChannel)Context.Channel;
 
-                if (!(Context.User as IGuildUser).GuildPermissions.ManageChannels)
+                if (!(Context.User as IGuildUser).GuildPermissions.ManageMessages)
                     return;
                 if (string.IsNullOrWhiteSpace(arg) || !arg.Contains(";"))
                     return;
