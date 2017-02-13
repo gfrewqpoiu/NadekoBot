@@ -126,7 +126,8 @@ namespace NadekoBot.Modules.Games.Trivia
                 if (!triviaCancelSource.IsCancellationRequested)
                     try { await channel.SendErrorAsync("Trivia Game", $"**Time's up!** The correct answer was **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
                 await Task.Delay(2000).ConfigureAwait(false);
-                await questionMessage.DeleteAsync().ConfigureAwait(false);        
+                await questionMessage.DeleteAsync().ConfigureAwait(false);
+            }            
         }
         public async Task EnsureStopped()
         {
