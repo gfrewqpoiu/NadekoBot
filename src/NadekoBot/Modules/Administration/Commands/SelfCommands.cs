@@ -3,6 +3,7 @@ using Discord.Commands;
 using NadekoBot.Attributes;
 using NadekoBot.Extensions;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -15,6 +16,29 @@ namespace NadekoBot.Modules.Administration
         [Group]
         class SelfCommands : ModuleBase
         {
+            [NadekoCommand, Usage, Description, Aliases]
+            [OwnerOnly]
+            public async Task ConnectShard(int shardid)
+            {
+                var shard = NadekoBot.Client.GetShard(shardid);
+
+                if (shard == null)
+                {
+                    await Context.Channel.SendErrorAsync("No shard by that id found.").ConfigureAwait(false);
+                    return;
+                }
+                try
+                {
+                    await Context.Channel.SendConfirmAsync($"Shard **#{shardid}** reconnecting.").ConfigureAwait(false);
+                    await shard.ConnectAsync().ConfigureAwait(false);
+                    await Context.Channel.SendConfirmAsync($"Shard **#{shardid}** reconnected.").ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warn(ex);
+                }
+            }
+
             [NadekoCommand, Usage, Description, Aliases]
             [OwnerOnly]
             public async Task Leave([Remainder] string guildStr)
@@ -132,7 +156,7 @@ namespace NadekoBot.Modules.Administration
                 if (ids[1].ToUpperInvariant().StartsWith("C:"))
                 {
                     var cid = ulong.Parse(ids[1].Substring(2));
-                    var ch = (await server.GetTextChannelsAsync()).Where(c => c.Id == cid).FirstOrDefault();
+                    var ch = server.TextChannels.Where(c => c.Id == cid).FirstOrDefault();
                     if (ch == null)
                     {
                         return;
@@ -159,15 +183,21 @@ namespace NadekoBot.Modules.Administration
             [OwnerOnly]
             public async Task Announce([Remainder] string message)
             {
-                var channels = await Task.WhenAll(NadekoBot.Client.GetGuilds().Select(g =>
-                    g.GetDefaultChannelAsync()
-                )).ConfigureAwait(false);
+                var channels = NadekoBot.Client.GetGuilds().Select(g => g.DefaultChannel).ToArray();
                 if (channels == null)
                     return;
                 await Task.WhenAll(channels.Where(c => c != null).Select(c => c.SendConfirmAsync($"🆕 Message from {Context.User} `[Bot Owner]`:", message)))
                         .ConfigureAwait(false);
 
                 await Context.Channel.SendConfirmAsync("🆗").ConfigureAwait(false);
+            }
+
+            [NadekoCommand, Usage, Description, Aliases]
+            [OwnerOnly]
+            public async Task ReloadImages()
+            {
+                var time = await NadekoBot.Images.Reload().ConfigureAwait(false);
+                await Context.Channel.SendConfirmAsync($"Images loaded after {time.TotalSeconds:F3}s!").ConfigureAwait(false);
             }
 
             private static UserStatus SettableUserStatusToUserStatus(SettableUserStatus sus)
@@ -185,6 +215,14 @@ namespace NadekoBot.Modules.Administration
                 }
 
                 return UserStatus.Online;
+            }
+
+            public enum SettableUserStatus
+            {
+                Online,
+                Invisible,
+                Idle,
+                Dnd
             }
         }
     }

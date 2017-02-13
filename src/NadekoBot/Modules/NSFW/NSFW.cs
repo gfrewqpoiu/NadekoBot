@@ -19,7 +19,7 @@ namespace NadekoBot.Modules.NSFW
     [NadekoModule("NSFW", "~")]
     public class NSFW : DiscordModule
     {
-#if !GLOBAL_NADEKO
+
         private static ConcurrentDictionary<ulong, Timer> AutoHentaiTimers { get; } = new ConcurrentDictionary<ulong, Timer>();
         private static ConcurrentHashSet<ulong> _hentaiBombBlacklist { get; } = new ConcurrentHashSet<ulong>();
 
@@ -65,7 +65,7 @@ namespace NadekoBot.Modules.NSFW
         [NadekoCommand, Usage, Description, Aliases]
         public Task Hentai([Remainder] string tag = null) =>
             InternalHentai(Context.Channel, tag, false);
-
+#if !GLOBAL_NADEKO
         [NadekoCommand, Usage, Description, Aliases]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task AutoHentai(int interval = 0, string tags = null)
@@ -134,12 +134,41 @@ namespace NadekoBot.Modules.NSFW
 
                 await Context.Channel.SendMessageAsync(String.Join("\n\n", linksEnum)).ConfigureAwait(false);
             }
-            finally {
+            finally
+            {
                 await Task.Delay(5000).ConfigureAwait(false);
                 _hentaiBombBlacklist.TryRemove(Context.User.Id);
             }
         }
+#endif
+        [NadekoCommand, Usage, Description, Aliases]
+        public Task Yandere([Remainder] string tag = null)
+            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Yandere);
 
+        [NadekoCommand, Usage, Description, Aliases]
+        public Task Konachan([Remainder] string tag = null)
+            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Konachan);
+
+        [NadekoCommand, Usage, Description, Aliases]
+        public async Task E621([Remainder] string tag = null)
+        {
+            tag = tag?.Trim() ?? "";
+
+            var url = await GetE621ImageLink(tag).ConfigureAwait(false);
+
+            if (url == null)
+                await Context.Channel.SendErrorAsync(Context.User.Mention + " No results.");
+            else
+                await Context.Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
+                    .WithDescription(Context.User.Mention + " " + tag)
+                    .WithImageUrl(url)
+                    .WithFooter(efb => efb.WithText("e621")))
+                    .ConfigureAwait(false);
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        public Task Rule34([Remainder] string tag = null)
+            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Rule34);
 
         [NadekoCommand, Usage, Description, Aliases]
         public async Task Danbooru([Remainder] string tag = null)
@@ -158,39 +187,32 @@ namespace NadekoBot.Modules.NSFW
                     .ConfigureAwait(false);
         }
 
-        [NadekoCommand, Usage, Description, Aliases]
-        public Task Yandere([Remainder] string tag = null)
-            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Yandere);
+        public static Task<string> GetDanbooruImageLink(string tag) => Task.Run(async () =>
+        {
+            try
+            {
+                using (var http = new HttpClient())
+                {
+                    http.AddFakeHeaders();
+                    var data = await http.GetStreamAsync("https://danbooru.donmai.us/posts.xml?limit=100&tags=" + tag).ConfigureAwait(false);
+                    var doc = new XmlDocument();
+                    doc.Load(data);
+                    var nodes = doc.GetElementsByTagName("file-url");
 
-        [NadekoCommand, Usage, Description, Aliases]
-        public Task Konachan([Remainder] string tag = null)
-            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Konachan);
+                    var node = nodes[new NadekoRandom().Next(0, nodes.Count)];
+                    return "https://danbooru.donmai.us" + node.InnerText;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        });
 
         [NadekoCommand, Usage, Description, Aliases]
         public Task Gelbooru([Remainder] string tag = null)
             => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Gelbooru);
 
-        [NadekoCommand, Usage, Description, Aliases]
-        public Task Rule34([Remainder] string tag = null)
-            => Searches.Searches.InternalDapiCommand(Context.Message, tag, Searches.Searches.DapiSearchType.Rule34);
-
-        [NadekoCommand, Usage, Description, Aliases]
-        public async Task E621([Remainder] string tag = null)
-        {
-            tag = tag?.Trim() ?? "";
-
-            var url = await GetE621ImageLink(tag).ConfigureAwait(false);
-
-            if (url == null)
-                await Context.Channel.SendErrorAsync(Context.User.Mention + " No results.");
-            else
-                await Context.Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
-                    .WithDescription(Context.User.Mention + " " + tag)
-                    .WithImageUrl(url)
-                    .WithFooter(efb => efb.WithText("e621")))
-                    .ConfigureAwait(false);
-        }
-#endif
         [NadekoCommand, Usage, Description, Aliases]
         public async Task Cp()
         {
@@ -232,29 +254,6 @@ namespace NadekoBot.Modules.NSFW
                 await Context.Channel.SendErrorAsync(ex.Message).ConfigureAwait(false);
             }
         }
-#if !GLOBAL_NADEKO
-        public static Task<string> GetDanbooruImageLink(string tag) => Task.Run(async () =>
-        {
-            try
-            {
-                using (var http = new HttpClient())
-                {
-                    http.AddFakeHeaders();
-                    var data = await http.GetStreamAsync("https://danbooru.donmai.us/posts.xml?limit=100&tags=" + tag).ConfigureAwait(false);
-                    var doc = new XmlDocument();
-                    doc.Load(data);
-                    var nodes = doc.GetElementsByTagName("file-url");
-
-                    var node = nodes[new NadekoRandom().Next(0, nodes.Count)];
-                    return "https://danbooru.donmai.us" + node.InnerText;
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        });
-
 
         public static Task<string> GetE621ImageLink(string tag) => Task.Run(async () =>
         {
@@ -278,6 +277,9 @@ namespace NadekoBot.Modules.NSFW
             }
         });
 
+        public static Task<string> GetRule34ImageLink(string tag) =>
+            Searches.Searches.InternalDapiSearch(tag, Searches.Searches.DapiSearchType.Rule34);
+
         public static Task<string> GetYandereImageLink(string tag) =>
             Searches.Searches.InternalDapiSearch(tag, Searches.Searches.DapiSearchType.Yandere);
 
@@ -286,9 +288,5 @@ namespace NadekoBot.Modules.NSFW
 
         public static Task<string> GetGelbooruImageLink(string tag) =>
             Searches.Searches.InternalDapiSearch(tag, Searches.Searches.DapiSearchType.Gelbooru);
-
-        public static Task<string> GetRule34ImageLink(string tag) =>
-            Searches.Searches.InternalDapiSearch(tag, Searches.Searches.DapiSearchType.Rule34);
-#endif
     }
 }

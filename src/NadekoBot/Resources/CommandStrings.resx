@@ -184,7 +184,7 @@
     <value>greetmsg</value>
   </data>
   <data name="greetmsg_desc" xml:space="preserve">
-    <value>Sets a new join announcement message which will be shown in the server's channel. Type %user% if you want to mention the new member. Using it with no message will show the current greet message.</value>
+    <value>Sets a new join announcement message which will be shown in the server's channel. Type %user% if you want to mention the new member. Using it with no message will show the current greet message. You can use embed json from &lt;http://nadekobot.xyz/embedbuilder/&gt; instead of a regular text, if you want the message to be embedded.</value>
   </data>
   <data name="greetmsg_usage" xml:space="preserve">
     <value>`{0}greetmsg Welcome, %user%.`</value>
@@ -202,7 +202,7 @@
     <value>byemsg</value>
   </data>
   <data name="byemsg_desc" xml:space="preserve">
-    <value>Sets a new leave announcement message. Type %user% if you want to show the name the user who left. Type %id% to show id. Using this command with no message will show the current bye message.</value>
+    <value>Sets a new leave announcement message. Type %user% if you want to show the name the user who left. Type %id% to show id. Using this command with no message will show the current bye message. You can use embed json from &lt;http://nadekobot.xyz/embedbuilder/&gt; instead of a regular text, if you want the message to be embedded.</value>
   </data>
   <data name="byemsg_usage" xml:space="preserve">
     <value>`{0}byemsg %user% has left.`</value>
@@ -292,7 +292,7 @@
     <value>addplaying adpl</value>
   </data>
   <data name="addplaying_desc" xml:space="preserve">
-    <value>Adds a specified string to the list of playing strings to rotate. Supported placeholders: %servers%, %users%, %playing%, %queued%</value>
+    <value>Adds a specified string to the list of playing strings to rotate. Supported placeholders: %servers%, %users%, %playing%, %queued%, %time%,%shardid%,%shardcount%, %shardguilds%</value>
   </data>
   <data name="addplaying_usage" xml:space="preserve">
     <value>`{0}adpl`</value>
@@ -340,7 +340,7 @@
     <value>Creates a text channel for each voice channel only users in that voice channel can see.If you are server owner, keep in mind you will see them all the time regardless.</value>
   </data>
   <data name="voiceplustext_usage" xml:space="preserve">
-    <value>`{0}voice+text`</value>
+    <value>`{0}v+t`</value>
   </data>
   <data name="scsc_cmd" xml:space="preserve">
     <value>scsc</value>
@@ -1273,7 +1273,7 @@
     <value>betroll br</value>
   </data>
   <data name="betroll_desc" xml:space="preserve">
-    <value>Bets a certain amount of currency and rolls a dice. Rolling over 66 yields x2 of your currency, over 90 - x3 and 100 x10.</value>
+    <value>Bets a certain amount of currency and rolls a dice. Rolling over 66 yields x2 of your currency, over 90 - x4 and 100 x10.</value>
   </data>
   <data name="betroll_usage" xml:space="preserve">
     <value>`{0}br 5`</value>
@@ -1376,7 +1376,6 @@
   </data>
   <data name="plant_usage" xml:space="preserve">
     <value>`{0}plant` or `{0}plant 5`</value>
-    <comment> </comment>
   </data>
   <data name="gencurrency_cmd" xml:space="preserve">
     <value>gencurrency gc</value>
@@ -2312,7 +2311,7 @@
     <value>`{0}greetdmmsg Welcome to the server, %user%`.</value>
   </data>
   <data name="greetdmmsg_desc" xml:space="preserve">
-    <value>Sets a new join announcement message which will be sent to the user who joined. Type %user% if you want to mention the new member. Using it with no message will show the current DM greet message.</value>
+    <value>Sets a new join announcement message which will be sent to the user who joined. Type %user% if you want to mention the new member. Using it with no message will show the current DM greet message. You can use embed json from &lt;http://nadekobot.xyz/embedbuilder/&gt; instead of a regular text, if you want the message to be embedded.</value>
   </data>
   <data name="cash_desc" xml:space="preserve">
     <value>Check how much currency a person has. (Defaults to yourself)</value>
@@ -3024,5 +3023,86 @@
   </data>
   <data name="waifuinfo_usage" xml:space="preserve">
     <value>`{0}waifuinfo @MyCrush` or `{0}waifuinfo`</value>
+  </data>
+  <data name="mal_cmd" xml:space="preserve">
+    <value>mal</value>
+  </data>
+  <data name="mal_desc" xml:space="preserve">
+    <value>Shows basic info from myanimelist profile.</value>
+  </data>
+  <data name="mal_usage" xml:space="preserve">
+    <value>`{0}mal straysocks`</value>
+  </data>
+  <data name="setmusicchannel_cmd" xml:space="preserve">
+    <value>setmusicchannel smch</value>
+  </data>
+  <data name="setmusicchannel_desc" xml:space="preserve">
+    <value>Sets the current channel as the default music output channel. This will output playing, finished, paused and removed songs to that channel instead of the channel where the first song was queued in.</value>
+  </data>
+  <data name="setmusicchannel_usage" xml:space="preserve">
+    <value>`{0}smch`</value>
+  </data>
+  <data name="reloadimages_cmd" xml:space="preserve">
+    <value>reloadimages</value>
+  </data>
+  <data name="reloadimages_desc" xml:space="preserve">
+    <value>Reloads images bot is using. Safe to use even when bot is being used heavily.</value>
+  </data>
+  <data name="reloadimages_usage" xml:space="preserve">
+    <value>`{0}reloadimages`</value>
+  </data>
+  <data name="shardstats_cmd" xml:space="preserve">
+    <value>shardstats</value>
+  </data>
+  <data name="shardstats_desc" xml:space="preserve">
+    <value>Stats for shards. Paginated with 25 shards per page.</value>
+  </data>
+  <data name="shardstats_usage" xml:space="preserve">
+    <value>`{0}shardstats` or `{0}shardstats 2`</value>
+  </data>
+  <data name="connectshard_cmd" xml:space="preserve">
+    <value>connectshard</value>
+  </data>
+  <data name="connectshard_desc" xml:space="preserve">
+    <value>Try (re)connecting a shard with a certain shardid when it dies. No one knows will it work. Keep an eye on the console for errors.</value>
+  </data>
+  <data name="connectshard_usage" xml:space="preserve">
+    <value>`{0}connectshard 2`</value>
+  </data>
+  <data name="shardid_cmd" xml:space="preserve">
+    <value>shardid</value>
+  </data>
+  <data name="shardid_desc" xml:space="preserve">
+    <value>Shows which shard is a certain guild on, by guildid.</value>
+  </data>
+  <data name="shardid_usage" xml:space="preserve">
+    <value>`{0}shardid 117523346618318850`</value>
+  </data>
+  <data name="tictactoe_cmd" xml:space="preserve">
+    <value>tictactoe ttt</value>
+  </data>
+  <data name="tictactoe_desc" xml:space="preserve">
+    <value>Starts a game of tic tac toe. Another user must run the command in the same channel in order to accept the challenge. Use numbers 1-9 to play. 15 seconds per move.</value>
+  </data>
+  <data name="tictactoe_usage" xml:space="preserve">
+    <value>&gt;ttt</value>
+  </data>
+  <data name="timezones_cmd" xml:space="preserve">
+    <value>timezones</value>
+  </data>
+  <data name="timezones_desc" xml:space="preserve">
+    <value>List of all timezones available on the system to be used with `{0}timezone`.</value>
+  </data>
+  <data name="timezones_usage" xml:space="preserve">
+    <value>`{0}timezones`</value>
+  </data>
+  <data name="timezone_cmd" xml:space="preserve">
+    <value>timezone</value>
+  </data>
+  <data name="timezone_desc" xml:space="preserve">
+    <value>Sets this guilds timezone. This affects bot's time output in this server (logs, etc..)</value>
+  </data>
+  <data name="timezone_usage" xml:space="preserve">
+    <value>`{0}timezone`</value>
   </data>
 </root>

@@ -38,20 +38,24 @@ namespace NadekoBot.Modules.Administration
 
         }
 
-        private static async Task DelMsgOnCmd_Handler(SocketUserMessage msg, CommandInfo cmd)
+        private static Task DelMsgOnCmd_Handler(SocketUserMessage msg, CommandInfo cmd)
         {
-            try
+            var _ = Task.Run(async () =>
             {
-                var channel = msg.Channel as SocketTextChannel;
-                if (channel == null)
-                    return;
-                if (DeleteMessagesOnCommand.Contains(channel.Guild.Id))
-                    await msg.DeleteAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _log.Warn(ex, "Delmsgoncmd errored...");
-            }
+                try
+                {
+                    var channel = msg.Channel as SocketTextChannel;
+                    if (channel == null)
+                        return;
+                    if (DeleteMessagesOnCommand.Contains(channel.Guild.Id) && cmd.Name != "prune")
+                        await msg.DeleteAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warn(ex, "Delmsgoncmd errored...");
+                }
+            });
+            return Task.CompletedTask;
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -548,5 +552,45 @@ namespace NadekoBot.Modules.Administration
 
             await Context.Channel.SendConfirmAsync($"Successfuly added a new donator. Total donated amount from this user: {don.Amount} 👑").ConfigureAwait(false);
         }
+
+        //[NadekoCommand, Usage, Description, Aliases]
+        //[RequireContext(ContextType.Guild)]
+        //public async Task Timezones(int page = 1)
+        //{
+        //    page -= 1;
+
+        //    if (page < 0 || page > 20)
+        //        return;
+
+        //    var timezones = TimeZoneInfo.GetSystemTimeZones();
+        //    var timezonesPerPage = 20;
+
+        //    await Context.Channel.SendPaginatedConfirmAsync(page + 1, (curPage) => new EmbedBuilder()
+        //        .WithOkColor()
+        //        .WithTitle("Available Timezones")
+        //        .WithDescription(string.Join("\n", timezones.Skip((curPage - 1) * timezonesPerPage).Take(timezonesPerPage).Select(x => $"`{x.Id,-25}` UTC{x.BaseUtcOffset:hhmm}"))),
+        //        timezones.Count / timezonesPerPage);
+        //}
+
+        //[NadekoCommand, Usage, Description, Aliases]
+        //[RequireContext(ContextType.Guild)]
+        //public async Task Timezone([Remainder] string id)
+        //{
+        //    TimeZoneInfo tz;
+        //    try
+        //    {
+        //        tz = TimeZoneInfo.FindSystemTimeZoneById(id);
+        //        if (tz != null)
+        //            await Context.Channel.SendConfirmAsync(tz.ToString()).ConfigureAwait(false);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        tz = null;
+        //        _log.Warn(ex);
+        //    }
+
+        //    if (tz == null)
+        //        await Context.Channel.SendErrorAsync("Timezone not found. You should specify one of the timezones listed in the 'timezones' command.").ConfigureAwait(false);
+        //}
     }
 }

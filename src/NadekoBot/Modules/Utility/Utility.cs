@@ -15,6 +15,8 @@ using System.Threading;
 using ImageSharp;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Discord.WebSocket;
+using NadekoBot.Services;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -22,6 +24,82 @@ namespace NadekoBot.Modules.Utility
     public partial class Utility : DiscordModule
     {
         private static ConcurrentDictionary<ulong, Timer> rotatingRoleColors = new ConcurrentDictionary<ulong, Timer>();
+
+        //[NadekoCommand, Usage, Description, Aliases]
+        //[RequireContext(ContextType.Guild)]
+        //public async Task Midorina([Remainder] string arg)
+        //{
+        //    var channel = (ITextChannel)Context.Channel;
+
+        //    var roleNames = arg?.Split(';');
+
+        //    if (roleNames == null || roleNames.Length == 0)
+        //        return;
+
+        //    var j = 0;
+        //    var roles = roleNames.Select(x => Context.Guild.Roles.FirstOrDefault(r => String.Compare(r.Name, x, StringComparison.OrdinalIgnoreCase) == 0))
+        //            .Where(x => x != null)
+        //            .Take(10)
+        //            .ToArray();
+
+        //    var rnd = new NadekoRandom();
+        //    var reactions = new[] { "🎬", "🐧", "🌍", "🌺", "🚀", "☀", "🌲", "🍒", "🐾", "🏀" }
+        //        .OrderBy(x => rnd.Next())
+        //        .ToArray();
+
+        //    var roleStrings = roles
+        //            .Select(x => $"{reactions[j++]} -> {x.Name}");
+            
+        //    var msg = await Context.Channel.SendConfirmAsync("Pick a Role",
+        //        string.Join("\n", roleStrings)).ConfigureAwait(false);
+
+        //    for (int i = 0; i < roles.Length; i++)
+        //    {
+        //        try { await msg.AddReactionAsync(reactions[i]).ConfigureAwait(false); }
+        //        catch (Exception ex) { _log.Warn(ex); }
+        //        await Task.Delay(1000).ConfigureAwait(false);
+        //    }
+
+        //    msg.OnReaction((r) => Task.Run(async () =>
+        //    {
+        //        try
+        //        {
+        //            var usr = r.User.GetValueOrDefault() as IGuildUser;
+
+        //            if (usr == null)
+        //                return;
+
+        //            var index = Array.IndexOf<string>(reactions, r.Emoji.Name);
+        //            if (index == -1)
+        //                return;
+
+        //            await usr.RemoveRolesAsync(roles[index]);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _log.Warn(ex);
+        //        }
+        //    }), (r) => Task.Run(async () =>
+        //    {
+        //        try
+        //        {
+        //            var usr = r.User.GetValueOrDefault() as IGuildUser;
+
+        //            if (usr == null)
+        //                return;
+
+        //            var index = Array.IndexOf<string>(reactions, r.Emoji.Name);
+        //            if (index == -1)
+        //                return;
+
+        //            await usr.RemoveRolesAsync(roles[index]);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _log.Warn(ex);
+        //        }
+        //    }));
+        //}
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
@@ -113,18 +191,30 @@ namespace NadekoBot.Modules.Utility
             game = game.Trim().ToUpperInvariant();
             if (string.IsNullOrWhiteSpace(game))
                 return;
-            var arr = (await (Context.Channel as IGuildChannel).Guild.GetUsersAsync())
+
+            var socketGuild = Context.Guild as SocketGuild;
+            if (socketGuild == null)
+            {
+                _log.Warn("Can't cast guild to socket guild.");
+                return;
+            }
+            var rng = new NadekoRandom();
+            var arr = await Task.Run(() => socketGuild.Users
                     .Where(u => u.Game?.Name?.ToUpperInvariant() == game)
                     .Select(u => u.Username)
-                    .ToList();
+                    .OrderBy(x => rng.Next())
+                    .Take(60)
+                    .ToArray()).ConfigureAwait(false);
 
             int i = 0;
-            if (!arr.Any())
+            if (arr.Length == 0)
                 await Context.Channel.SendErrorAsync("Nobody is playing that game.").ConfigureAwait(false);
             else
+            {
                 await Context.Channel.SendConfirmAsync("```css\n" + string.Join("\n", arr.GroupBy(item => (i++) / 2)
                                                                                  .Select(ig => string.Concat(ig.Select(el => $"• {el,-27}")))) + "\n```")
                                                                                  .ConfigureAwait(false);
+            }
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -267,9 +357,53 @@ namespace NadekoBot.Modules.Utility
         }
 
         [NadekoCommand, Usage, Description, Aliases]
+        public async Task ShardStats(int page = 1)
+        {
+            if (page < 1)
+                return;
+
+            var status = string.Join(", ", NadekoBot.Client.Shards.GroupBy(x => x.ConnectionState)
+                .Select(x => $"{x.Count()} shards {x.Key}")
+                .ToArray());
+
+            var allShardStrings = NadekoBot.Client.Shards
+                .Select(x => $"Shard **#{x.ShardId.ToString()}** is in {Format.Bold(x.ConnectionState.ToString())} state with {Format.Bold(x.Guilds.Count.ToString())} servers")
+                .ToArray();
+
+
+
+            await Context.Channel.SendPaginatedConfirmAsync(page, (curPage) =>
+            {
+
+                var str = string.Join("\n", allShardStrings.Skip(25 * (curPage - 1)).Take(25));
+
+                if (string.IsNullOrWhiteSpace(str))
+                    str = "No shards on this page.";
+
+                return new EmbedBuilder()
+                    .WithAuthor(a => a.WithName("Shard Stats"))
+                    .WithTitle(status)
+                    .WithOkColor()
+                    .WithDescription(str);
+            }, allShardStrings.Length / 25);
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        public async Task ShardId(ulong guildid)
+        {
+            var shardId = NadekoBot.Client.GetShardIdFor(guildid);
+
+            await Context.Channel.SendConfirmAsync($"ShardId for **{guildid}** with {NadekoBot.Client.Shards.Count} total shards", shardId.ToString()).ConfigureAwait(false);
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
         public async Task Stats()
         {
             var stats = NadekoBot.Stats;
+
+            var shardId = Context.Guild != null
+                ? NadekoBot.Client.GetShardIdFor(Context.Guild.Id)
+                : 0;
 
             await Context.Channel.EmbedAsync(
                 new EmbedBuilder().WithOkColor()
@@ -277,8 +411,8 @@ namespace NadekoBot.Modules.Utility
                                           .WithUrl("http://nadekobot.readthedocs.io/en/latest/")
                                           .WithIconUrl("https://cdn.discordapp.com/avatars/116275390695079945/b21045e778ef21c96d175400e779f0fb.jpg"))
                     .AddField(efb => efb.WithName(Format.Bold("Author")).WithValue(stats.Author).WithIsInline(true))
-                    .AddField(efb => efb.WithName(Format.Bold("Library")).WithValue(stats.Library).WithIsInline(true))
                     .AddField(efb => efb.WithName(Format.Bold("Bot ID")).WithValue(NadekoBot.Client.CurrentUser.Id.ToString()).WithIsInline(true))
+                    .AddField(efb => efb.WithName(Format.Bold("Shard")).WithValue($"#{shardId}, {NadekoBot.Client.Shards.Count} total").WithIsInline(true))
                     .AddField(efb => efb.WithName(Format.Bold("Commands Ran")).WithValue(stats.CommandsRan.ToString()).WithIsInline(true))
                     .AddField(efb => efb.WithName(Format.Bold("Messages")).WithValue($"{stats.MessageCounter} ({stats.MessagesPerSecond:F2}/sec)").WithIsInline(true))
                     .AddField(efb => efb.WithName(Format.Bold("Memory")).WithValue($"{stats.Heap} MB").WithIsInline(true))
