@@ -351,3 +351,6 @@ __pycache__/
 
 ### VisualStudio Patch ###
 build/
+.vscode/launch.json
+
+.vscode/tasks.json
