@@ -354,3 +354,5 @@ build/
 .vscode/launch.json
 
 .vscode/tasks.json
+
+src/NadekoBot/credentials.json
