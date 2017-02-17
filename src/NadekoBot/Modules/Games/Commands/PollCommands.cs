@@ -47,9 +47,6 @@ namespace NadekoBot.Modules.Games
             private async Task InternalStartPoll(string arg, bool isPublic = false)
             {
                 var channel = (ITextChannel)Context.Channel;
-
-                if (!(Context.User as IGuildUser).GuildPermissions.ManageMessages)
-                    return;
                 if (string.IsNullOrWhiteSpace(arg) || !arg.Contains(";"))
                     return;
                 var data = arg.Split(';');
