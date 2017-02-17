@@ -195,6 +195,7 @@ namespace NadekoBot.Modules.Games.Trivia
                     ShouldStopGame = true;
                     try { errorMessage = await channel.SendConfirmAsync("Trivia Game", $"{guildUser.Mention} guessed it and WON the game! The answer was: **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch { }
                     var reward = NadekoBot.BotConfig.TriviaCurrencyReward;
+                    await umsg.DeleteAsync().ConfigureAwait(false);
                     if (reward > 0)
                         await CurrencyHandler.AddCurrencyAsync(guildUser, "Won trivia", reward, true).ConfigureAwait(false);
                     return;
