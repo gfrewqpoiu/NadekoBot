@@ -1,3 +1,4 @@
+This is a fork of the Nadekobot for my usage
 ![img](https://ci.appveyor.com/api/projects/status/gmu6b3ltc80hr3k9?svg=true)
 [![Discord](https://discordapp.com/api/guilds/117523346618318850/widget.png)](https://discord.gg/nadekobot)
 [![Documentation Status](https://readthedocs.org/projects/nadekobot/badge/?version=latest)](http://nadekobot.readthedocs.io/en/latest/?badge=latest)
