@@ -197,8 +197,26 @@ namespace NadekoBot.Modules.Games.Trivia
                     var reward = NadekoBot.BotConfig.TriviaCurrencyReward;
                     await umsg.DeleteAsync().ConfigureAwait(false);
                     if (reward > 0)
-                        await CurrencyHandler.AddCurrencyAsync(guildUser, "Won trivia", reward, true).ConfigureAwait(false);
-                    return;
+                        {
+                            if (WinRequirement < 3)
+                                return;
+                            if (WinRequirement < 5)
+                                {
+                                    await CurrencyHandler.AddCurrencyAsync(guildUser, "Won trivia", reward+Math.Min(Users.Count()-1, 1), true).ConfigureAwait(false);
+                                    return;
+                                }
+                            if (WinRequirement < 11)
+                                {
+                                    await CurrencyHandler.AddCurrencyAsync(guildUser, "Won trivia", reward+1+Math.Min(Users.Count()-1, 5), true).ConfigureAwait(false);
+                                    return;
+                                }
+                            else
+                                {
+                                    int properReward = reward + (int)Math.Ceiling(WinRequirement/5d) + Math.Min(Users.Count()-1, 10);
+                                    await CurrencyHandler.AddCurrencyAsync(guildUser, "Won trivia", properReward, true).ConfigureAwait(false);
+                                    return;
+                                }
+                        }
                 }
                 errorMessage = await channel.SendConfirmAsync("Trivia Game", $"{guildUser.Mention} guessed it! The answer was: **{CurrentQuestion.Answer}**").ConfigureAwait(false);
                 await umsg.DeleteAsync().ConfigureAwait(false);
