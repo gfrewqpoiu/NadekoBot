@@ -97,7 +97,7 @@ namespace NadekoBot.Modules.Gambling
                             {
                                 _log.Warn(ex);
                             }
-                            var t = await Task.WhenAny(Task.Delay(20000, token), fullgame);
+                            var t = await Task.WhenAny(Task.Delay(30000, token), fullgame);
                             Started = true;
                             cancelSource.Cancel();
                             if (t == fullgame)
@@ -270,7 +270,10 @@ namespace NadekoBot.Modules.Gambling
                         confStr = GetText("animal_race_join_bet", u.Mention, p.Animal, amount + CurrencySign);
                     else
                         confStr = GetText("animal_race_join", u.Mention, p.Animal);
-                    await _raceChannel.SendConfirmAsync(GetText("animal_race"), Format.Bold(confStr)).ConfigureAwait(false);
+                    IUserMessage joinmsg = await _raceChannel.SendConfirmAsync(GetText("animal_race"), Format.Bold(confStr)).ConfigureAwait(false);
+                    await Task.Delay(1000);
+                    await joinmsg.DeleteAsync().ConfigureAwait(false);
+
                 }
 
                 private string GetText(string text)
