@@ -175,7 +175,7 @@ namespace NadekoBot.Modules.Gambling
                             if (msg == null || _messagesSinceGameStarted >= 10) // also resend the message if channel was spammed
                             {
                                 if (msg != null)
-                                    try { await msg.DeleteAsync(); } catch { }
+                                    try { await msg.DeleteAsync().ConfigureAwait(false); } catch { }
                                 _messagesSinceGameStarted = 0;
                                 try { msg = await _raceChannel.SendMessageAsync(text).ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
                             }
@@ -213,6 +213,8 @@ namespace NadekoBot.Modules.Gambling
                         {
                             await _raceChannel.SendConfirmAsync(GetText("animal_race"),
                                 Format.Bold(GetText("animal_race_won", winner.User.Mention, winner.Animal))).ConfigureAwait(false);
+                            await Task.Delay(3000);
+                            await msg.DeleteAsync().ConfigureAwait(false);
                         }
                     }
 
