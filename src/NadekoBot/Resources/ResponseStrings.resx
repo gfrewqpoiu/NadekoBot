@@ -397,7 +397,7 @@ Reason: {1}</value>
     <value>Sucessfully added a new donator.Total donated amount from this user: {0} 👑</value>
   </data>
   <data name="administration_donators" xml:space="preserve">
-    <value>Thanks to the people listed below for making this project hjappen!</value>
+    <value>Thanks to the people listed below for making this project happen!</value>
   </data>
   <data name="administration_fwall_start" xml:space="preserve">
     <value>I will forward DMs to all owners.</value>
@@ -1081,7 +1081,7 @@ Don't forget to leave your discord name or id in the message.
     <comment>Someone rolled 35</comment>
   </data>
   <data name="gambling_dice_rolled_num" xml:space="preserve">
-    <value>Dice rolled: {1}</value>
+    <value>Dice rolled: {0}</value>
     <comment>Dice Rolled: 5</comment>
   </data>
   <data name="gambling_race_failed_starting" xml:space="preserve">
@@ -1104,6 +1104,9 @@ Don't forget to leave your discord name or id in the message.
   </data>
   <data name="gambling_likes" xml:space="preserve">
     <value>Likes</value>
+  </data>
+  <data name="gambling_nobody" xml:space="preserve">
+    <value>Nobody</value>
   </data>
   <data name="gambling_price" xml:space="preserve">
     <value>Price</value>
@@ -1139,7 +1142,7 @@ Don't forget to leave your discord name or id in the message.
     <value>You have divorced a waifu who likes you. You heartless monster.
 {0} received {1} as a compensation.</value>
   </data>
-  <data name="gambling_waifu_divorced_not_like" xml:space="preserve">
+  <data name="gambling_waifu_divorced_notlike" xml:space="preserve">
     <value>You have divorced a waifu who doesn't like you. You received {0} back.</value>
   </data>
   <data name="gambling_waifu_egomaniac" xml:space="preserve">
@@ -1163,5 +1166,77 @@ Don't forget to leave your discord name or id in the message.
   </data>
   <data name="gambling_waifu_recent_divorce" xml:space="preserve">
     <value>You divorced recently. You must wait {0} hours and {1} minutes to divorce again.</value>
+  </data>
+  <data name="games_8ball" xml:space="preserve">
+    <value>8ball</value>
+  </data>
+  <data name="games_acrophobia" xml:space="preserve">
+    <value>Acrophobia</value>
+  </data>
+  <data name="games_acro_ended_no_sub" xml:space="preserve">
+    <value>Game ended with no submissions.</value>
+  </data>
+  <data name="games_acro_no_votes_cast" xml:space="preserve">
+    <value>No votes cast. Game ended with no winner.</value>
+  </data>
+  <data name="games_acro_nym_was" xml:space="preserve">
+    <value>Acronym was {0}.</value>
+  </data>
+  <data name="games_acro_running" xml:space="preserve">
+    <value>Acrophobia game is already running in this channel.</value>
+  </data>
+  <data name="games_acro_started" xml:space="preserve">
+    <value>Game started. Create a sentence with the following acronym: {0}.</value>
+  </data>
+  <data name="games_acro_started_footer" xml:space="preserve">
+    <value>You have {0} seconds to make a submission.</value>
+  </data>
+  <data name="games_acro_submit" xml:space="preserve">
+    <value>{0} submitted their sentence. ({1} total)</value>
+  </data>
+  <data name="games_acro_vote" xml:space="preserve">
+    <value>Vote by typing a number of the submission</value>
+  </data>
+  <data name="games_acro_vote_cast" xml:space="preserve">
+    <value>{0} cast their vote!</value>
+  </data>
+  <data name="games_acro_winner" xml:space="preserve">
+    <value>Winner is {0} with {1} points.</value>
+  </data>
+  <data name="games_acro_winner_only" xml:space="preserve">
+    <value>{0} is the winner for being the only user who made a submission!</value>
+  </data>
+  <data name="games_question" xml:space="preserve">
+    <value>Question</value>
+  </data>
+  <data name="games_rps_draw" xml:space="preserve">
+    <value>It's a draw! Both picked {0}</value>
+  </data>
+  <data name="games_rps_win" xml:space="preserve">
+    <value>{0} won! {1} beats {2}</value>
+  </data>
+  <data name="games_submissions_closed" xml:space="preserve">
+    <value>Submissions Closed</value>
+  </data>
+  <data name="gambling_total_average" xml:space="preserve">
+    <value>Total: {0} Average: {1}</value>
+  </data>
+  <data name="games_curgen_disabled" xml:space="preserve">
+    <value>Currency generation has been disabled on this channel.</value>
+  </data>
+  <data name="games_curgen_enabled" xml:space="preserve">
+    <value>Currency generation has been enabled on this channel.</value>
+  </data>
+  <data name="games_hangman_game_started" xml:space="preserve">
+    <value>Hangman game started</value>
+  </data>
+  <data name="games_hangman_running" xml:space="preserve">
+    <value>Hangman game already running on this channel.</value>
+  </data>
+  <data name="games_hangman_start_errored" xml:space="preserve">
+    <value>Starting hangman errored.</value>
+  </data>
+  <data name="games_hangman_types" xml:space="preserve">
+    <value>List of "{0}hangman" term types:</value>
   </data>
 </root>
