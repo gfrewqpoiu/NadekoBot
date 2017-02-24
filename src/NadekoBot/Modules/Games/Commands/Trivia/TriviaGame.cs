@@ -235,7 +235,7 @@ namespace NadekoBot.Modules.Games.Trivia
                 }
 
                 errorMessage = await Channel.SendConfirmAsync(GetText("trivia_game"),
-                    GetText("guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
+                    GetText("trivia_guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
                 await umsg.DeleteAsync().ConfigureAwait(false);
 
             }
