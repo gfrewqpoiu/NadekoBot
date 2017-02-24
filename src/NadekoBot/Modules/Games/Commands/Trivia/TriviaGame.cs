@@ -130,11 +130,9 @@ namespace NadekoBot.Modules.Games.Trivia
                     NadekoBot.Client.MessageReceived -= PotentialGuess;
                 }
                 if (!triviaCancelSource.IsCancellationRequested)
-<<<<<<< HEAD
-                    try {errorMessage = await channel.SendErrorAsync("Trivia Game", $"**Time's up!** The correct answer was **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
-=======
-                    try { await Channel.SendErrorAsync(GetText("trivia_game"), GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
->>>>>>> Kwoth/dev
+
+                    try {errorMessage = await Channel.SendErrorAsync(GetText("trivia_game"), GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
+
                 await Task.Delay(2000).ConfigureAwait(false);
                 await questionMessage.DeleteAsync().ConfigureAwait(false);
                 await Task.Delay(3000).ConfigureAwait(false);
@@ -200,12 +198,9 @@ namespace NadekoBot.Modules.Games.Trivia
                 if (Users[guildUser] == WinRequirement)
                 {
                     ShouldStopGame = true;
-<<<<<<< HEAD
-                    try { errorMessage = await channel.SendConfirmAsync("Trivia Game", $"{guildUser.Mention} guessed it and WON the game! The answer was: **{CurrentQuestion.Answer}**").ConfigureAwait(false); } catch { }
-=======
                     try
                     {
-                        await Channel.SendConfirmAsync(GetText("trivia_game"),
+                        errorMessage = await Channel.SendConfirmAsync(GetText("trivia_game"),
                             GetText("trivia_win",
                                 guildUser.Mention,
                                 Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
@@ -214,7 +209,6 @@ namespace NadekoBot.Modules.Games.Trivia
                     {
                         // ignored
                     }
->>>>>>> Kwoth/dev
                     var reward = NadekoBot.BotConfig.TriviaCurrencyReward;
                     await umsg.DeleteAsync().ConfigureAwait(false);
                     if (reward > 0)
@@ -239,14 +233,11 @@ namespace NadekoBot.Modules.Games.Trivia
                                 }
                         }
                 }
-<<<<<<< HEAD
-                errorMessage = await channel.SendConfirmAsync("Trivia Game", $"{guildUser.Mention} guessed it! The answer was: **{CurrentQuestion.Answer}**").ConfigureAwait(false);
-                await umsg.DeleteAsync().ConfigureAwait(false);
-=======
-                await Channel.SendConfirmAsync(GetText("trivia_game"),
-                    GetText("guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
 
->>>>>>> Kwoth/dev
+                errorMessage = await Channel.SendConfirmAsync(GetText("trivia_game"),
+                    GetText("guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
+                await umsg.DeleteAsync().ConfigureAwait(false);
+
             }
             catch (Exception ex) { _log.Warn(ex); }
         }
