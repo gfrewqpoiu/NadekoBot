@@ -2861,6 +2861,33 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Category.
+        /// </summary>
+        public static string games_category {
+            get {
+                return ResourceManager.GetString("games_category", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled cleverbot on this server..
+        /// </summary>
+        public static string games_cleverbot_disabled {
+            get {
+                return ResourceManager.GetString("games_cleverbot_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled cleverbot on this server..
+        /// </summary>
+        public static string games_cleverbot_enabled {
+            get {
+                return ResourceManager.GetString("games_cleverbot_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Currency generation has been disabled on this channel..
         /// </summary>
         public static string games_curgen_disabled {
@@ -2875,6 +2902,42 @@ namespace NadekoBot.Resources {
         public static string games_curgen_enabled {
             get {
                 return ResourceManager.GetString("games_curgen_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} random {1} appeared! Pick them up by typing `{2}pick`.
+        /// </summary>
+        public static string games_curgen_pl {
+            get {
+                return ResourceManager.GetString("games_curgen_pl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to A random {0} appeared! Pick it up by typing `{1}pick`.
+        /// </summary>
+        public static string games_curgen_sn {
+            get {
+                return ResourceManager.GetString("games_curgen_sn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed loading a question..
+        /// </summary>
+        public static string games_failed_loading_question {
+            get {
+                return ResourceManager.GetString("games_failed_loading_question", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Game Started.
+        /// </summary>
+        public static string games_game_started {
+            get {
+                return ResourceManager.GetString("games_game_started", resourceCulture);
             }
         }
         
@@ -2915,6 +2978,51 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Leaderboard.
+        /// </summary>
+        public static string games_leaderboard {
+            get {
+                return ResourceManager.GetString("games_leaderboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No results.
+        /// </summary>
+        public static string games_no_results {
+            get {
+                return ResourceManager.GetString("games_no_results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to You don&apos;t have enough {0}.
+        /// </summary>
+        public static string games_not_enough {
+            get {
+                return ResourceManager.GetString("games_not_enough", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to picked {0}.
+        /// </summary>
+        public static string games_picked {
+            get {
+                return ResourceManager.GetString("games_picked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} planted {1}.
+        /// </summary>
+        public static string games_planted {
+            get {
+                return ResourceManager.GetString("games_planted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Question.
         /// </summary>
         public static string games_question {
@@ -2947,6 +3055,168 @@ namespace NadekoBot.Resources {
         public static string games_submissions_closed {
             get {
                 return ResourceManager.GetString("games_submissions_closed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Trivia game is already running on this server..
+        /// </summary>
+        public static string games_trivia_already_running {
+            get {
+                return ResourceManager.GetString("games_trivia_already_running", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Trivia Game.
+        /// </summary>
+        public static string games_trivia_game {
+            get {
+                return ResourceManager.GetString("games_trivia_game", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} guessed it! The answer was: {1}.
+        /// </summary>
+        public static string games_trivia_guess {
+            get {
+                return ResourceManager.GetString("games_trivia_guess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No trivia is running on this server..
+        /// </summary>
+        public static string games_trivia_none {
+            get {
+                return ResourceManager.GetString("games_trivia_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} has {1} points.
+        /// </summary>
+        public static string games_trivia_points {
+            get {
+                return ResourceManager.GetString("games_trivia_points", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Stopping after this question..
+        /// </summary>
+        public static string games_trivia_stopping {
+            get {
+                return ResourceManager.GetString("games_trivia_stopping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Time&apos;s up! The correct answer was {0}.
+        /// </summary>
+        public static string games_trivia_times_up {
+            get {
+                return ResourceManager.GetString("games_trivia_times_up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} guessed it and WON the game! The answer was: {1}.
+        /// </summary>
+        public static string games_trivia_win {
+            get {
+                return ResourceManager.GetString("games_trivia_win", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to A draw!.
+        /// </summary>
+        public static string games_ttt_a_draw {
+            get {
+                return ResourceManager.GetString("games_ttt_a_draw", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to You can&apos;t play against yourself..
+        /// </summary>
+        public static string games_ttt_against_yourself {
+            get {
+                return ResourceManager.GetString("games_ttt_against_yourself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to TicTacToe Game is already running in this channel..
+        /// </summary>
+        public static string games_ttt_already_running {
+            get {
+                return ResourceManager.GetString("games_ttt_already_running", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to has created a game of TicTacToe..
+        /// </summary>
+        public static string games_ttt_created {
+            get {
+                return ResourceManager.GetString("games_ttt_created", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} has Won!.
+        /// </summary>
+        public static string games_ttt_has_won {
+            get {
+                return ResourceManager.GetString("games_ttt_has_won", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Matched Three.
+        /// </summary>
+        public static string games_ttt_matched_three {
+            get {
+                return ResourceManager.GetString("games_ttt_matched_three", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No moves left!.
+        /// </summary>
+        public static string games_ttt_no_moves {
+            get {
+                return ResourceManager.GetString("games_ttt_no_moves", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Time Expired!.
+        /// </summary>
+        public static string games_ttt_time_expired {
+            get {
+                return ResourceManager.GetString("games_ttt_time_expired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0}&apos;s move.
+        /// </summary>
+        public static string games_ttt_users_move {
+            get {
+                return ResourceManager.GetString("games_ttt_users_move", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} vs {1}.
+        /// </summary>
+        public static string games_vs {
+            get {
+                return ResourceManager.GetString("games_vs", resourceCulture);
             }
         }
         
@@ -3156,6 +3426,456 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of ALL MODULES on {0} channel..
+        /// </summary>
+        public static string permissions_acm_disable {
+            get {
+                return ResourceManager.GetString("permissions_acm_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of ALL MODULES on {0} channel..
+        /// </summary>
+        public static string permissions_acm_enable {
+            get {
+                return ResourceManager.GetString("permissions_acm_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Allowed.
+        /// </summary>
+        public static string permissions_allowed {
+            get {
+                return ResourceManager.GetString("permissions_allowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of ALL MODULES for {0} role..
+        /// </summary>
+        public static string permissions_arm_disable {
+            get {
+                return ResourceManager.GetString("permissions_arm_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of ALL MODULES for {0} role..
+        /// </summary>
+        public static string permissions_arm_enable {
+            get {
+                return ResourceManager.GetString("permissions_arm_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of ALL MODULES on this server..
+        /// </summary>
+        public static string permissions_asm_disable {
+            get {
+                return ResourceManager.GetString("permissions_asm_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of ALL MODULES on this server..
+        /// </summary>
+        public static string permissions_asm_enable {
+            get {
+                return ResourceManager.GetString("permissions_asm_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of ALL MODULES for {0} user..
+        /// </summary>
+        public static string permissions_aum_disable {
+            get {
+                return ResourceManager.GetString("permissions_aum_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of ALL MODULES for {0} user..
+        /// </summary>
+        public static string permissions_aum_enable {
+            get {
+                return ResourceManager.GetString("permissions_aum_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Blacklisted {0} with ID {1}.
+        /// </summary>
+        public static string permissions_blacklisted {
+            get {
+                return ResourceManager.GetString("permissions_blacklisted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Command {0} now has a {1}s cooldown..
+        /// </summary>
+        public static string permissions_cmdcd_add {
+            get {
+                return ResourceManager.GetString("permissions_cmdcd_add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Command {0} has no coooldown now and all existing cooldowns have been cleared..
+        /// </summary>
+        public static string permissions_cmdcd_cleared {
+            get {
+                return ResourceManager.GetString("permissions_cmdcd_cleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No command cooldowns set..
+        /// </summary>
+        public static string permissions_cmdcd_none {
+            get {
+                return ResourceManager.GetString("permissions_cmdcd_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Command Costs.
+        /// </summary>
+        public static string permissions_command_costs {
+            get {
+                return ResourceManager.GetString("permissions_command_costs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of {0} {1} on {2} channel..
+        /// </summary>
+        public static string permissions_cx_disable {
+            get {
+                return ResourceManager.GetString("permissions_cx_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of {0} {1} on {2} channel..
+        /// </summary>
+        public static string permissions_cx_enable {
+            get {
+                return ResourceManager.GetString("permissions_cx_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Denied.
+        /// </summary>
+        public static string permissions_denied {
+            get {
+                return ResourceManager.GetString("permissions_denied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Added word {0} to the list of filtered words..
+        /// </summary>
+        public static string permissions_filter_word_add {
+            get {
+                return ResourceManager.GetString("permissions_filter_word_add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to List Of Filtered Words.
+        /// </summary>
+        public static string permissions_filter_word_list {
+            get {
+                return ResourceManager.GetString("permissions_filter_word_list", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Removed word {0} from the list of filtered words..
+        /// </summary>
+        public static string permissions_filter_word_remove {
+            get {
+                return ResourceManager.GetString("permissions_filter_word_remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid second parameter.(Must be a number between {0} and {1}).
+        /// </summary>
+        public static string permissions_invalid_second_param_between {
+            get {
+                return ResourceManager.GetString("permissions_invalid_second_param_between", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invite filtering disabled on this channel..
+        /// </summary>
+        public static string permissions_invite_filter_channel_off {
+            get {
+                return ResourceManager.GetString("permissions_invite_filter_channel_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invite filtering enabled on this channel..
+        /// </summary>
+        public static string permissions_invite_filter_channel_on {
+            get {
+                return ResourceManager.GetString("permissions_invite_filter_channel_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invite filtering disabled on this server..
+        /// </summary>
+        public static string permissions_invite_filter_server_off {
+            get {
+                return ResourceManager.GetString("permissions_invite_filter_server_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invite filtering enabled on this server..
+        /// </summary>
+        public static string permissions_invite_filter_server_on {
+            get {
+                return ResourceManager.GetString("permissions_invite_filter_server_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Moved permission {0} from #{1} to #{2}.
+        /// </summary>
+        public static string permissions_moved_permission {
+            get {
+                return ResourceManager.GetString("permissions_moved_permission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No costs set..
+        /// </summary>
+        public static string permissions_no_costs {
+            get {
+                return ResourceManager.GetString("permissions_no_costs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Can&apos;t find permission at index #{0}.
+        /// </summary>
+        public static string permissions_not_found {
+            get {
+                return ResourceManager.GetString("permissions_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to command.
+        /// </summary>
+        public static string permissions_of_command {
+            get {
+                return ResourceManager.GetString("permissions_of_command", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to module.
+        /// </summary>
+        public static string permissions_of_module {
+            get {
+                return ResourceManager.GetString("permissions_of_module", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Permissions page {0}.
+        /// </summary>
+        public static string permissions_page {
+            get {
+                return ResourceManager.GetString("permissions_page", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No permission found on that index..
+        /// </summary>
+        public static string permissions_perm_out_of_range {
+            get {
+                return ResourceManager.GetString("permissions_perm_out_of_range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Current permissions role is {0}..
+        /// </summary>
+        public static string permissions_permrole {
+            get {
+                return ResourceManager.GetString("permissions_permrole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Users now require {0} role in order to edit permissions..
+        /// </summary>
+        public static string permissions_permrole_changed {
+            get {
+                return ResourceManager.GetString("permissions_permrole_changed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to removed permission #{0} - {1}.
+        /// </summary>
+        public static string permissions_removed {
+            get {
+                return ResourceManager.GetString("permissions_removed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of {0} {1} for {2} role..
+        /// </summary>
+        public static string permissions_rx_disable {
+            get {
+                return ResourceManager.GetString("permissions_rx_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of {0} {1} for {2} role..
+        /// </summary>
+        public static string permissions_rx_enable {
+            get {
+                return ResourceManager.GetString("permissions_rx_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to sec..
+        /// </summary>
+        public static string permissions_sec {
+            get {
+                return ResourceManager.GetString("permissions_sec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of {0} {1} on this server..
+        /// </summary>
+        public static string permissions_sx_disable {
+            get {
+                return ResourceManager.GetString("permissions_sx_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of {0} {1} on this server..
+        /// </summary>
+        public static string permissions_sx_enable {
+            get {
+                return ResourceManager.GetString("permissions_sx_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unblacklisted {0} with ID {1}.
+        /// </summary>
+        public static string permissions_unblacklisted {
+            get {
+                return ResourceManager.GetString("permissions_unblacklisted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to uneditable.
+        /// </summary>
+        public static string permissions_uneditable {
+            get {
+                return ResourceManager.GetString("permissions_uneditable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Disabled usage of {0} {1} for {2} user..
+        /// </summary>
+        public static string permissions_ux_disable {
+            get {
+                return ResourceManager.GetString("permissions_ux_disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Enabled usage of {0} {1} for {2} user..
+        /// </summary>
+        public static string permissions_ux_enable {
+            get {
+                return ResourceManager.GetString("permissions_ux_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to I will no longer show permission warnings..
+        /// </summary>
+        public static string permissions_verbose_false {
+            get {
+                return ResourceManager.GetString("permissions_verbose_false", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to I will now show permission warnings..
+        /// </summary>
+        public static string permissions_verbose_true {
+            get {
+                return ResourceManager.GetString("permissions_verbose_true", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Word filtering disabled on this channel..
+        /// </summary>
+        public static string permissions_word_filter_channel_off {
+            get {
+                return ResourceManager.GetString("permissions_word_filter_channel_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Word filtering enabled on this channel..
+        /// </summary>
+        public static string permissions_word_filter_channel_on {
+            get {
+                return ResourceManager.GetString("permissions_word_filter_channel_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Word filtering disabled on this server..
+        /// </summary>
+        public static string permissions_word_filter_server_off {
+            get {
+                return ResourceManager.GetString("permissions_word_filter_server_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Word filtering enabled on this server..
+        /// </summary>
+        public static string permissions_word_filter_server_on {
+            get {
+                return ResourceManager.GetString("permissions_word_filter_server_on", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} has already fainted..
         /// </summary>
         public static string pokemon_already_fainted {
@@ -3350,6 +4070,852 @@ namespace NadekoBot.Resources {
         public static string pokemon_you_fainted {
             get {
                 return ResourceManager.GetString("pokemon_you_fainted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Abilities.
+        /// </summary>
+        public static string searches_abilities {
+            get {
+                return ResourceManager.GetString("searches_abilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No favorite anime yet.
+        /// </summary>
+        public static string searches_anime_no_fav {
+            get {
+                return ResourceManager.GetString("searches_anime_no_fav", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Started automatic translation of messages on this channel. User messages will be auto-deleted..
+        /// </summary>
+        public static string searches_atl_ad_started {
+            get {
+                return ResourceManager.GetString("searches_atl_ad_started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to your auto-translate language has been removed..
+        /// </summary>
+        public static string searches_atl_removed {
+            get {
+                return ResourceManager.GetString("searches_atl_removed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Your auto-translate language has been set to {from}&gt;{to}.
+        /// </summary>
+        public static string searches_atl_set {
+            get {
+                return ResourceManager.GetString("searches_atl_set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Started automatic translation of messages on this channel..
+        /// </summary>
+        public static string searches_atl_started {
+            get {
+                return ResourceManager.GetString("searches_atl_started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Stopped automatic translation of messages on this channel..
+        /// </summary>
+        public static string searches_atl_stopped {
+            get {
+                return ResourceManager.GetString("searches_atl_stopped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Bad input format, or something went wrong..
+        /// </summary>
+        public static string searches_bad_input_format {
+            get {
+                return ResourceManager.GetString("searches_bad_input_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Couldn&apos;t find that card..
+        /// </summary>
+        public static string searches_card_not_found {
+            get {
+                return ResourceManager.GetString("searches_card_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to fact.
+        /// </summary>
+        public static string searches_catfact {
+            get {
+                return ResourceManager.GetString("searches_catfact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Chapters.
+        /// </summary>
+        public static string searches_chapters {
+            get {
+                return ResourceManager.GetString("searches_chapters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Comic #.
+        /// </summary>
+        public static string searches_comic_number {
+            get {
+                return ResourceManager.GetString("searches_comic_number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Competitive Loses.
+        /// </summary>
+        public static string searches_compet_loses {
+            get {
+                return ResourceManager.GetString("searches_compet_loses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Competitive Played.
+        /// </summary>
+        public static string searches_compet_played {
+            get {
+                return ResourceManager.GetString("searches_compet_played", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Competitive Rank.
+        /// </summary>
+        public static string searches_compet_rank {
+            get {
+                return ResourceManager.GetString("searches_compet_rank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Competitive Wins.
+        /// </summary>
+        public static string searches_compet_wins {
+            get {
+                return ResourceManager.GetString("searches_compet_wins", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Completed.
+        /// </summary>
+        public static string searches_completed {
+            get {
+                return ResourceManager.GetString("searches_completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Condition.
+        /// </summary>
+        public static string searches_condition {
+            get {
+                return ResourceManager.GetString("searches_condition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Cost.
+        /// </summary>
+        public static string searches_cost {
+            get {
+                return ResourceManager.GetString("searches_cost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Date.
+        /// </summary>
+        public static string searches_date {
+            get {
+                return ResourceManager.GetString("searches_date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Define:.
+        /// </summary>
+        public static string searches_define {
+            get {
+                return ResourceManager.GetString("searches_define", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Dropped.
+        /// </summary>
+        public static string searches_dropped {
+            get {
+                return ResourceManager.GetString("searches_dropped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Episodes.
+        /// </summary>
+        public static string searches_episodes {
+            get {
+                return ResourceManager.GetString("searches_episodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Error occured..
+        /// </summary>
+        public static string searches_error_occured {
+            get {
+                return ResourceManager.GetString("searches_error_occured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Example.
+        /// </summary>
+        public static string searches_example {
+            get {
+                return ResourceManager.GetString("searches_example", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed finding that animu..
+        /// </summary>
+        public static string searches_failed_finding_anime {
+            get {
+                return ResourceManager.GetString("searches_failed_finding_anime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed finding that mango..
+        /// </summary>
+        public static string searches_failed_finding_manga {
+            get {
+                return ResourceManager.GetString("searches_failed_finding_manga", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Genres.
+        /// </summary>
+        public static string searches_genres {
+            get {
+                return ResourceManager.GetString("searches_genres", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed finding a definition for that tag..
+        /// </summary>
+        public static string searches_hashtag_error {
+            get {
+                return ResourceManager.GetString("searches_hashtag_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Height/Weight.
+        /// </summary>
+        public static string searches_height_weight {
+            get {
+                return ResourceManager.GetString("searches_height_weight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0}m/{1}kg.
+        /// </summary>
+        public static string searches_height_weight_val {
+            get {
+                return ResourceManager.GetString("searches_height_weight_val", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Humidity.
+        /// </summary>
+        public static string searches_humidity {
+            get {
+                return ResourceManager.GetString("searches_humidity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Image Search For:.
+        /// </summary>
+        public static string searches_image_search_for {
+            get {
+                return ResourceManager.GetString("searches_image_search_for", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to find that movie..
+        /// </summary>
+        public static string searches_imdb_fail {
+            get {
+                return ResourceManager.GetString("searches_imdb_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid source or target language..
+        /// </summary>
+        public static string searches_invalid_lang {
+            get {
+                return ResourceManager.GetString("searches_invalid_lang", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Joes not loaded..
+        /// </summary>
+        public static string searches_jokes_not_loaded {
+            get {
+                return ResourceManager.GetString("searches_jokes_not_loaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Lat/Long.
+        /// </summary>
+        public static string searches_latlong {
+            get {
+                return ResourceManager.GetString("searches_latlong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Level.
+        /// </summary>
+        public static string searches_level {
+            get {
+                return ResourceManager.GetString("searches_level", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Lsit of {0}place tags.
+        /// </summary>
+        public static string searches_list_of_place_tags {
+            get {
+                return ResourceManager.GetString("searches_list_of_place_tags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Location.
+        /// </summary>
+        public static string searches_location {
+            get {
+                return ResourceManager.GetString("searches_location", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Magic Items not loaded..
+        /// </summary>
+        public static string searches_magicitems_not_loaded {
+            get {
+                return ResourceManager.GetString("searches_magicitems_not_loaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0}&apos;s MAL profile.
+        /// </summary>
+        public static string searches_mal_profile {
+            get {
+                return ResourceManager.GetString("searches_mal_profile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Bot owner didn&apos;t specify MashapeApiKey. You can&apos;t use this functionality..
+        /// </summary>
+        public static string searches_mashape_api_missing {
+            get {
+                return ResourceManager.GetString("searches_mashape_api_missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Min/Max.
+        /// </summary>
+        public static string searches_min_max {
+            get {
+                return ResourceManager.GetString("searches_min_max", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No channel found..
+        /// </summary>
+        public static string searches_no_channel_found {
+            get {
+                return ResourceManager.GetString("searches_no_channel_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No results found..
+        /// </summary>
+        public static string searches_no_results {
+            get {
+                return ResourceManager.GetString("searches_no_results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to On-Hold.
+        /// </summary>
+        public static string searches_on_hold {
+            get {
+                return ResourceManager.GetString("searches_on_hold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Original Url.
+        /// </summary>
+        public static string searches_original_url {
+            get {
+                return ResourceManager.GetString("searches_original_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to An osu! API key is required..
+        /// </summary>
+        public static string searches_osu_api_key {
+            get {
+                return ResourceManager.GetString("searches_osu_api_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed retreiving osu signature..
+        /// </summary>
+        public static string searches_osu_failed {
+            get {
+                return ResourceManager.GetString("searches_osu_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Found over {0} images. Showing random {0}..
+        /// </summary>
+        public static string searches_over_x {
+            get {
+                return ResourceManager.GetString("searches_over_x", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to User not found! Please check the Region and BattleTag before trying again..
+        /// </summary>
+        public static string searches_ow_user_not_found {
+            get {
+                return ResourceManager.GetString("searches_ow_user_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Plan to watch.
+        /// </summary>
+        public static string searches_plan_to_watch {
+            get {
+                return ResourceManager.GetString("searches_plan_to_watch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Platform.
+        /// </summary>
+        public static string searches_platform {
+            get {
+                return ResourceManager.GetString("searches_platform", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No ability found..
+        /// </summary>
+        public static string searches_pokemon_ability_none {
+            get {
+                return ResourceManager.GetString("searches_pokemon_ability_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No pokemon found..
+        /// </summary>
+        public static string searches_pokemon_none {
+            get {
+                return ResourceManager.GetString("searches_pokemon_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Profile Link:.
+        /// </summary>
+        public static string searches_profile_link {
+            get {
+                return ResourceManager.GetString("searches_profile_link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Quality:.
+        /// </summary>
+        public static string searches_quality {
+            get {
+                return ResourceManager.GetString("searches_quality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Quick Playtime.
+        /// </summary>
+        public static string searches_quick_playtime {
+            get {
+                return ResourceManager.GetString("searches_quick_playtime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Quick Wins.
+        /// </summary>
+        public static string searches_quick_wins {
+            get {
+                return ResourceManager.GetString("searches_quick_wins", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Rating.
+        /// </summary>
+        public static string searches_rating {
+            get {
+                return ResourceManager.GetString("searches_rating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Score:.
+        /// </summary>
+        public static string searches_score {
+            get {
+                return ResourceManager.GetString("searches_score", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Search For:.
+        /// </summary>
+        public static string searches_search_for {
+            get {
+                return ResourceManager.GetString("searches_search_for", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Short Url.
+        /// </summary>
+        public static string searches_short_url {
+            get {
+                return ResourceManager.GetString("searches_short_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to shorten that url..
+        /// </summary>
+        public static string searches_shorten_fail {
+            get {
+                return ResourceManager.GetString("searches_shorten_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Something went wrong..
+        /// </summary>
+        public static string searches_something_went_wrong {
+            get {
+                return ResourceManager.GetString("searches_something_went_wrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please specify search parameters..
+        /// </summary>
+        public static string searches_specify_search_params {
+            get {
+                return ResourceManager.GetString("searches_specify_search_params", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Status.
+        /// </summary>
+        public static string searches_status {
+            get {
+                return ResourceManager.GetString("searches_status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Store Url.
+        /// </summary>
+        public static string searches_store_url {
+            get {
+                return ResourceManager.GetString("searches_store_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No such stream..
+        /// </summary>
+        public static string searches_stream_no {
+            get {
+                return ResourceManager.GetString("searches_stream_no", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Stream probably doesn&apos;t exist..
+        /// </summary>
+        public static string searches_stream_not_exist {
+            get {
+                return ResourceManager.GetString("searches_stream_not_exist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Removed {0}&apos;s stream ({1}) from notifications..
+        /// </summary>
+        public static string searches_stream_removed {
+            get {
+                return ResourceManager.GetString("searches_stream_removed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to I will notify this channel when status changes..
+        /// </summary>
+        public static string searches_stream_tracked {
+            get {
+                return ResourceManager.GetString("searches_stream_tracked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Streamer {0} is offline..
+        /// </summary>
+        public static string searches_streamer_offline {
+            get {
+                return ResourceManager.GetString("searches_streamer_offline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Streamer {0} is online with {1} viewers..
+        /// </summary>
+        public static string searches_streamer_online {
+            get {
+                return ResourceManager.GetString("searches_streamer_online", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to You are following {0} streams on this server..
+        /// </summary>
+        public static string searches_streams_following {
+            get {
+                return ResourceManager.GetString("searches_streams_following", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to You are not following any streams on this server..
+        /// </summary>
+        public static string searches_streams_none {
+            get {
+                return ResourceManager.GetString("searches_streams_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Sunrise.
+        /// </summary>
+        public static string searches_sunrise {
+            get {
+                return ResourceManager.GetString("searches_sunrise", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Sunset.
+        /// </summary>
+        public static string searches_sunset {
+            get {
+                return ResourceManager.GetString("searches_sunset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Temperature.
+        /// </summary>
+        public static string searches_temperature {
+            get {
+                return ResourceManager.GetString("searches_temperature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Title:.
+        /// </summary>
+        public static string searches_title {
+            get {
+                return ResourceManager.GetString("searches_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Top 3 favorite anime:.
+        /// </summary>
+        public static string searches_top_3_fav_anime {
+            get {
+                return ResourceManager.GetString("searches_top_3_fav_anime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Translation:.
+        /// </summary>
+        public static string searches_translation {
+            get {
+                return ResourceManager.GetString("searches_translation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Types.
+        /// </summary>
+        public static string searches_types {
+            get {
+                return ResourceManager.GetString("searches_types", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed finding definition for that term..
+        /// </summary>
+        public static string searches_ud_error {
+            get {
+                return ResourceManager.GetString("searches_ud_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Url.
+        /// </summary>
+        public static string searches_url {
+            get {
+                return ResourceManager.GetString("searches_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Viewers.
+        /// </summary>
+        public static string searches_viewers {
+            get {
+                return ResourceManager.GetString("searches_viewers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Watching.
+        /// </summary>
+        public static string searches_watching {
+            get {
+                return ResourceManager.GetString("searches_watching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Page not found..
+        /// </summary>
+        public static string searches_wiki_page_not_found {
+            get {
+                return ResourceManager.GetString("searches_wiki_page_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed finding that term on the specified wikia..
+        /// </summary>
+        public static string searches_wikia_error {
+            get {
+                return ResourceManager.GetString("searches_wikia_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please enter a target wikia, followed by search query..
+        /// </summary>
+        public static string searches_wikia_input_error {
+            get {
+                return ResourceManager.GetString("searches_wikia_input_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Wind Speed.
+        /// </summary>
+        public static string searches_wind_speed {
+            get {
+                return ResourceManager.GetString("searches_wind_speed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The {0} most banned champions.
+        /// </summary>
+        public static string searches_x_most_banned_champs {
+            get {
+                return ResourceManager.GetString("searches_x_most_banned_champs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to yodify your sentence..
+        /// </summary>
+        public static string searches_yodify_error {
+            get {
+                return ResourceManager.GetString("searches_yodify_error", resourceCulture);
             }
         }
         
