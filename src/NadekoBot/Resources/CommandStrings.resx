@@ -2326,10 +2326,10 @@
     <value>Check how much currency a person has. (Defaults to yourself)</value>
   </data>
   <data name="cash_usage" xml:space="preserve">
-    <value>`{0}$$` or `{0}$$ @SomeGuy`</value>
+    <value>`{0}>>` or `{0}>> @SomeGuy`</value>
   </data>
   <data name="cash_cmd" xml:space="preserve">
-    <value>cash $$</value>
+    <value>cash >></value>
   </data>
   <data name="listperms_desc" xml:space="preserve">
     <value>Lists whole permission chain with their indexes. You can specify an optional page number if there are a lot of permissions.</value>
