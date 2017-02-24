@@ -22,8 +22,8 @@ namespace NadekoBot.Modules.Games.Trivia
         public IGuild Guild { get; }
         public ITextChannel Channel { get; }
 
-        private int QuestionDurationMiliseconds { get; } = 30000;
-        private int HintTimeoutMiliseconds { get; } = 6000;
+        private int questionDurationMiliseconds { get; } = 30000;
+        private int hintTimeoutMiliseconds { get; } = 6000;
         public bool ShowHints { get; } = true;
         private IUserMessage errorMessage = null;
 
