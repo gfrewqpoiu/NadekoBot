@@ -41,7 +41,7 @@ namespace NadekoBot.Modules.Gambling
                 static readonly List<Func<int[], int>> _winningCombos = new List<Func<int[], int>>()
                 {
                     //three flowers
-                    (arr) => arr.All(a=>a==MaxValue) ? 30 : 0,
+                    (arr) => arr.All(a=>a==MaxValue) ? 31 : 0,
                     //three of the same
                     (arr) => !arr.Any(a => a != arr[0]) ? 10 : 0,
                     //two flowers
