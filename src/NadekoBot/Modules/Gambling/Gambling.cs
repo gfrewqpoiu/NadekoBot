@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Discord;
 using Discord.Commands;
 using NadekoBot.Attributes;
@@ -272,7 +272,7 @@ namespace NadekoBot.Modules.Gambling
                                          .WithIsInline(true));
             }
 
-            await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
+            IUserMessage board = await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
         }
     }
 }
