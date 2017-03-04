@@ -25,6 +25,7 @@ namespace NadekoBot.Modules.Administration
                 //{"nl-NL", "Dutch, Netherlands"},
                 //{"ja-JP", "Japanese, Japan"},
                 {"pt-BR", "Portuguese, Brazil"},
+                {"zh-CN", "Chinese (Simplified), China"}
                 //{"sr-Cyrl-RS", "Serbian, Serbia - Cyrillic"}
             }.ToImmutableDictionary();
 
@@ -97,7 +98,6 @@ namespace NadekoBot.Modules.Administration
             }
 
             [NadekoCommand, Usage, Description, Aliases]
-            [OwnerOnly]
             public async Task LanguagesList()
             {
                 await Context.Channel.EmbedAsync(new EmbedBuilder().WithOkColor()

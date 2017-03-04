@@ -315,7 +315,7 @@
 Raison: {1}</value>
   </data>
   <data name="administration_banned_pl" xml:space="preserve">
-    <value>banni</value>
+    <value>bannis</value>
     <comment>PLURAL</comment>
   </data>
   <data name="administration_banned_user" xml:space="preserve">
@@ -1339,7 +1339,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>{0} contre {1}</value>
   </data>
   <data name="music_attempting_to_queue" xml:space="preserve">
-    <value>Tentative d&apos;ajouter {0} musiques à la file d&apos;attente...</value>
+    <value>Tentative d&apos;ajouter {0} pistes à la file d&apos;attente...</value>
   </data>
   <data name="music_autoplay_disabled" xml:space="preserve">
     <value>Lecture automatique désactivée.</value>
@@ -1402,16 +1402,16 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Pas de résultat.</value>
   </data>
   <data name="music_paused" xml:space="preserve">
-    <value>Lecteur mis sur pause.</value>
+    <value>Lecteure mise en pause.</value>
   </data>
   <data name="music_player_queue" xml:space="preserve">
-    <value>Liste d&apos;attente - Page {0}/{1}</value>
+    <value>File d&apos;attente - Page {0}/{1}</value>
   </data>
   <data name="music_playing_song" xml:space="preserve">
-    <value>Lecture en cours:</value>
+    <value>Lecture en cours</value>
   </data>
   <data name="music_playlists" xml:space="preserve">
-    <value>`#{0}` - **{1}** par *{2}* ({3} morceaux)</value>
+    <value>`#{0}` - **{1}** par *{2}* ({3} pistes)</value>
   </data>
   <data name="music_playlists_page" xml:space="preserve">
     <value>Page {0} des listes de lecture sauvegardées</value>
@@ -1435,23 +1435,23 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Limite à {0}s</value>
   </data>
   <data name="music_queue" xml:space="preserve">
-    <value>Liste d&apos;attente</value>
+    <value>File d&apos;attente</value>
   </data>
   <data name="music_queued_song" xml:space="preserve">
-    <value>Musique ajoutée à la file d&apos;attente</value>
+    <value>Piste ajoutée à la file d&apos;attente</value>
   </data>
   <data name="music_queue_cleared" xml:space="preserve">
-    <value>Liste d&apos;attente effacée.</value>
+    <value>File d&apos;attente effacée.</value>
   </data>
   <data name="music_queue_full" xml:space="preserve">
-    <value>Liste d&apos;attente complète ({0}/{0}).</value>
+    <value>File d&apos;attente complète ({0}/{0}).</value>
   </data>
   <data name="music_removed_song" xml:space="preserve">
-    <value>Musique retirée</value>
+    <value>Piste retirée</value>
     <comment>context: &quot;removed song #5&quot;</comment>
   </data>
   <data name="music_repeating_cur_song" xml:space="preserve">
-    <value>Répétition de la musique en cours</value>
+    <value>Répétition de la piste en cours de lecture</value>
   </data>
   <data name="music_repeating_playlist" xml:space="preserve">
     <value>Liste de lecture en boucle</value>
@@ -1472,7 +1472,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Lecture en boucle activée.</value>
   </data>
   <data name="music_set_music_channel" xml:space="preserve">
-    <value>Je vais désormais afficher les musiques en cours, en pause, terminées et supprimées sur ce salon.</value>
+    <value>Je vais désormais afficher les pistess en cours, en pause, terminées et supprimées sur ce salon.</value>
   </data>
   <data name="music_skipped_to" xml:space="preserve">
     <value>Saut à `{0}:{1}`</value>
@@ -1481,13 +1481,13 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Lecture aléatoire activée.</value>
   </data>
   <data name="music_song_moved" xml:space="preserve">
-    <value>Musique déplacée</value>
+    <value>Piste déplacée</value>
   </data>
   <data name="music_time_format" xml:space="preserve">
     <value>{0}h {1}m {2}s</value>
   </data>
   <data name="music_to_position" xml:space="preserve">
-    <value>En position</value>
+    <value>À la position</value>
   </data>
   <data name="music_unlimited" xml:space="preserve">
     <value>Illimité</value>
@@ -2178,7 +2178,7 @@ OwnerID: {2}</value>
     <value>Pas d&apos;emojis spéciaux trouvés.</value>
   </data>
   <data name="utility_stats_songs" xml:space="preserve">
-    <value>Joue actuellement {0} musiques, {1} en attente.</value>
+    <value>Joue actuellement {0} piste(s), {1} en attente.</value>
   </data>
   <data name="utility_text_channels" xml:space="preserve">
     <value>Salons textuels</value>
@@ -2190,7 +2190,7 @@ OwnerID: {2}</value>
     <value>Durée de fonctionnement</value>
   </data>
   <data name="utility_userid" xml:space="preserve">
-    <value>{0} de l&apos;utilisateur {1} est {2}</value>
+    <value>{0} de l&apos;utilisateur {1}: {2}</value>
     <comment>Id of the user kwoth#1234 is 123123123123</comment>
   </data>
   <data name="utility_users" xml:space="preserve">
