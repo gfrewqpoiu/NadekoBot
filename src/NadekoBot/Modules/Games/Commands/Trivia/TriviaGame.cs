@@ -39,7 +39,9 @@ namespace NadekoBot.Modules.Games.Trivia
 
         public int WinRequirement { get; }
 
-        public TriviaGame(IGuild guild, ITextChannel channel, bool showHints, int winReq)
+        private IGuildUser Startuser;
+
+        public TriviaGame(IGuild guild, ITextChannel channel, IGuildUser user, bool showHints, int winReq)
         {
             _log = LogManager.GetCurrentClassLogger();
 
@@ -47,6 +49,7 @@ namespace NadekoBot.Modules.Games.Trivia
             Guild = guild;
             Channel = channel;
             WinRequirement = winReq;
+            Startuser = user;
         }
 
         private string GetText(string key, params object[] replacements) =>
@@ -157,12 +160,16 @@ namespace NadekoBot.Modules.Games.Trivia
                     .WithDescription(GetLeaderboard())).ConfigureAwait(false);
         }
 
-        public async Task StopGame()
+        public async Task StopGame(IGuildUser user)
         {
             var old = ShouldStopGame;
             ShouldStopGame = true;
-            if (!old)
+            if (!old && (user == Startuser || user.GuildPermissions.ManageMessages))
                 try { await Channel.SendConfirmAsync(GetText("trivia_game"), GetText("trivia_stopping")).ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
+            else
+            {
+                ShouldStopGame = false;
+            }
         }
 
         private async Task PotentialGuess(SocketMessage imsg)

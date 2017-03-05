@@ -26,10 +26,11 @@ namespace NadekoBot.Modules.Games
             public async Task Trivia(int winReq = 10, [Remainder] string additionalArgs = "")
             {
                 var channel = (ITextChannel)Context.Channel;
+                var user = (IGuildUser)Context.User;
 
                 var showHints = !additionalArgs.Contains("nohint");
 
-                var trivia = new TriviaGame(channel.Guild, channel, showHints, winReq);
+                var trivia = new TriviaGame(channel.Guild, channel, user, showHints, winReq);
                 if (RunningTrivias.TryAdd(channel.Guild.Id, trivia))
                 {
                     try
@@ -69,11 +70,12 @@ namespace NadekoBot.Modules.Games
             public async Task Tq()
             {
                 var channel = (ITextChannel)Context.Channel;
+                var user = (IGuildUser)Context.User;
 
                 TriviaGame trivia;
                 if (RunningTrivias.TryGetValue(channel.Guild.Id, out trivia))
                 {
-                    await trivia.StopGame().ConfigureAwait(false);
+                    await trivia.StopGame(user).ConfigureAwait(false);
                     return;
                 }
 
