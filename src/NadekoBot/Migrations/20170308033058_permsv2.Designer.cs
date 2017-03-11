@@ -10,9 +10,10 @@ using NadekoBot.Modules.Music.Classes;
 namespace NadekoBot.Migrations
 {
     [DbContext(typeof(NadekoContext))]
-    partial class NadekoSqliteContextModelSnapshot : ModelSnapshot
+    [Migration("20170308033058_permsv2")]
+    partial class permsv2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752");
@@ -924,26 +925,6 @@ namespace NadekoBot.Migrations
                     b.ToTable("SelfAssignableRoles");
                 });
 
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.UnmuteTimer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime?>("DateAdded");
-
-                    b.Property<int?>("GuildConfigId");
-
-                    b.Property<DateTime>("UnmuteAt");
-
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildConfigId");
-
-                    b.ToTable("UnmuteTimer");
-                });
-
             modelBuilder.Entity("NadekoBot.Services.Database.Models.UserPokeTypes", b =>
                 {
                     b.Property<int>("Id")
@@ -961,26 +942,6 @@ namespace NadekoBot.Migrations
                         .IsUnique();
 
                     b.ToTable("PokeGame");
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.VcRoleInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime?>("DateAdded");
-
-                    b.Property<int?>("GuildConfigId");
-
-                    b.Property<ulong>("RoleId");
-
-                    b.Property<ulong>("VoiceChannelId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildConfigId");
-
-                    b.ToTable("VcRoleInfo");
                 });
 
             modelBuilder.Entity("NadekoBot.Services.Database.Models.WaifuInfo", b =>
@@ -1207,20 +1168,6 @@ namespace NadekoBot.Migrations
                     b.HasOne("NadekoBot.Services.Database.Models.BotConfig")
                         .WithMany("RaceAnimals")
                         .HasForeignKey("BotConfigId");
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.UnmuteTimer", b =>
-                {
-                    b.HasOne("NadekoBot.Services.Database.Models.GuildConfig")
-                        .WithMany("UnmuteTimers")
-                        .HasForeignKey("GuildConfigId");
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.VcRoleInfo", b =>
-                {
-                    b.HasOne("NadekoBot.Services.Database.Models.GuildConfig")
-                        .WithMany("VcRoleInfos")
-                        .HasForeignKey("GuildConfigId");
                 });
 
             modelBuilder.Entity("NadekoBot.Services.Database.Models.WaifuInfo", b =>

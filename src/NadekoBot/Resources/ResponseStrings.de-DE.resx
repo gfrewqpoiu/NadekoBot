@@ -200,7 +200,7 @@
     <value>Unzureichende Rechte. Dies erfordert das Sie den Bot besitzen für globale Reaktionen, und Administratorrechte für serverseitige Reaktionen.</value>
   </data>
   <data name="customreactions_list_all" xml:space="preserve">
-    <value>Liste aller benutzerdefinierten Reaktionen.</value>
+    <value>Liste aller benutzerdefinierten Reaktionen</value>
   </data>
   <data name="customreactions_name" xml:space="preserve">
     <value>Benutzerdefinierte Reaktionen</value>
@@ -544,11 +544,11 @@ Grund: {1}</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="administration_muted_pl" xml:space="preserve">
-    <value>wurden Stumm geschalten</value>
+    <value>wurden Stummgeschalten</value>
     <comment>PLURAL (users have been muted)</comment>
   </data>
   <data name="administration_muted_sn" xml:space="preserve">
-    <value>wurde Stumm geschalten</value>
+    <value>wurde Stummgeschalten</value>
     <comment>singular &quot;User muted.&quot;</comment>
   </data>
   <data name="administration_mute_error" xml:space="preserve">
@@ -1052,7 +1052,7 @@ Vergessen Sie bitte nicht, Ihren Discord-Namen oder Ihre ID in der Nachricht zu 
     <comment>Fuzzy</comment>
   </data>
   <data name="help_list_of_commands" xml:space="preserve">
-    <value>Lister der Befehle</value>
+    <value>Liste der Befehle</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="help_list_of_modules" xml:space="preserve">
@@ -1281,11 +1281,13 @@ Vergessen Sie bitte nicht, Ihren Discord-Namen oder Ihre ID in der Nachricht zu 
     <value>Währungsgeneration in diesem Kanal aktiviert.</value>
   </data>
   <data name="games_curgen_pl" xml:space="preserve">
-    <value>{0} zufällige {1} sind erschienen! Sammle sie indem Sie `{2}pick` schreiben</value>
-    <comment>plural</comment>
+    <value>{0} zufällige {1} sind erschienen! Sammlen Sie sie indem Sie `{2}pick` schreiben</value>
+    <comment>plural
+Fuzzy</comment>
   </data>
   <data name="games_curgen_sn" xml:space="preserve">
-    <value>Eine zufällige {0} ist erschienen! Sammle sie indem Sie `{1}pick` schreiben</value>
+    <value>Eine zufällige {0} ist erschienen! Sammlen Sie sie indem Sie `{1}pick` schreiben</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="games_failed_loading_question" xml:space="preserve">
     <value>Laden einer Frage fehlgeschlagen.</value>
@@ -2094,6 +2096,7 @@ Fuzzy</comment>
   </data>
   <data name="utility_inrole_list" xml:space="preserve">
     <value>Hier ist eine Liste mit Nutzern in diesen Rollen:</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="utility_inrole_not_allowed" xml:space="preserve">
     <value>Sie haben keine Berechtigung diesen Befehl auf Rollen mit vielen Nutzern zu benutzen um Missbrauch zu verhindern.</value>
@@ -2187,7 +2190,7 @@ ID des Besitzers: {2}</value>
     <value>Zitat hinzugefügt</value>
   </data>
   <data name="utility_quote_deleted" xml:space="preserve">
-    <value>Zufälliges Zitat wurde gelöscht.</value>
+    <value>Zitat #{0} wurde gelöscht.</value>
   </data>
   <data name="utility_region" xml:space="preserve">
     <value>Region</value>
@@ -2286,7 +2289,7 @@ ID des Besitzers: {2}</value>
     <value>Benutzer</value>
   </data>
   <data name="utility_voice_channels" xml:space="preserve">
-    <value>Sprach Kanäle</value>
+    <value>Sprach-Kanäle</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="gambling_animal_race_already_in" xml:space="preserve">
@@ -2324,6 +2327,36 @@ ID des Besitzers: {2}</value>
   <data name="games_x_votes_cast" xml:space="preserve">
     <value>{0} totale Abstimmungen eingereicht.</value>
     <comment>Fuzzy</comment>
+  </data>
+  <data name="games_pick_pl" xml:space="preserve">
+    <value>Sammel sie durch das Schreiben von `{0}pick`</value>
+  </data>
+  <data name="games_pick_sn" xml:space="preserve">
+    <value>Sammel sie durch das Schreiben von `{0}pick</value>
+  </data>
+  <data name="gambling_no_users_found" xml:space="preserve">
+    <value>Kein Benutzer gefunden.</value>
+  </data>
+  <data name="gambling_page" xml:space="preserve">
+    <value>Seite {0}</value>
+  </data>
+  <data name="administration_must_be_in_voice" xml:space="preserve">
+    <value>Sie müssen in einem Sprachkanal auf diesem Server sein.</value>
+  </data>
+  <data name="administration_no_vcroles" xml:space="preserve">
+    <value>Keine Sprachkanal Rollen gefunden.</value>
+  </data>
+  <data name="administration_user_muted_time" xml:space="preserve">
+    <value>{0} wurde **stummgeschaltet** im Text- und Sprachchat für {1} minuten.</value>
+  </data>
+  <data name="administration_vcrole_added" xml:space="preserve">
+    <value>Benutzer die dem Sprachkanal {0} beitreten werden der Rolle {1} zugeweist.</value>
+  </data>
+  <data name="administration_vcrole_removed" xml:space="preserve">
+    <value>Benutzer die den Sprachkanal {0} beitreten werden nicht länger einer Rolle zugeweist.</value>
+  </data>
+  <data name="administration_vc_role_list" xml:space="preserve">
+    <value>Rollen für Sprachkanäle</value>
   </data>
 
 </root>

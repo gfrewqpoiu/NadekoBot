@@ -96,7 +96,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Starts an Acrophobia game. Second argment is optional round length in seconds. (default is 60).
+        ///    Looks up a localized string similar to Starts an Acrophobia game. Second argument is optional round length in seconds. (default is 60).
         /// </summary>
         public static string acro_desc {
             get {
@@ -2364,7 +2364,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Deletes a random quote with the specified keyword. You have to either be server Administrator or the creator of the quote to delete it..
+        ///    Looks up a localized string similar to Deletes a quote with the specified ID. You have to be either server Administrator or the creator of the quote to delete it..
         /// </summary>
         public static string deletequote_desc {
             get {
@@ -4956,7 +4956,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Mutes a mentioned user both from speaking and chatting..
+        ///    Looks up a localized string similar to Mutes a mentioned user both from speaking and chatting. You can also specify time in minutes (up to 1440) for how long the user should be muted..
         /// </summary>
         public static string mute_desc {
             get {
@@ -4965,7 +4965,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to `{0}mute @Someone`.
+        ///    Looks up a localized string similar to `{0}mute @Someone` or `{0}mute 30 @Someone`.
         /// </summary>
         public static string mute_usage {
             get {
@@ -8642,6 +8642,60 @@ namespace NadekoBot.Resources {
         public static string usrmdl_usage {
             get {
                 return ResourceManager.GetString("usrmdl_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to vcrole.
+        /// </summary>
+        public static string vcrole_cmd {
+            get {
+                return ResourceManager.GetString("vcrole_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Sets or resets a role which will be given to users who join the voice channel you&apos;re in when you run this command. Provide no role name to disable. You must be in a voice channel to run this command..
+        /// </summary>
+        public static string vcrole_desc {
+            get {
+                return ResourceManager.GetString("vcrole_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}vcrole SomeRole` or `{0}vcrole`.
+        /// </summary>
+        public static string vcrole_usage {
+            get {
+                return ResourceManager.GetString("vcrole_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to vcrolelist.
+        /// </summary>
+        public static string vcrolelist_cmd {
+            get {
+                return ResourceManager.GetString("vcrolelist_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Shows a list of currently set voice channel roles..
+        /// </summary>
+        public static string vcrolelist_desc {
+            get {
+                return ResourceManager.GetString("vcrolelist_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}vcrolelist`.
+        /// </summary>
+        public static string vcrolelist_usage {
+            get {
+                return ResourceManager.GetString("vcrolelist_usage", resourceCulture);
             }
         }
         
