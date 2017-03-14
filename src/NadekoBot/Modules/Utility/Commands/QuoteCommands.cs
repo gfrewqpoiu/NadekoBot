@@ -46,16 +46,17 @@ namespace NadekoBot.Modules.Utility
             {
                 if (string.IsNullOrWhiteSpace(keyword))
                     return;
-
+                int id = -1;
                 keyword = keyword.ToUpperInvariant();
 
                 Quote quote;
                 using (var uow = DbHandler.UnitOfWork())
-                {
+                {if (Int32.TryParse(keyword, out id))
+                    quote = uow.Quotes.Get(id);
+                else
                     quote =
                         await uow.Quotes.GetRandomQuoteByKeywordAsync(Context.Guild.Id, keyword).ConfigureAwait(false);
                 }
-
                 if (quote == null)
                     return;
 
@@ -106,6 +107,11 @@ namespace NadekoBot.Modules.Utility
             public async Task AddQuote(string keyword, [Remainder] string text)
             {
                 if (string.IsNullOrWhiteSpace(keyword) || string.IsNullOrWhiteSpace(text))
+                    return;
+
+                int isint = -1;
+
+                if (Int32.TryParse(keyword, out isint))
                     return;
 
                 keyword = keyword.ToUpperInvariant();
