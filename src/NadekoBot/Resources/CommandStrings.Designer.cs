@@ -249,6 +249,60 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to alias cmdmap.
+        /// </summary>
+        public static string alias_cmd {
+            get {
+                return ResourceManager.GetString("alias_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Create a custom alias for a certain Nadeko command. Provide no alias to remove the existing one..
+        /// </summary>
+        public static string alias_desc {
+            get {
+                return ResourceManager.GetString("alias_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}alias allin $bf 100 h` or `{0}alias &quot;linux thingy&quot; &gt;loonix Spyware Windows`.
+        /// </summary>
+        public static string alias_usage {
+            get {
+                return ResourceManager.GetString("alias_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to aliaslist cmdmaplist aliases.
+        /// </summary>
+        public static string aliaslist_cmd {
+            get {
+                return ResourceManager.GetString("aliaslist_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Shows the list of currently set aliases. Paginated..
+        /// </summary>
+        public static string aliaslist_desc {
+            get {
+                return ResourceManager.GetString("aliaslist_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}aliaslist` or `{0}aliaslist 3`.
+        /// </summary>
+        public static string aliaslist_usage {
+            get {
+                return ResourceManager.GetString("aliaslist_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to allchnlmdls acm.
         /// </summary>
         public static string allchnlmdls_cmd {
@@ -1977,6 +2031,60 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to crad.
+        /// </summary>
+        public static string crad_cmd {
+            get {
+                return ResourceManager.GetString("crad_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Toggles whether the message triggering the custom reaction will be automatically deleted..
+        /// </summary>
+        public static string crad_desc {
+            get {
+                return ResourceManager.GetString("crad_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}crad 59`.
+        /// </summary>
+        public static string crad_usage {
+            get {
+                return ResourceManager.GetString("crad_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to crdm.
+        /// </summary>
+        public static string crdm_cmd {
+            get {
+                return ResourceManager.GetString("crdm_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Toggles whether the response message of the custom reaction will be sent as a direct message..
+        /// </summary>
+        public static string crdm_desc {
+            get {
+                return ResourceManager.GetString("crdm_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}crad 44`.
+        /// </summary>
+        public static string crdm_usage {
+            get {
+                return ResourceManager.GetString("crdm_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to createinvite crinv.
         /// </summary>
         public static string createinvite_cmd {
@@ -2373,7 +2481,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to `{0}delq abc`.
+        ///    Looks up a localized string similar to `{0}delq 123456`.
         /// </summary>
         public static string deletequote_usage {
             get {

@@ -10,9 +10,10 @@ using NadekoBot.Modules.Music.Classes;
 namespace NadekoBot.Migrations
 {
     [DbContext(typeof(NadekoContext))]
-    partial class NadekoSqliteContextModelSnapshot : ModelSnapshot
+    [Migration("20170318190018_crad-and-crdm")]
+    partial class cradandcrdm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752");
@@ -205,26 +206,6 @@ namespace NadekoBot.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ClashOfClans");
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.CommandAlias", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime?>("DateAdded");
-
-                    b.Property<int?>("GuildConfigId");
-
-                    b.Property<string>("Mapping");
-
-                    b.Property<string>("Trigger");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildConfigId");
-
-                    b.ToTable("CommandAlias");
                 });
 
             modelBuilder.Entity("NadekoBot.Services.Database.Models.CommandCooldown", b =>
@@ -1096,13 +1077,6 @@ namespace NadekoBot.Migrations
                         .WithMany("Bases")
                         .HasForeignKey("ClashWarId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.CommandAlias", b =>
-                {
-                    b.HasOne("NadekoBot.Services.Database.Models.GuildConfig")
-                        .WithMany("CommandAliases")
-                        .HasForeignKey("GuildConfigId");
                 });
 
             modelBuilder.Entity("NadekoBot.Services.Database.Models.CommandCooldown", b =>

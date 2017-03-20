@@ -2018,6 +2018,42 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Message triggering the custom reaction with id {0} won&apos;t get automatically deleted..
+        /// </summary>
+        public static string customreactions_crad_disabled {
+            get {
+                return ResourceManager.GetString("customreactions_crad_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Message triggering the custom reaction with id {0} will get automatically deleted..
+        /// </summary>
+        public static string customreactions_crad_enabled {
+            get {
+                return ResourceManager.GetString("customreactions_crad_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Response message for the custom reaction with id {0} won&apos;t be sent as a DM..
+        /// </summary>
+        public static string customreactions_crdm_disabled {
+            get {
+                return ResourceManager.GetString("customreactions_crdm_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Response message for the custom reaction with id {0} will be sent as a DM..
+        /// </summary>
+        public static string customreactions_crdm_enabled {
+            get {
+                return ResourceManager.GetString("customreactions_crdm_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Custom Reaction deleted.
         /// </summary>
         public static string customreactions_deleted {
@@ -5617,6 +5653,51 @@ namespace NadekoBot.Resources {
         public static string utility_activity_users_total {
             get {
                 return ResourceManager.GetString("utility_activity_users_total", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Typing {0} will now be an alias of {1}..
+        /// </summary>
+        public static string utility_alias_added {
+            get {
+                return ResourceManager.GetString("utility_alias_added", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to List of aliases.
+        /// </summary>
+        public static string utility_alias_list {
+            get {
+                return ResourceManager.GetString("utility_alias_list", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Trigger {0} didn&apos;t have an alias..
+        /// </summary>
+        public static string utility_alias_remove_fail {
+            get {
+                return ResourceManager.GetString("utility_alias_remove_fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Trigger {0} no longer has an alias..
+        /// </summary>
+        public static string utility_alias_removed {
+            get {
+                return ResourceManager.GetString("utility_alias_removed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No alias found.
+        /// </summary>
+        public static string utility_aliases_none {
+            get {
+                return ResourceManager.GetString("utility_aliases_none", resourceCulture);
             }
         }
         

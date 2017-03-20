@@ -3186,4 +3186,40 @@
   <data name="vcrole_usage" xml:space="preserve">
     <value>`{0}vcrole SomeRole` or `{0}vcrole`</value>
   </data>
+  <data name="crad_cmd" xml:space="preserve">
+    <value>crad</value>
+  </data>
+  <data name="crad_desc" xml:space="preserve">
+    <value>Toggles whether the message triggering the custom reaction will be automatically deleted.</value>
+  </data>
+  <data name="crad_usage" xml:space="preserve">
+    <value>`{0}crad 59`</value>
+  </data>
+  <data name="crdm_cmd" xml:space="preserve">
+    <value>crdm</value>
+  </data>
+  <data name="crdm_desc" xml:space="preserve">
+    <value>Toggles whether the response message of the custom reaction will be sent as a direct message.</value>
+  </data>
+  <data name="crdm_usage" xml:space="preserve">
+    <value>`{0}crad 44`</value>
+  </data>
+  <data name="aliaslist_cmd" xml:space="preserve">
+    <value>aliaslist cmdmaplist aliases</value>
+  </data>
+  <data name="aliaslist_desc" xml:space="preserve">
+    <value>Shows the list of currently set aliases. Paginated.</value>
+  </data>
+  <data name="aliaslist_usage" xml:space="preserve">
+    <value>`{0}aliaslist` or `{0}aliaslist 3`</value>
+  </data>
+  <data name="alias_cmd" xml:space="preserve">
+    <value>alias cmdmap</value>
+  </data>
+  <data name="alias_desc" xml:space="preserve">
+    <value>Create a custom alias for a certain Nadeko command. Provide no alias to remove the existing one.</value>
+  </data>
+  <data name="alias_usage" xml:space="preserve">
+    <value>`{0}alias allin $bf 100 h` or `{0}alias "linux thingy" &gt;loonix Spyware Windows`</value>
+  </data>
 </root>
