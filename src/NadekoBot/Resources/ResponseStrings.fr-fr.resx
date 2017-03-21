@@ -339,7 +339,7 @@ Raison: {1}</value>
     <value>Les annonces de départ seront supprimées après {0} secondes.</value>
   </data>
   <data name="administration_byemsg_cur" xml:space="preserve">
-    <value>Annonce de départ actuelle : {0}</value>
+    <value>Annonce de départ actuelle: {0}</value>
   </data>
   <data name="administration_byemsg_enable" xml:space="preserve">
     <value>Activez les annonces de départ en entrant {0}</value>
@@ -469,7 +469,7 @@ Raison: {1}</value>
   </data>
   <data name="administration_kickdm" xml:space="preserve">
     <value>Vous avez été expulsé du serveur {0}.
-Raison : {1}</value>
+Raison: {1}</value>
   </data>
   <data name="administration_kicked_user" xml:space="preserve">
     <value>Utilisateur expulsé</value>
@@ -510,7 +510,7 @@ Raison : {1}</value>
     <value>Enregistrement désactivé.</value>
   </data>
   <data name="administration_log_events" xml:space="preserve">
-    <value>Événements enregistrés que vous pouvez suivre :</value>
+    <value>Événements enregistrés que vous pouvez suivre:</value>
   </data>
   <data name="administration_log_ignore" xml:space="preserve">
     <value>L&apos;enregistrement ignorera désormais {0}</value>
@@ -525,7 +525,7 @@ Raison : {1}</value>
     <value>{0} a émis une notification pour les rôles suivants</value>
   </data>
   <data name="administration_message_from_bo" xml:space="preserve">
-    <value>Message de {0} `[Bot Owner]` :</value>
+    <value>Message de {0} `[Propriétaire du bot]`:</value>
   </data>
   <data name="administration_message_sent" xml:space="preserve">
     <value>Message envoyé.</value>
@@ -1079,7 +1079,7 @@ N&apos;oubliez pas de mettre votre nom discord ou ID dans le message.
     <value>Usage</value>
   </data>
   <data name="nsfw_autohentai_started" xml:space="preserve">
-    <value>Autohentai commencé. Publie toutes les {0}s avec l&apos;un des tags suivants :
+    <value>Autohentai commencé. Publie toutes les {0}s avec l&apos;un des tags suivants:
 {1}</value>
   </data>
   <data name="nsfw_tag" xml:space="preserve">
@@ -1124,7 +1124,7 @@ N&apos;oubliez pas de mettre votre nom discord ou ID dans le message.
     <comment>Someone rolled 35</comment>
   </data>
   <data name="gambling_dice_rolled_num" xml:space="preserve">
-    <value>Dé tiré au sort: {0}</value>
+    <value>Dés lancés: {0}</value>
     <comment>Dice Rolled: 5</comment>
   </data>
   <data name="gambling_race_failed_starting" xml:space="preserve">
@@ -1137,8 +1137,9 @@ N&apos;oubliez pas de mettre votre nom discord ou ID dans le message.
     <value>Le deuxième nombre doit être plus grand que le premier.</value>
   </data>
   <data name="gambling_changes_of_heart" xml:space="preserve">
-    <value>Changements de Coeur</value>
-    <comment>Fuzzy</comment>
+    <value>Changements d&apos;avis</value>
+    <comment>La plus proche traduction pour cette expression serait &quot;Changement d&apos;avis&quot;
+Fuzzy</comment>
   </data>
   <data name="gambling_claimed_by" xml:space="preserve">
     <value>Revendiquée par</value>
@@ -1260,14 +1261,14 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>{0} a gagné ! {1} bat {2}.</value>
   </data>
   <data name="games_submissions_closed" xml:space="preserve">
-    <value>Inscriptions terminées.</value>
+    <value>Soumissions fermées.</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="gambling_animal_race_already_started" xml:space="preserve">
     <value>Une course d&apos;animaux est déjà en cours.</value>
   </data>
   <data name="gambling_total_average" xml:space="preserve">
-    <value>Total : {0} Moyenne : {1}</value>
+    <value>Total: {0} Moyenne: {1}</value>
   </data>
   <data name="games_category" xml:space="preserve">
     <value>Catégorie</value>
@@ -1309,7 +1310,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Initialisation du pendu erronée.</value>
   </data>
   <data name="games_hangman_types" xml:space="preserve">
-    <value>Liste des &quot;{0}hangman&quot; types de termes :</value>
+    <value>Liste des types de termes pour &quot;{0}hangman&quot;:</value>
   </data>
   <data name="games_leaderboard" xml:space="preserve">
     <value>Classement</value>
@@ -1365,7 +1366,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>a crée une partie de Morpion.</value>
   </data>
   <data name="games_ttt_has_won" xml:space="preserve">
-    <value>{0} a gagné !</value>
+    <value>{0} a gagné!</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="games_ttt_matched_three" xml:space="preserve">
@@ -1376,7 +1377,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Aucun mouvement restant !</value>
   </data>
   <data name="games_ttt_time_expired" xml:space="preserve">
-    <value>Le temps a expiré !</value>
+    <value>Le temps a expiré!</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="games_ttt_users_move" xml:space="preserve">
@@ -1451,7 +1452,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Pas de résultat.</value>
   </data>
   <data name="music_paused" xml:space="preserve">
-    <value>Lecteur mis sur pause.</value>
+    <value>Lecture mise en pause.</value>
   </data>
   <data name="music_player_queue" xml:space="preserve">
     <value>File d&apos;attente - Page {0}/{1}</value>
@@ -1505,7 +1506,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <comment>context: &quot;removed song #5&quot;</comment>
   </data>
   <data name="music_repeating_cur_song" xml:space="preserve">
-    <value>Répétition de la piste en cours de lecture</value>
+    <value>Répétition de la piste actuelle</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="music_repeating_playlist" xml:space="preserve">
@@ -1535,7 +1536,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Saut à `{0}:{1}`</value>
   </data>
   <data name="music_songs_shuffled" xml:space="preserve">
-    <value>Lecture aléatoire activée.</value>
+    <value>Pistes mélangées.</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="music_song_moved" xml:space="preserve">
@@ -1872,7 +1873,7 @@ La nouvelle valeur de {0} est {1} !</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="searches_original_url" xml:space="preserve">
-    <value>Url originale</value>
+    <value>Url d&apos;origine</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="searches_osu_api_key" xml:space="preserve">
@@ -1908,11 +1909,11 @@ La nouvelle valeur de {0} est {1} !</value>
     <value>Qualité</value>
   </data>
   <data name="searches_quick_playtime" xml:space="preserve">
-    <value>Durée en Jeux Rapides</value>
+    <value>Temps en parties rapides</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="searches_quick_wins" xml:space="preserve">
-    <value>Victoires Rapides</value>
+    <value>Parties rapides gagnées</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="searches_rating" xml:space="preserve">
@@ -2103,7 +2104,7 @@ Fuzzy</comment>
     <comment>Fuzzy</comment>
   </data>
   <data name="utility_inrole_not_allowed" xml:space="preserve">
-    <value>Vous ne pouvez pas utiliser cette commande sur un rôle incluant beaucoup d&apos;utilisateurs afin d&apos;éviter les abus.</value>
+    <value>Vous ne pouvez pas utiliser cette commande sur les rôles associés à beaucoup d&apos;utilisateurs afin d&apos;éviter les abus.</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="utility_invalid_value" xml:space="preserve">
@@ -2120,7 +2121,7 @@ Fuzzy</comment>
   <data name="utility_listservers" xml:space="preserve">
     <value>ID: {0}
 Membres: {1}
-OwnerID: {2}</value>
+ID du propriétaire: {2}</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="utility_listservers_none" xml:space="preserve">
@@ -2205,7 +2206,7 @@ OwnerID: {2}</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="utility_remind" xml:space="preserve">
-    <value>Je vais vous rappeler {0} pour {1} dans {2} `({3:d.M.yyyy} à {4:HH:mm})` </value>
+    <value>Je vais rappeler {0} de {1} dans {2} `({3:d.M.yyyy} à {4:HH:mm})`</value>
   </data>
   <data name="utility_remind_invalid_format" xml:space="preserve">
     <value>Format de date non valide. Vérifiez la liste des commandes.</value>
@@ -2236,7 +2237,7 @@ OwnerID: {2}</value>
     <value>Rôles</value>
   </data>
   <data name="utility_roles_all_page" xml:space="preserve">
-    <value>Page #{0} de tout les rôles sur ce serveur.</value>
+    <value>Page #{0} de tous les rôles de ce serveur:</value>
   </data>
   <data name="utility_roles_page" xml:space="preserve">
     <value>Page #{0} des rôles pour {1}</value>
@@ -2363,6 +2364,36 @@ Fuzzy</comment>
   </data>
   <data name="administration_vc_role_list" xml:space="preserve">
     <value>Rôles du salon vocal</value>
+  </data>
+  <data name="customreactions_crad_disabled" xml:space="preserve">
+    <value>Le message déclenchant la réaction personnalisée avec l&apos;ID {0} ne sera pas automatiquement effacé.</value>
+  </data>
+  <data name="customreactions_crad_enabled" xml:space="preserve">
+    <value>Le message déclenchant la réaction personnalisée avec l&apos;ID {0} sera  automatiquement effacé.</value>
+  </data>
+  <data name="customreactions_crdm_disabled" xml:space="preserve">
+    <value>Le message de réponse pour la réaction personnalisée avec l&apos;ID {0} ne sera pas envoyé en MP.</value>
+  </data>
+  <data name="customreactions_crdm_enabled" xml:space="preserve">
+    <value>Le message de réponse pour la réaction personnalisée avec l&apos;ID {0} sera envoyé en MP.</value>
+  </data>
+  <data name="utility_aliases_none" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="utility_alias_added" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="utility_alias_list" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="utility_alias_removed" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="utility_alias_remove_fail" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="searches_compet_playtime" xml:space="preserve">
+    <value></value>
   </data>
 
 </root>
