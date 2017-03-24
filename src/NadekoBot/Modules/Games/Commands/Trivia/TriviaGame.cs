@@ -24,9 +24,10 @@ namespace NadekoBot.Modules.Games.Trivia
 
         private int questionDurationMiliseconds { get; } = 30000;
         private int hintTimeoutMiliseconds { get; } = 6000;
-        public bool ShowHints { get; } = true;
         private IUserMessage errorMessage = null;
 
+        public bool ShowHints { get; }
+        public bool IsPokemon { get; }
         private CancellationTokenSource triviaCancelSource { get; set; }
 
         public TriviaQuestion CurrentQuestion { get; private set; }
@@ -41,7 +42,7 @@ namespace NadekoBot.Modules.Games.Trivia
 
         private IGuildUser Startuser;
 
-        public TriviaGame(IGuild guild, ITextChannel channel, IGuildUser user, bool showHints, int winReq)
+        public TriviaGame(IGuild guild, ITextChannel channel, IGuildUser user, bool showHints, int winReq, bool isPokemon)
         {
             _log = LogManager.GetCurrentClassLogger();
 
@@ -50,6 +51,7 @@ namespace NadekoBot.Modules.Games.Trivia
             Channel = channel;
             WinRequirement = winReq;
             Startuser = user;
+            IsPokemon = isPokemon;
         }
 
         private string GetText(string key, params object[] replacements) =>
@@ -66,7 +68,7 @@ namespace NadekoBot.Modules.Games.Trivia
                 triviaCancelSource = new CancellationTokenSource();
 
                 // load question
-                CurrentQuestion = TriviaQuestionPool.Instance.GetRandomQuestion(OldQuestions);
+                CurrentQuestion = TriviaQuestionPool.Instance.GetRandomQuestion(OldQuestions, IsPokemon);
                 if (string.IsNullOrWhiteSpace(CurrentQuestion?.Answer) || string.IsNullOrWhiteSpace(CurrentQuestion.Question))
                 {
                     await Channel.SendErrorAsync(GetText("trivia_game"), GetText("failed_loading_question")).ConfigureAwait(false);
@@ -81,7 +83,8 @@ namespace NadekoBot.Modules.Games.Trivia
                     questionEmbed = new EmbedBuilder().WithOkColor()
                         .WithTitle(GetText("trivia_game"))
                         .AddField(eab => eab.WithName(GetText("category")).WithValue(CurrentQuestion.Category))
-                        .AddField(eab => eab.WithName(GetText("question")).WithValue(CurrentQuestion.Question));
+                        .AddField(eab => eab.WithName(GetText("question")).WithValue(CurrentQuestion.Question))
+                        .WithImageUrl(CurrentQuestion.ImageUrl);
 
                     questionMessage = await Channel.EmbedAsync(questionEmbed).ConfigureAwait(false);
                 }
@@ -133,9 +136,19 @@ namespace NadekoBot.Modules.Games.Trivia
                     NadekoBot.Client.MessageReceived -= PotentialGuess;
                 }
                 if (!triviaCancelSource.IsCancellationRequested)
-
-                    try {errorMessage = await Channel.SendErrorAsync(GetText("trivia_game"), GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false); } catch (Exception ex) { _log.Warn(ex); }
-
+                {
+                    try
+                    {
+                        errorMessage = await Channel.EmbedAsync(new EmbedBuilder().WithErrorColor()
+                            .WithTitle(GetText("trivia_game"))
+                            .WithDescription(GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer))))
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Warn(ex);
+                    }
+                }
                 await Task.Delay(2000).ConfigureAwait(false);
                 await questionMessage.DeleteAsync().ConfigureAwait(false);
                 await Task.Delay(3000).ConfigureAwait(false);
@@ -207,10 +220,13 @@ namespace NadekoBot.Modules.Games.Trivia
                     ShouldStopGame = true;
                     try
                     {
-                        errorMessage = await Channel.SendConfirmAsync(GetText("trivia_game"),
-                            GetText("trivia_win",
+                        errorMessage = await Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
+                            .WithTitle(GetText("trivia_game"))
+                            .WithDescription(GetText("trivia_win",
                                 guildUser.Mention,
-                                Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
+                                Format.Bold(CurrentQuestion.Answer)))
+                            .WithImageUrl(CurrentQuestion.AnswerImageUrl))
+                            .ConfigureAwait(false);
                     }
                     catch
                     {
@@ -241,10 +257,13 @@ namespace NadekoBot.Modules.Games.Trivia
                         }
                 }
 
-                errorMessage = await Channel.SendConfirmAsync(GetText("trivia_game"),
-                    GetText("trivia_guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer))).ConfigureAwait(false);
-                await umsg.DeleteAsync().ConfigureAwait(false);
+                errorMessage = await Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
+                    .WithTitle(GetText("trivia_game"))
+                    .WithDescription(GetText("trivia_guess", guildUser.Mention, Format.Bold(CurrentQuestion.Answer)))
+                    .WithImageUrl(CurrentQuestion.AnswerImageUrl))
+                    .ConfigureAwait(false);
 
+                await umsg.DeleteAsync().ConfigureAwait(false);    
             }
             catch (Exception ex) { _log.Warn(ex); }
         }
