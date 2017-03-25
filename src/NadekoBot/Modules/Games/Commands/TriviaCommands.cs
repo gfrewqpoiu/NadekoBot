@@ -31,6 +31,8 @@ namespace NadekoBot.Modules.Games
                 var channel = (ITextChannel)Context.Channel;
                 var user = (IGuildUser)Context.User;
 
+                additionalArgs = additionalArgs?.Trim()?.ToLowerInvariant();
+
                 var showHints = !additionalArgs.Contains("nohint");
                 var isPokemon = additionalArgs.Contains("pokemon");
                 var trivia = new TriviaGame(channel.Guild, channel, user, showHints, winReq, isPokemon);

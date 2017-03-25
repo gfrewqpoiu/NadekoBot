@@ -141,7 +141,8 @@ namespace NadekoBot.Modules.Games.Trivia
                     {
                         errorMessage = await Channel.EmbedAsync(new EmbedBuilder().WithErrorColor()
                             .WithTitle(GetText("trivia_game"))
-                            .WithDescription(GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer))))
+                            .WithDescription(GetText("trivia_times_up", Format.Bold(CurrentQuestion.Answer)))
+                            .WithImageUrl(CurrentQuestion.AnswerImageUrl))
                             .ConfigureAwait(false);
                     }
                     catch (Exception ex)
@@ -149,7 +150,7 @@ namespace NadekoBot.Modules.Games.Trivia
                         _log.Warn(ex);
                     }
                 }
-                await Task.Delay(2000).ConfigureAwait(false);
+                await Task.Delay(3000).ConfigureAwait(false);
                 await questionMessage.DeleteAsync().ConfigureAwait(false);
                 await Task.Delay(3000).ConfigureAwait(false);
                try
