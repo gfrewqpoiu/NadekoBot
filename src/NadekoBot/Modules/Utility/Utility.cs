@@ -233,11 +233,11 @@ namespace NadekoBot.Modules.Utility
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
-        public async Task reverse([Remainder] string str)
+        public async Task reverse([Remainder] string arg = null)
         {
-            char[] arr = str.ToCharArray();
+            char[] arr = arg.ToCharArray();
             Array.Reverse(arr);
-            await Context.Channel.SendConfirmAsync(arr.ToString());
+            await Context.Channel.SendConfirmAsync(new string(arr));
         }
 
         [NadekoCommand, Usage, Description, Aliases]
