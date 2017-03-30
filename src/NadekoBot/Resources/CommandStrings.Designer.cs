@@ -1381,7 +1381,34 @@ namespace NadekoBot.Resources {
                 return ResourceManager.GetString("chatunmute_usage", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///    Looks up a localized string similar to reverse.
+        /// </summary>
+        public static string reverse_cmd {
+            get {
+                return ResourceManager.GetString("reverse_cmd", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///    Looks up a localized string similar to Reverses the given Text.
+        /// </summary>
+        public static string reverse_desc {
+            get {
+                return ResourceManager.GetString("reverse_desc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}reverse Text`.
+        /// </summary>
+        public static string reverse_usage {
+            get {
+                return ResourceManager.GetString("reverse_usage", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///    Looks up a localized string similar to checkmyperms.
         /// </summary>
@@ -1390,7 +1417,7 @@ namespace NadekoBot.Resources {
                 return ResourceManager.GetString("checkmyperms_cmd", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///    Looks up a localized string similar to Checks your user-specific permissions on this channel..
         /// </summary>

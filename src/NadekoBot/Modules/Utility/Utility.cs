@@ -233,6 +233,15 @@ namespace NadekoBot.Modules.Utility
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
+        public async Task reverse([Remainder] string str)
+        {
+            char[] arr = str.ToCharArray();
+            Array.Reverse(arr);
+            await Context.Channel.SendConfirmAsync(arr.ToString());
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        [RequireContext(ContextType.Guild)]
         public async Task CheckMyPerms()
         {
 

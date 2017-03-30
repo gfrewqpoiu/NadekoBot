@@ -846,6 +846,15 @@
   <data name="inrole_usage" xml:space="preserve">
     <value>`{0}inrole Some Role`</value>
   </data>
+  <data name="reverse_cmd" xml:space="preserve">
+    <value>reverse</value>
+  </data>
+  <data name="reverse_desc" xml:space="preserve">
+    <value>Reverses the given Text.</value>
+  </data>
+  <data name="reverse_usage" xml:space="preserve">
+    <value>`{0}reverse Text`</value>
+  </data>
   <data name="checkmyperms_cmd" xml:space="preserve">
     <value>checkmyperms</value>
   </data>
