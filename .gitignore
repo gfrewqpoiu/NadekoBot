@@ -356,3 +356,5 @@ build/
 .vscode/tasks.json
 
 src/NadekoBot/credentials.json
+
+src/NadekoBot/Resources/ResponseStrings.fr-fr.resx

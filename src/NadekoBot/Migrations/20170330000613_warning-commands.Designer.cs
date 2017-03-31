@@ -10,9 +10,10 @@ using NadekoBot.Modules.Music.Classes;
 namespace NadekoBot.Migrations
 {
     [DbContext(typeof(NadekoContext))]
-    partial class NadekoSqliteContextModelSnapshot : ModelSnapshot
+    [Migration("20170330000613_warning-commands")]
+    partial class warningcommands
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752");
@@ -950,38 +951,6 @@ namespace NadekoBot.Migrations
                     b.ToTable("SelfAssignableRoles");
                 });
 
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.StartupCommand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int?>("BotConfigId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.Property<string>("ChannelName");
-
-                    b.Property<string>("CommandText");
-
-                    b.Property<DateTime?>("DateAdded");
-
-                    b.Property<ulong?>("GuildId");
-
-                    b.Property<string>("GuildName");
-
-                    b.Property<int>("Index");
-
-                    b.Property<ulong?>("VoiceChannelId");
-
-                    b.Property<string>("VoiceChannelName");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BotConfigId");
-
-                    b.ToTable("StartupCommand");
-                });
-
             modelBuilder.Entity("NadekoBot.Services.Database.Models.UnmuteTimer", b =>
                 {
                     b.Property<int>("Id")
@@ -1317,13 +1286,6 @@ namespace NadekoBot.Migrations
                 {
                     b.HasOne("NadekoBot.Services.Database.Models.BotConfig")
                         .WithMany("RaceAnimals")
-                        .HasForeignKey("BotConfigId");
-                });
-
-            modelBuilder.Entity("NadekoBot.Services.Database.Models.StartupCommand", b =>
-                {
-                    b.HasOne("NadekoBot.Services.Database.Models.BotConfig")
-                        .WithMany("StartupCommands")
                         .HasForeignKey("BotConfigId");
                 });
 
