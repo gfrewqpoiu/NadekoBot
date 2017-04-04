@@ -1752,7 +1752,7 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to `{0}claimpatreonrewards`.
+        ///    Looks up a localized string similar to `{0}clparew`.
         /// </summary>
         public static string claimpatreonrewards_usage {
             get {
@@ -5406,6 +5406,33 @@ namespace NadekoBot.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to ping.
+        /// </summary>
+        public static string ping_cmd {
+            get {
+                return ResourceManager.GetString("ping_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Ping the bot to see if there are latency issues..
+        /// </summary>
+        public static string ping_desc {
+            get {
+                return ResourceManager.GetString("ping_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}ping`.
+        /// </summary>
+        public static string ping_usage {
+            get {
+                return ResourceManager.GetString("ping_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to place.
         /// </summary>
         public static string place_cmd {
@@ -5753,6 +5780,33 @@ namespace NadekoBot.Resources {
         public static string queue_usage {
             get {
                 return ResourceManager.GetString("queue_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to quoteid qid.
+        /// </summary>
+        public static string quoteid_cmd {
+            get {
+                return ResourceManager.GetString("quoteid_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Displays the quote with the specified ID number. Quote ID numbers can be found by typing `.liqu [num]` where `[num]` is a number of a page which contains 15 quotes..
+        /// </summary>
+        public static string quoteid_desc {
+            get {
+                return ResourceManager.GetString("quoteid_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}qid 123456`.
+        /// </summary>
+        public static string quoteid_usage {
+            get {
+                return ResourceManager.GetString("quoteid_usage", resourceCulture);
             }
         }
         
@@ -8237,6 +8291,33 @@ namespace NadekoBot.Resources {
         public static string tictactoe_usage {
             get {
                 return ResourceManager.GetString("tictactoe_usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to time.
+        /// </summary>
+        public static string time_cmd {
+            get {
+                return ResourceManager.GetString("time_cmd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Shows the current time and timezone in the specified location..
+        /// </summary>
+        public static string time_desc {
+            get {
+                return ResourceManager.GetString("time_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to `{0}time London, UK`.
+        /// </summary>
+        public static string time_usage {
+            get {
+                return ResourceManager.GetString("time_usage", resourceCulture);
             }
         }
         
