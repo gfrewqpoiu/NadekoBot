@@ -75,12 +75,13 @@ namespace NadekoBot.Services
                             }
                         })))
                     .Where(ch => ch != null)
+                    .OrderBy(x => NadekoBot.Credentials.OwnerIds.IndexOf(x.Id))
                     .ToList();
 
                 if (!ownerChannels.Any())
                     _log.Warn("No owner channels created! Make sure you've specified correct OwnerId in the credentials.json file.");
                 else
-                    _log.Info($"Created {ownerChannels.Count} out of {NadekoBot.Credentials.OwnerIds.Count} owner message channels.");
+                    _log.Info($"Created {ownerChannels.Count} out of {NadekoBot.Credentials.OwnerIds.Length} owner message channels.");
             });
 
             _client.MessageReceived += MessageReceivedHandler;
@@ -486,15 +487,22 @@ namespace NadekoBot.Services
                         }
                     }
 
-                    int price;
-                    if (Permissions.CommandCostCommands.CommandCosts.TryGetValue(cmd.Aliases.First().Trim().ToLowerInvariant(), out price) && price > 0)
-                    {
-                        var success = await CurrencyHandler.RemoveCurrencyAsync(context.User.Id, $"Running {cmd.Name} command.", price).ConfigureAwait(false);
-                        if (!success)
-                        {
-                            return new ExecuteCommandResult(cmd, pc, SearchResult.FromError(CommandError.Exception, $"Insufficient funds. You need {price}{NadekoBot.BotConfig.CurrencySign} to run this command."));
-                        }
-                    }
+                    //int price;
+                    //if (Permissions.CommandCostCommands.CommandCosts.TryGetValue(cmd.Aliases.First().Trim().ToLowerInvariant(), out price) && price > 0)
+                    //{
+                    //    var success = await CurrencyHandler.RemoveCurrencyAsync(context.User.Id, $"Running {cmd.Name} command.", price).ConfigureAwait(false);
+                    //    if (!success)
+                    //    {
+                    //        return new ExecuteCommandResult(cmd, pc, SearchResult.FromError(CommandError.Exception, $"Insufficient funds. You need {price}{NadekoBot.BotConfig.CurrencySign} to run this command."));
+                    //    }
+                    //}
+                }
+
+                if (cmd.Name != "resetglobalperms" && 
+                    (GlobalPermissionCommands.BlockedCommands.Contains(cmd.Aliases.First().ToLowerInvariant()) ||
+                    GlobalPermissionCommands.BlockedModules.Contains(module.Name.ToLowerInvariant())))
+                {
+                    return new ExecuteCommandResult(cmd, null, SearchResult.FromError(CommandError.Exception, $"Command or module is blocked globally by the bot owner."));
                 }
 
                 // Bot will ignore commands which are ran more often than what specified by

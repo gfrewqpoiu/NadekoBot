@@ -12,6 +12,7 @@ using NadekoBot.Services.Database.Models;
 using static NadekoBot.Modules.Permissions.Permissions;
 using System.Collections.Concurrent;
 using NLog;
+using NadekoBot.Modules.Permissions;
 
 namespace NadekoBot.Modules.Administration
 {
@@ -64,6 +65,23 @@ namespace NadekoBot.Modules.Administration
                 UpdateCache(config);
             }
             await ReplyConfirmLocalized("perms_reset").ConfigureAwait(false);
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        [OwnerOnly]
+        public async Task ResetGlobalPermissions()
+        {
+            using (var uow = DbHandler.UnitOfWork())
+            {
+                var gc = uow.BotConfig.GetOrCreate();
+                gc.BlockedCommands.Clear();
+                gc.BlockedModules.Clear();
+
+                GlobalPermissionCommands.BlockedCommands.Clear();
+                GlobalPermissionCommands.BlockedModules.Clear();
+                await uow.CompleteAsync();
+            }
+            await ReplyConfirmLocalized("global_perms_reset").ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -193,6 +211,19 @@ namespace NadekoBot.Modules.Administration
 
             var r = await Context.Guild.CreateRoleAsync(roleName).ConfigureAwait(false);
             await ReplyConfirmLocalized("cr", Format.Bold(r.Name)).ConfigureAwait(false);
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        public async Task RoleHoist(string roleSearchName, PermissionAction targetState)
+        {
+            var roleName = roleSearchName.ToUpperInvariant();
+            var role = Context.Guild.Roles.FirstOrDefault(r => r.Name.ToUpperInvariant() == roleName);
+
+            await role.ModifyAsync(r => r.Hoist = targetState.Value).ConfigureAwait(false);
+            await ReplyConfirmLocalized("rh", Format.Bold(role.Name), Format.Bold(targetState.Value.ToString())).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -360,13 +391,18 @@ namespace NadekoBot.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [Priority(0)]
         public async Task Prune(int count)
         {
             if (count < 1)
                 return;
             await Context.Message.DeleteAsync().ConfigureAwait(false);
-            int limit = (count < 100) ? count : 100;
+            int limit = (count < 100) ? count + 1 : 100;
             var enumerable = (await Context.Channel.GetMessagesAsync(limit: limit).Flatten().ConfigureAwait(false));
+            if (enumerable.FirstOrDefault()?.Id == Context.Message.Id)
+                enumerable = enumerable.Skip(1).ToArray();
+            else
+                enumerable = enumerable.Take(count);
             await Context.Channel.DeleteMessagesAsync(enumerable).ConfigureAwait(false);
         }
 
@@ -375,6 +411,7 @@ namespace NadekoBot.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [Priority(1)]
         public async Task Prune(IGuildUser user, int count = 100)
         {
             if (count < 1)
