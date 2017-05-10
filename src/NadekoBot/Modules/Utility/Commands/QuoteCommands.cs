@@ -59,7 +59,12 @@ namespace NadekoBot.Modules.Utility
                 }
                 if (quote == null)
                     return;
-
+                
+                if (quote.GuildId != Context.Guild.Id)
+                    {
+                        await Context.Channel.SendMessageAsync("You cannot use Quotes from other Servers")
+                        return;
+                    }
                 CREmbed crembed;
                 if (CREmbed.TryParse(quote.Text, out crembed))
                 {
