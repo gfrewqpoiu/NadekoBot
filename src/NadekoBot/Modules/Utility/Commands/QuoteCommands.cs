@@ -62,7 +62,7 @@ namespace NadekoBot.Modules.Utility
                 
                 if (quote.GuildId != Context.Guild.Id)
                     {
-                        await Context.Channel.SendMessageAsync("You cannot use Quotes from other Servers")
+                        await Context.Channel.SendMessageAsync("You cannot use Quotes from other Servers");
                         return;
                     }
                 CREmbed crembed;
