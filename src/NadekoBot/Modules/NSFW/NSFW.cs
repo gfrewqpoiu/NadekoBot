@@ -199,6 +199,16 @@ namespace NadekoBot.Modules.NSFW
                     var nodes = doc.GetElementsByTagName("file-url");
 
                     var node = nodes[new NadekoRandom().Next(0, nodes.Count)];
+                    var i = 0;
+
+                    while (node.InnerText.Contains("loli") || (node.InnerText.Contains("shota") && (i != 10)))
+                    {
+                        node = nodes[new NadekoRandom().Next(0, nodes.Count)];
+                        i++;
+                    }
+                    if (i == 10)
+                        return null;
+
                     return "https://danbooru.donmai.us" + node.InnerText;
                 }
             }
@@ -259,8 +269,16 @@ namespace NadekoBot.Modules.NSFW
                     var doc = new XmlDocument();
                     doc.Load(data);
                     var nodes = doc.GetElementsByTagName("file_url");
+                    var i = 0;
 
                     var node = nodes[new NadekoRandom().Next(0, nodes.Count)];
+                    while (node.InnerText.Contains("loli") || (node.InnerText.Contains("shota") && (i != 10)))
+                    {
+                        node = nodes[new NadekoRandom().Next(0, nodes.Count)];
+                        i++;
+                    }
+                    if (i == 10)
+                        return null;
                     return node.InnerText;
                 }
             }

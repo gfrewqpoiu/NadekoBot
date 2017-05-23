@@ -795,7 +795,7 @@ namespace NadekoBot.Modules.Searches
                     website = $"https://safebooru.org/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
                     break;
                 case DapiSearchType.Gelbooru:
-                    website = $"http://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
+                    website = $"http://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}+-loli+-shota";
                     break;
                 case DapiSearchType.Rule34:
                     website = $"https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
@@ -804,7 +804,7 @@ namespace NadekoBot.Modules.Searches
                     website = $"https://konachan.com/post.xml?s=post&q=index&limit=100&tags={tag}";
                     break;
                 case DapiSearchType.Yandere:
-                    website = $"https://yande.re/post.xml?limit=100&tags={tag}";
+                    website = $"https://yande.re/post.xml?limit=100&tags={tag}+-loli+-shota";
                     break;
             }
             try
@@ -819,6 +819,16 @@ namespace NadekoBot.Modules.Searches
                         doc.Load(data);
 
                         var node = doc.LastChild.ChildNodes[new NadekoRandom().Next(0, doc.LastChild.ChildNodes.Count)];
+
+                        var i = 0;
+
+                        while (node.Attributes["file_url"].Value.Contains("loli") || (node.Attributes["file_url"].Value.Contains("shota") && (i != 10)))
+                        {
+                            node = doc.LastChild.ChildNodes[new NadekoRandom().Next(0, doc.LastChild.ChildNodes.Count)];
+                            i++;
+                        }
+                        if (i == 10)
+                            return null;
 
                         var url = node.Attributes["file_url"].Value;
                         if (!url.StartsWith("http"))
