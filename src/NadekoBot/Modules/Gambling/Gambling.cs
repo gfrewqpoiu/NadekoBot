@@ -213,9 +213,23 @@ namespace NadekoBot.Modules.Gambling
                 return;
             }
 
-            var rnd = new NadekoRandom().Next(0, 101);
+            //var rnd = new NadekoRandom().Next(0, 101);
+            var rnd = 0;
             var str = Context.User.Mention + Format.Code(GetText("roll", rnd));
-            if (rnd < 67)
+            if (rnd == 0)
+            {
+                if (amount == 1)
+                {
+                    str += "Bad luck, but you are a cheapo so no consolation";
+                }
+                else
+                {
+                    str += "Bad luck, here have a consolation flower";
+                    await CurrencyHandler.AddCurrencyAsync(Context.User, "Betroll Consolation",
+                        (int) (1), false).ConfigureAwait(false);
+                }
+            }
+            else if (rnd < 67)
             {
                 str += GetText("better_luck");
             }
