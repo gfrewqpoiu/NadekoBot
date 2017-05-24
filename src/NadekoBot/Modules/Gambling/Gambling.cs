@@ -213,8 +213,8 @@ namespace NadekoBot.Modules.Gambling
                 return;
             }
 
-            //var rnd = new NadekoRandom().Next(0, 101);
-            var rnd = 0;
+            var rnd = new NadekoRandom().Next(0, 101);
+            //var rnd = 0;
             var str = Context.User.Mention + Format.Code(GetText("roll", rnd));
             if (rnd == 0)
             {
