@@ -43,14 +43,13 @@ namespace NadekoBot.Modules.Games
             public async Task InternalTrivia(int winReq, string additionalArgs = "")
             {
                 var channel = (ITextChannel)Context.Channel;
-                var user = (IGuildUser)Context.User;
 
                 additionalArgs = additionalArgs?.Trim()?.ToLowerInvariant();
 
                 var showHints = !additionalArgs.Contains("nohint");
                 var isPokemon = additionalArgs.Contains("pokemon");
 
-                var trivia = new TriviaGame(_strings, _client, _bc, _cs, channel.Guild, channel, showHints, winReq, user, isPokemon);
+                var trivia = new TriviaGame(_strings, _client, _bc, _cs, channel.Guild, channel, showHints, winReq, isPokemon);
                 if (RunningTrivias.TryAdd(channel.Guild.Id, trivia))
                 {
                     try
@@ -90,12 +89,11 @@ namespace NadekoBot.Modules.Games
             public async Task Tq()
             {
                 var channel = (ITextChannel)Context.Channel;
-                var user = (IGuildUser)Context.User;
 
                 TriviaGame trivia;
                 if (RunningTrivias.TryGetValue(channel.Guild.Id, out trivia))
                 {
-                    await trivia.StopGame(user).ConfigureAwait(false);
+                    await trivia.StopGame().ConfigureAwait(false);
                     return;
                 }
 
