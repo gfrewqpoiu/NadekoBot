@@ -228,7 +228,7 @@ namespace NadekoBot.Modules.Gambling
                 else
                 {
                     str += "Bad luck, here have a consolation flower";
-                    await CurrencyHandler.AddCurrencyAsync(Context.User, "Betroll Consolation",
+                    await _currency.AddAsync(Context.User, "Betroll Consolation",
                         (int) (1), false).ConfigureAwait(false);
                 }
             }

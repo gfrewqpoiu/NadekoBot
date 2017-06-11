@@ -786,65 +786,6 @@ namespace NadekoBot.Modules.Searches
                     .WithImageUrl(url)
                     .WithFooter(efb => efb.WithText(type.ToString()))).ConfigureAwait(false);
         }
-
-        public static async Task<string> InternalDapiSearch(string tag, DapiSearchType type)
-        {
-            tag = tag?.Replace(" ", "_");
-            var website = "";
-            switch (type)
-            {
-                case DapiSearchType.Safebooru:
-                    website = $"https://safebooru.org/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
-                    break;
-                case DapiSearchType.Gelbooru:
-                    website = $"http://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}+-loli+-shota";
-                    break;
-                case DapiSearchType.Rule34:
-                    website = $"https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
-                    break;
-                case DapiSearchType.Konachan:
-                    website = $"https://konachan.com/post.xml?s=post&q=index&limit=100&tags={tag}";
-                    break;
-                case DapiSearchType.Yandere:
-                    website = $"https://yande.re/post.xml?limit=100&tags={tag}+-loli+-shota";
-                    break;
-            }
-            try
-            {
-                var toReturn = await Task.Run(async () =>
-                {
-                    using (var http = new HttpClient())
-                    {
-                        http.AddFakeHeaders();
-                        var data = await http.GetStreamAsync(website).ConfigureAwait(false);
-                        var doc = new XmlDocument();
-                        doc.Load(data);
-
-                        var node = doc.LastChild.ChildNodes[new NadekoRandom().Next(0, doc.LastChild.ChildNodes.Count)];
-
-                        var i = 0;
-
-                        while (node.Attributes["file_url"].Value.Contains("loli") || (node.Attributes["file_url"].Value.Contains("shota") && (i != 10)))
-                        {
-                            node = doc.LastChild.ChildNodes[new NadekoRandom().Next(0, doc.LastChild.ChildNodes.Count)];
-                            i++;
-                        }
-                        if (i == 10)
-                            return null;
-
-                        var url = node.Attributes["file_url"].Value;
-                        if (!url.StartsWith("http"))
-                            url = "https:" + url;
-                        return url;
-                    }
-                }).ConfigureAwait(false);
-                return toReturn;
-            }
-            catch
-            {
-                return null;
-            }
-        }
         public async Task<bool> ValidateQuery(IMessageChannel ch, string query)
         {
             if (!string.IsNullOrWhiteSpace(query)) return true;
