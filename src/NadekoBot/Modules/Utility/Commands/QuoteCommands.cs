@@ -57,7 +57,7 @@ namespace NadekoBot.Modules.Utility
                 keyword = keyword.ToUpperInvariant();
 
                 Quote quote;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {if (Int32.TryParse(keyword, out id))
                     quote = uow.Quotes.Get(id);
                 else
