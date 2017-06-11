@@ -64,6 +64,8 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public List<StartupCommand> StartupCommands { get; set; }
         public HashSet<BlockedCmdOrMdl> BlockedCommands { get; set; }
         public HashSet<BlockedCmdOrMdl> BlockedModules { get; set; }
+        public int PermissionVersion { get; set; } = 1;
+        public string DefaultPrefix { get; set; } = ".";
     }
 
     public class BlockedCmdOrMdl : DbEntity
@@ -104,13 +106,13 @@ Nadeko Support Server: https://discord.gg/nadekobot";
     {
         public ulong ItemId { get; set; }
         public BlacklistType Type { get; set; }
+    }
 
-        public enum BlacklistType
-        {
-            Server,
-            Channel,
-            User
-        }
+    public enum BlacklistType
+    {
+        Server,
+        Channel,
+        User
     }
 
     public class EightBallResponse : DbEntity

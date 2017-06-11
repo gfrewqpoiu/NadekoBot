@@ -7,82 +7,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using NadekoBot.Services;
 using NadekoBot.Attributes;
-using Discord.WebSocket;
 using NadekoBot.Services.Database.Models;
-using static NadekoBot.Modules.Permissions.Permissions;
-using System.Collections.Concurrent;
-using NLog;
-using NadekoBot.Modules.Permissions;
+using NadekoBot.Services.Administration;
 
 namespace NadekoBot.Modules.Administration
 {
-    [NadekoModule("Administration", ".")]
     public partial class Administration : NadekoTopLevelModule
     {
-        private static ConcurrentHashSet<ulong> deleteMessagesOnCommand { get; }
+        private IGuild _nadekoSupportServer;
+        private readonly DbService _db;
+        private readonly AdministrationService _admin;
 
-        private new static readonly Logger _log;
-
-        static Administration()
+        public Administration(DbService db, AdministrationService admin)
         {
-            _log = LogManager.GetCurrentClassLogger();
-            NadekoBot.CommandHandler.CommandExecuted += DelMsgOnCmd_Handler;
-
-            deleteMessagesOnCommand = new ConcurrentHashSet<ulong>(NadekoBot.AllGuildConfigs.Where(g => g.DeleteMessageOnCommand).Select(g => g.GuildId));
-
-        }
-
-        private static Task DelMsgOnCmd_Handler(IUserMessage msg, CommandInfo cmd)
-        {
-            var _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var channel = msg.Channel as SocketTextChannel;
-                    if (channel == null)
-                        return;
-
-                    if (deleteMessagesOnCommand.Contains(channel.Guild.Id) && cmd.Name != "prune" && cmd.Name != "pick" && cmd.Name != "..")
-                        await msg.DeleteAsync().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _log.Warn(ex, "Delmsgoncmd errored...");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ResetPermissions()
-        {
-            using (var uow = DbHandler.UnitOfWork())
-            {
-                var config = uow.GuildConfigs.GcWithPermissionsv2For(Context.Guild.Id);
-                config.Permissions = Permissionv2.GetDefaultPermlist;
-                await uow.CompleteAsync();
-                UpdateCache(config);
-            }
-            await ReplyConfirmLocalized("perms_reset").ConfigureAwait(false);
-        }
-
-        [NadekoCommand, Usage, Description, Aliases]
-        [OwnerOnly]
-        public async Task ResetGlobalPermissions()
-        {
-            using (var uow = DbHandler.UnitOfWork())
-            {
-                var gc = uow.BotConfig.GetOrCreate();
-                gc.BlockedCommands.Clear();
-                gc.BlockedModules.Clear();
-
-                GlobalPermissionCommands.BlockedCommands.Clear();
-                GlobalPermissionCommands.BlockedModules.Clear();
-                await uow.CompleteAsync();
-            }
-            await ReplyConfirmLocalized("global_perms_reset").ConfigureAwait(false);
+            _db = db;
+            _admin = admin;
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -91,7 +30,7 @@ namespace NadekoBot.Modules.Administration
         public async Task Delmsgoncmd()
         {
             bool enabled;
-            using (var uow = DbHandler.UnitOfWork())
+            using (var uow = _db.UnitOfWork)
             {
                 var conf = uow.GuildConfigs.For(Context.Guild.Id, set => set);
                 enabled = conf.DeleteMessageOnCommand = !conf.DeleteMessageOnCommand;
@@ -100,12 +39,12 @@ namespace NadekoBot.Modules.Administration
             }
             if (enabled)
             {
-                deleteMessagesOnCommand.Add(Context.Guild.Id);
+                _admin.DeleteMessagesOnCommand.Add(Context.Guild.Id);
                 await ReplyConfirmLocalized("delmsg_on").ConfigureAwait(false);
             }
             else
             {
-                deleteMessagesOnCommand.TryRemove(Context.Guild.Id);
+                _admin.DeleteMessagesOnCommand.TryRemove(Context.Guild.Id);
                 await ReplyConfirmLocalized("delmsg_off").ConfigureAwait(false);
             }
         }
@@ -122,7 +61,7 @@ namespace NadekoBot.Modules.Administration
                 return;
             try
             {
-                await usr.AddRolesAsync(role).ConfigureAwait(false);
+                await usr.AddRoleAsync(role).ConfigureAwait(false);
                 await ReplyConfirmLocalized("setrole", Format.Bold(role.Name), Format.Bold(usr.ToString()))
                     .ConfigureAwait(false);
             }
@@ -144,7 +83,7 @@ namespace NadekoBot.Modules.Administration
                 return;
             try
             {
-                await usr.RemoveRolesAsync(role).ConfigureAwait(false);
+                await usr.RemoveRoleAsync(role).ConfigureAwait(false);
                 await ReplyConfirmLocalized("remrole", Format.Bold(role.Name), Format.Bold(usr.ToString())).ConfigureAwait(false);
             }
             catch
@@ -218,13 +157,10 @@ namespace NadekoBot.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
-        public async Task RoleHoist(string roleSearchName, PermissionAction targetState)
+        public async Task RoleHoist(IRole role)
         {
-            var roleName = roleSearchName.ToUpperInvariant();
-            var role = Context.Guild.Roles.FirstOrDefault(r => r.Name.ToUpperInvariant() == roleName);
-
-            await role.ModifyAsync(r => r.Hoist = targetState.Value).ConfigureAwait(false);
-            await ReplyConfirmLocalized("rh", Format.Bold(role.Name), Format.Bold(targetState.Value.ToString())).ConfigureAwait(false);
+            await role.ModifyAsync(r => r.Hoist = !role.IsHoisted).ConfigureAwait(false);
+            await ReplyConfirmLocalized("rh", Format.Bold(role.Name), Format.Bold(role.IsHoisted.ToString())).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -457,19 +393,18 @@ namespace NadekoBot.Modules.Administration
             await Context.Channel.SendMessageAsync(send).ConfigureAwait(false);
         }
 
-        private IGuild _nadekoSupportServer;
         [NadekoCommand, Usage, Description, Aliases]
         public async Task Donators()
         {
             IEnumerable<Donator> donatorsOrdered;
 
-            using (var uow = DbHandler.UnitOfWork())
+            using (var uow = _db.UnitOfWork)
             {
                 donatorsOrdered = uow.Donators.GetDonatorsOrdered();
             }
             await Context.Channel.SendConfirmAsync(GetText("donators"), string.Join("⭐", donatorsOrdered.Select(d => d.Name))).ConfigureAwait(false);
 
-            _nadekoSupportServer = _nadekoSupportServer ?? NadekoBot.Client.GetGuild(117523346618318850);
+            _nadekoSupportServer = _nadekoSupportServer ?? (await Context.Client.GetGuildAsync(117523346618318850));
 
             var patreonRole = _nadekoSupportServer?.GetRole(236667642088259585);
             if (patreonRole == null)
@@ -485,7 +420,7 @@ namespace NadekoBot.Modules.Administration
         public async Task Donadd(IUser donator, int amount)
         {
             Donator don;
-            using (var uow = DbHandler.UnitOfWork())
+            using (var uow = _db.UnitOfWork)
             {
                 don = uow.Donators.AddOrUpdateDonator(donator.Id, donator.Username, amount);
                 await uow.CompleteAsync();

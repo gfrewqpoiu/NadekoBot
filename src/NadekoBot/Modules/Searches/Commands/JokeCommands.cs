@@ -1,13 +1,9 @@
 ﻿using Discord.Commands;
 using NadekoBot.Attributes;
 using NadekoBot.Extensions;
-using NadekoBot.Modules.Searches.Models;
 using NadekoBot.Services;
-using Newtonsoft.Json;
+using NadekoBot.Services.Searches;
 using Newtonsoft.Json.Linq;
-using NLog;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,27 +15,11 @@ namespace NadekoBot.Modules.Searches
         [Group]
         public class JokeCommands : NadekoSubmodule
         {
-            private static List<WoWJoke> wowJokes { get; } = new List<WoWJoke>();
-            private static List<MagicItem> magicItems { get; } = new List<MagicItem>();
-            private new static readonly Logger _log;
+            private readonly SearchesService _searches;
 
-            static JokeCommands()
+            public JokeCommands(SearchesService searches)
             {
-                _log = LogManager.GetCurrentClassLogger();
-
-                if (File.Exists("data/wowjokes.json"))
-                {
-                    wowJokes = JsonConvert.DeserializeObject<List<WoWJoke>>(File.ReadAllText("data/wowjokes.json"));
-                }
-                else
-                    _log.Warn("data/wowjokes.json is missing. WOW Jokes are not loaded.");
-
-                if (File.Exists("data/magicitems.json"))
-                {
-                    magicItems = JsonConvert.DeserializeObject<List<MagicItem>>(File.ReadAllText("data/magicitems.json"));
-                }
-                else
-                    _log.Warn("data/magicitems.json is missing. Magic items are not loaded.");
+                _searches = searches;
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -75,24 +55,24 @@ namespace NadekoBot.Modules.Searches
             [NadekoCommand, Usage, Description, Aliases]
             public async Task WowJoke()
             {
-                if (!wowJokes.Any())
+                if (!_searches.WowJokes.Any())
                 {
                     await ReplyErrorLocalized("jokes_not_loaded").ConfigureAwait(false);
                     return;
                 }
-                var joke = wowJokes[new NadekoRandom().Next(0, wowJokes.Count)];
+                var joke = _searches.WowJokes[new NadekoRandom().Next(0, _searches.WowJokes.Count)];
                 await Context.Channel.SendConfirmAsync(joke.Question, joke.Answer).ConfigureAwait(false);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             public async Task MagicItem()
             {
-                if (!wowJokes.Any())
+                if (!_searches.WowJokes.Any())
                 {
                     await ReplyErrorLocalized("magicitems_not_loaded").ConfigureAwait(false);
                     return;
                 }
-                var item = magicItems[new NadekoRandom().Next(0, magicItems.Count)];
+                var item = _searches.MagicItems[new NadekoRandom().Next(0, _searches.MagicItems.Count)];
 
                 await Context.Channel.SendConfirmAsync("✨" + item.Name, item.Description).ConfigureAwait(false);
             }

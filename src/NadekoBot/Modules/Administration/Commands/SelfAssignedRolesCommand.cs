@@ -18,14 +18,20 @@ namespace NadekoBot.Modules.Administration
         [Group]
         public class SelfAssignedRolesCommands : NadekoSubmodule
         {
-            
+            private readonly DbService _db;
+
+            public SelfAssignedRolesCommands(DbService db)
+            {
+                _db = db;
+            }
+
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageMessages)]
             public async Task AdSarm()
             {
                 bool newval;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     var config = uow.GuildConfigs.For(Context.Guild.Id, set => set);
                     newval = config.AutoDeleteSelfAssignedRoleMessages = !config.AutoDeleteSelfAssignedRoleMessages;
@@ -49,7 +55,7 @@ namespace NadekoBot.Modules.Administration
 
                 string msg;
                 var error = false;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id);
                     if (roles.Any(s => s.RoleId == role.Id && s.GuildId == role.Guild.Id))
@@ -84,7 +90,7 @@ namespace NadekoBot.Modules.Administration
                     return;
 
                 bool success;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     success = uow.SelfAssignedRoles.DeleteByGuildAndRoleId(role.Guild.Id, role.Id);
                     await uow.CompleteAsync();
@@ -105,7 +111,7 @@ namespace NadekoBot.Modules.Administration
                 var removeMsg = new StringBuilder();
                 var msg = new StringBuilder();
                 var roleCnt = 0;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     var roleModels = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id).ToList();
                     msg.AppendLine();
@@ -139,7 +145,7 @@ namespace NadekoBot.Modules.Administration
             public async Task Tesar()
             {
                 bool areExclusive;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     var config = uow.GuildConfigs.For(Context.Guild.Id, set => set);
 
@@ -160,7 +166,7 @@ namespace NadekoBot.Modules.Administration
 
                 GuildConfig conf;
                 SelfAssignedRole[] roles;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     conf = uow.GuildConfigs.For(Context.Guild.Id, set => set);
                     roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id).ToArray();
@@ -186,7 +192,7 @@ namespace NadekoBot.Modules.Administration
                         var sameRole = Context.Guild.GetRole(sameRoleId);
                         if (sameRole != null)
                         {
-                            await guildUser.RemoveRolesAsync(sameRole).ConfigureAwait(false);
+                            await guildUser.RemoveRoleAsync(sameRole).ConfigureAwait(false);
                             await Task.Delay(500).ConfigureAwait(false);
                         }
                         //await ReplyErrorLocalized("self_assign_already_excl", Format.Bold(sameRole?.Name)).ConfigureAwait(false);
@@ -195,7 +201,7 @@ namespace NadekoBot.Modules.Administration
                 }
                 try
                 {
-                    await guildUser.AddRolesAsync(role).ConfigureAwait(false);
+                    await guildUser.AddRoleAsync(role).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -220,7 +226,7 @@ namespace NadekoBot.Modules.Administration
 
                 bool autoDeleteSelfAssignedRoleMessages;
                 IEnumerable<SelfAssignedRole> roles;
-                using (var uow = DbHandler.UnitOfWork())
+                using (var uow = _db.UnitOfWork)
                 {
                     autoDeleteSelfAssignedRoleMessages = uow.GuildConfigs.For(Context.Guild.Id, set => set).AutoDeleteSelfAssignedRoleMessages;
                     roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id);
@@ -237,7 +243,7 @@ namespace NadekoBot.Modules.Administration
                 }
                 try
                 {
-                    await guildUser.RemoveRolesAsync(role).ConfigureAwait(false);
+                    await guildUser.RemoveRoleAsync(role).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {

@@ -3,6 +3,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using NadekoBot.Extensions;
 using NadekoBot.Services;
+using NadekoBot.Services.Database.Models;
 using NLog;
 using System;
 using System.Collections.Concurrent;
@@ -18,6 +19,10 @@ namespace NadekoBot.Modules.Games.Trivia
     {
         private readonly SemaphoreSlim _guessLock = new SemaphoreSlim(1, 1);
         private readonly Logger _log;
+        private readonly NadekoStrings _strings;
+        private readonly DiscordShardedClient _client;
+        private readonly BotConfig _bc;
+        private readonly CurrencyService _cs;
 
         public IGuild Guild { get; }
         public ITextChannel Channel { get; }
@@ -40,11 +45,15 @@ namespace NadekoBot.Modules.Games.Trivia
 
         public int WinRequirement { get; }
 
-        private IGuildUser Startuser;
-
-        public TriviaGame(IGuild guild, ITextChannel channel, IGuildUser user, bool showHints, int winReq, bool isPokemon)
+        public TriviaGame(NadekoStrings strings, DiscordShardedClient client, BotConfig bc,
+            CurrencyService cs, IGuild guild, ITextChannel channel,
+            bool showHints, int winReq, IGuildUser user, bool isPokemon)
         {
             _log = LogManager.GetCurrentClassLogger();
+            _strings = strings;
+            _client = client;
+            _bc = bc;
+            _cs = cs;
 
             ShowHints = showHints;
             Guild = guild;
@@ -55,8 +64,8 @@ namespace NadekoBot.Modules.Games.Trivia
         }
 
         private string GetText(string key, params object[] replacements) =>
-            NadekoTopLevelModule.GetTextStatic(key,
-                NadekoBot.Localization.GetCultureInfo(Channel.GuildId),
+            _strings.GetText(key,
+                Channel.GuildId,
                 typeof(Games).Name.ToLowerInvariant(),
                 replacements);
 
@@ -104,7 +113,7 @@ namespace NadekoBot.Modules.Games.Trivia
                 //receive messages
                 try
                 {
-                    NadekoBot.Client.MessageReceived += PotentialGuess;
+                    _client.MessageReceived += PotentialGuess;
 
                     //allow people to guess
                     GameActive = true;
@@ -133,7 +142,7 @@ namespace NadekoBot.Modules.Games.Trivia
                 finally
                 {
                     GameActive = false;
-                    NadekoBot.Client.MessageReceived -= PotentialGuess;
+                    _client.MessageReceived -= PotentialGuess;
                 }
                 if (!triviaCancelSource.IsCancellationRequested)
                 {
@@ -188,38 +197,38 @@ namespace NadekoBot.Modules.Games.Trivia
 
         private async Task PotentialGuess(SocketMessage imsg)
         {
-            try
+            await Task.Yield();
+            var _ = Task.Run(async () =>
             {
-                if (imsg.Author.IsBot)
-                    return;
-
-                var umsg = imsg as SocketUserMessage;
-
-                var textChannel = umsg?.Channel as ITextChannel;
-                if (textChannel == null || textChannel.Guild != Guild)
-                    return;
-
-                var guildUser = (IGuildUser)umsg.Author;
-
-                var guess = false;
-                await _guessLock.WaitAsync().ConfigureAwait(false);
                 try
                 {
-                    if (GameActive && CurrentQuestion.IsAnswerCorrect(umsg.Content) && !triviaCancelSource.IsCancellationRequested)
-                    {
-                        Users.AddOrUpdate(guildUser, 1, (gu, old) => ++old);
-                        guess = true;
-                    }
-                }
-                finally { _guessLock.Release(); }
-                if (!guess) return;
-                triviaCancelSource.Cancel();
+                    if (imsg.Author.IsBot)
+                        return;
 
+                    var umsg = imsg as SocketUserMessage;
 
-                if (Users[guildUser] == WinRequirement)
-                {
-                    ShouldStopGame = true;
+                    var textChannel = umsg?.Channel as ITextChannel;
+                    if (textChannel == null || textChannel.Guild != Guild)
+                        return;
+
+                    var guildUser = (IGuildUser)umsg.Author;
+
+                    var guess = false;
+                    await _guessLock.WaitAsync().ConfigureAwait(false);
                     try
+                    {
+                        if (GameActive && CurrentQuestion.IsAnswerCorrect(umsg.Content) && !triviaCancelSource.IsCancellationRequested)
+                        {
+                            Users.AddOrUpdate(guildUser, 1, (gu, old) => ++old);
+                            guess = true;
+                        }
+                    }
+                    finally { _guessLock.Release(); }
+                    if (!guess) return;
+                    triviaCancelSource.Cancel();
+
+
+                    if (Users[guildUser] == WinRequirement)
                     {
                         errorMessage = await Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
                             .WithTitle(GetText("trivia_game"))
