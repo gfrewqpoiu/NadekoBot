@@ -364,3 +364,4 @@ src/NadekoBot/credentials.json
 src/NadekoBot/Resources/ResponseStrings.fr-fr.resx
 
 src/NadekoBot/NadekoBot.db
+.idea/
