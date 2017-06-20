@@ -97,19 +97,18 @@ namespace NadekoBot.Services.Games
         private string GetText(ITextChannel ch, string key, params object[] rep)
             => _strings.GetText(key, ch.GuildId, "Games".ToLowerInvariant(), rep);
 
-        private async Task PotentialFlowerGeneration(SocketMessage imsg)
+        private Task PotentialFlowerGeneration(SocketMessage imsg)
         {
-            await Task.Yield();
             var msg = imsg as SocketUserMessage;
             if (msg == null || msg.Author.IsBot)
-                return;
+                return Task.CompletedTask;
 
             var channel = imsg.Channel as ITextChannel;
             if (channel == null)
-                return;
+                return Task.CompletedTask;
 
             if (!GenerationChannels.Contains(channel.Id))
-                return;
+                return Task.CompletedTask;
 
             var _ = Task.Run(async () =>
             {
@@ -118,13 +117,17 @@ namespace NadekoBot.Services.Games
                     var lastGeneration = LastGenerations.GetOrAdd(channel.Id, DateTime.MinValue);
                     var rng = new NadekoRandom();
 
-                    if (DateTime.Now - TimeSpan.FromSeconds(_bc.CurrencyGenerationCooldown) < lastGeneration) //recently generated in this channel, don't generate again
+                    if (DateTime.UtcNow - TimeSpan.FromSeconds(_bc.CurrencyGenerationCooldown) < lastGeneration) //recently generated in this channel, don't generate again
                         return;
 
                     var num = rng.Next(1, 101) + _bc.CurrencyGenerationChance * 100;
-                    if (num > 100 && LastGenerations.TryUpdate(channel.Id, DateTime.Now, lastGeneration))
+                    if (num > 100 && LastGenerations.TryUpdate(channel.Id, DateTime.UtcNow, lastGeneration))
                     {
                         var dropAmount = _bc.CurrencyDropAmount;
+                        var dropAmountMax = _bc.CurrencyDropAmountMax;
+
+                        if (dropAmountMax != null && dropAmountMax > dropAmount)
+                            dropAmount = new NadekoRandom().Next(dropAmount, dropAmountMax.Value + 1);
 
                         if (dropAmount > 0)
                         {
@@ -155,7 +158,7 @@ namespace NadekoBot.Services.Games
                     LogManager.GetCurrentClassLogger().Warn(ex);
                 }
             });
-            return;
+            return Task.CompletedTask;
         }
     }
 }

@@ -5,6 +5,8 @@ using NadekoBot.Services;
 using NLog;
 using System.Globalization;
 using System.Threading.Tasks;
+using System;
+using Discord.WebSocket;
 
 namespace NadekoBot.Modules
 {
@@ -12,10 +14,10 @@ namespace NadekoBot.Modules
     {
         protected readonly Logger _log;
         protected CultureInfo _cultureInfo;
-        
+
         public readonly string ModuleTypeName;
         public readonly string LowerModuleTypeName;
-        
+
         public NadekoStrings _strings { get; set; }
         public CommandHandler _cmdHandler { get; set; }
         public ILocalization _localization { get; set; }
@@ -32,9 +34,7 @@ namespace NadekoBot.Modules
 
         protected override void BeforeExecute()
         {
-            _cultureInfo =_localization.GetCultureInfo(Context.Guild?.Id);
-
-            _log.Info("Culture info is {0}", _cultureInfo);
+            _cultureInfo = _localization.GetCultureInfo(Context.Guild?.Id);
         }
 
         //public Task<IUserMessage> ReplyConfirmLocalized(string titleKey, string textKey, string url = null, string footer = null)
@@ -56,7 +56,7 @@ namespace NadekoBot.Modules
         //    var text = NadekoBot.ResponsesResourceManager.GetString(textKey, cultureInfo);
         //    return Context.Channel.SendErrorAsync(title, text, url, footer);
         //}
-        
+
         protected string GetText(string key) =>
             _strings.GetText(key, _cultureInfo, LowerModuleTypeName);
 
@@ -85,6 +85,50 @@ namespace NadekoBot.Modules
         {
             var text = GetText(textKey, replacements);
             return Context.Channel.SendConfirmAsync(Context.User.Mention + " " + text);
+        }
+
+        // todo maybe make this generic and use
+        // TypeConverter typeConverter = TypeDescriptor.GetConverter(propType);
+        public async Task<string> GetUserInputAsync(ulong userId, ulong channelId)
+        {
+            var userInputTask = new TaskCompletionSource<string>();
+            var dsc = (DiscordShardedClient)Context.Client;
+            try
+            {
+                dsc.MessageReceived += MessageReceived;
+
+                if ((await Task.WhenAny(userInputTask.Task, Task.Delay(10000))) != userInputTask.Task)
+                {
+                    return null;
+                }
+
+                return await userInputTask.Task;
+            }
+            finally
+            {
+                dsc.MessageReceived -= MessageReceived;
+            }
+
+            Task MessageReceived(SocketMessage arg)
+            {
+                var _ = Task.Run(() =>
+                {
+                    if (!(arg is SocketUserMessage userMsg) ||
+                        !(userMsg.Channel is ITextChannel chan) ||
+                        userMsg.Author.Id != userId ||
+                        userMsg.Channel.Id != channelId)
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    if (userInputTask.TrySetResult(arg.Content))
+                    {
+                        userMsg.DeleteAfter(1);
+                    }
+                    return Task.CompletedTask;
+                });
+                return Task.CompletedTask;
+            }
         }
     }
 

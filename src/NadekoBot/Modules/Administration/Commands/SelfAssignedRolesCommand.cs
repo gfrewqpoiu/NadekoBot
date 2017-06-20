@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using NadekoBot.Attributes;
 using NadekoBot.Extensions;
 using NadekoBot.Services;
@@ -105,16 +106,18 @@ namespace NadekoBot.Modules.Administration
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
-            public async Task Lsar()
+            public async Task Lsar(int page = 1)
             {
+                if (--page < 0)
+                    return;
+
                 var toRemove = new ConcurrentHashSet<SelfAssignedRole>();
                 var removeMsg = new StringBuilder();
-                var msg = new StringBuilder();
+                var roles = new List<string>();
                 var roleCnt = 0;
                 using (var uow = _db.UnitOfWork)
                 {
                     var roleModels = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id).ToList();
-                    msg.AppendLine();
                     
                     foreach (var roleModel in roleModels)
                     {
@@ -126,17 +129,24 @@ namespace NadekoBot.Modules.Administration
                         }
                         else
                         {
-                            msg.Append($"**{role.Name}**, ");
+                            roles.Add(Format.Bold(role.Name));
                             roleCnt++;
                         }
                     }
                     foreach (var role in toRemove)
                     {
-                        removeMsg.AppendLine(GetText("role_clean", role.RoleId));
+                        roles.Add(GetText("role_clean", role.RoleId));
                     }
                     await uow.CompleteAsync();
                 }
-                await Context.Channel.SendConfirmAsync(GetText("self_assign_list", roleCnt), msg + "\n\n" + removeMsg).ConfigureAwait(false);
+
+                await Context.Channel.SendPaginatedConfirmAsync((DiscordShardedClient)Context.Client, page, (curPage) =>
+                {
+                    return new EmbedBuilder()
+                        .WithTitle(GetText("self_assign_list", roleCnt))
+                        .WithDescription(string.Join("\n", roles.Skip(curPage * 10).Take(10)))
+                        .WithOkColor();
+                }, roles.Count / 10);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -206,7 +216,7 @@ namespace NadekoBot.Modules.Administration
                 catch (Exception ex)
                 {
                     await ReplyErrorLocalized("self_assign_perms").ConfigureAwait(false);
-                    Console.WriteLine(ex);
+                    _log.Info(ex);
                     return;
                 }
                 var msg = await ReplyConfirmLocalized("self_assign_success",Format.Bold(role.Name)).ConfigureAwait(false);

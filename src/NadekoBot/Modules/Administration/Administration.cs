@@ -68,7 +68,7 @@ namespace NadekoBot.Modules.Administration
             catch (Exception ex)
             {
                 await ReplyErrorLocalized("setrole_err").ConfigureAwait(false);
-                Console.WriteLine(ex.ToString());
+                _log.Info(ex);
             }
         }
 
@@ -309,65 +309,6 @@ namespace NadekoBot.Modules.Administration
             await ReplyConfirmLocalized("set_channel_name").ConfigureAwait(false);
         }
 
-
-        //delets her own messages, no perm required
-        [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        public async Task Prune()
-        {
-            var user = await Context.Guild.GetCurrentUserAsync().ConfigureAwait(false);
-
-            var enumerable = (await Context.Channel.GetMessagesAsync().Flatten())
-                .Where(x => x.Author.Id == user.Id && DateTime.Now - x.CreatedAt < twoWeeks);
-            await Context.Channel.DeleteMessagesAsync(enumerable).ConfigureAwait(false);
-            Context.Message.DeleteAfter(3);
-        }
-
-
-        private TimeSpan twoWeeks => TimeSpan.FromDays(14);
-        // prune x
-        [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(ChannelPermission.ManageMessages)]
-        [RequireBotPermission(GuildPermission.ManageMessages)]
-        [Priority(0)]
-        public async Task Prune(int count)
-        {
-            if (count < 1)
-                return;
-            await Context.Message.DeleteAsync().ConfigureAwait(false);
-            int limit = (count < 100) ? count + 1 : 100;
-            var enumerable = (await Context.Channel.GetMessagesAsync(limit: limit).Flatten().ConfigureAwait(false))
-                .Where(x => DateTime.Now - x.CreatedAt < twoWeeks);
-            if (enumerable.FirstOrDefault()?.Id == Context.Message.Id)
-                enumerable = enumerable.Skip(1).ToArray();
-            else
-                enumerable = enumerable.Take(count);
-            await Context.Channel.DeleteMessagesAsync(enumerable).ConfigureAwait(false);
-        }
-
-        //prune @user [x]
-        [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(ChannelPermission.ManageMessages)]
-        [RequireBotPermission(GuildPermission.ManageMessages)]
-        [Priority(1)]
-        public async Task Prune(IGuildUser user, int count = 100)
-        {
-            if (count < 1)
-                return;
-
-            if (user.Id == Context.User.Id)
-                count += 1;
-
-            int limit = (count < 100) ? count : 100;
-            var enumerable = (await Context.Channel.GetMessagesAsync(limit: limit).Flatten())
-                .Where(m => m.Author == user && DateTime.Now - m.CreatedAt < twoWeeks);
-            await Context.Channel.DeleteMessagesAsync(enumerable).ConfigureAwait(false);
-
-            Context.Message.DeleteAfter(3);
-        }
-
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.MentionEveryone)]
@@ -427,45 +368,5 @@ namespace NadekoBot.Modules.Administration
             }
             await ReplyConfirmLocalized("donadd", don.Amount).ConfigureAwait(false);
         }
-
-        //[NadekoCommand, Usage, Description, Aliases]
-        //[RequireContext(ContextType.Guild)]
-        //public async Task Timezones(int page = 1)
-        //{
-        //    page -= 1;
-
-        //    if (page < 0 || page > 20)
-        //        return;
-
-        //    var timezones = TimeZoneInfo.GetSystemTimeZones();
-        //    var timezonesPerPage = 20;
-
-        //    await Context.Channel.SendPaginatedConfirmAsync(page + 1, (curPage) => new EmbedBuilder()
-        //        .WithOkColor()
-        //        .WithTitle("Available Timezones")
-        //        .WithDescription(string.Join("\n", timezones.Skip((curPage - 1) * timezonesPerPage).Take(timezonesPerPage).Select(x => $"`{x.Id,-25}` UTC{x.BaseUtcOffset:hhmm}"))),
-        //        timezones.Count / timezonesPerPage);
-        //}
-
-        //[NadekoCommand, Usage, Description, Aliases]
-        //[RequireContext(ContextType.Guild)]
-        //public async Task Timezone([Remainder] string id)
-        //{
-        //    TimeZoneInfo tz;
-        //    try
-        //    {
-        //        tz = TimeZoneInfo.FindSystemTimeZoneById(id);
-        //        if (tz != null)
-        //            await Context.Channel.SendConfirmAsync(tz.ToString()).ConfigureAwait(false);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        tz = null;
-        //        _log.Warn(ex);
-        //    }
-
-        //    if (tz == null)
-        //        await Context.Channel.SendErrorAsync("Timezone not found. You should specify one of the timezones listed in the 'timezones' command.").ConfigureAwait(false);
-        //}
     }
 }

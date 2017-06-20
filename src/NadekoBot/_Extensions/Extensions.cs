@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -18,6 +19,23 @@ namespace NadekoBot.Extensions
 {
     public static class Extensions
     {
+        public static async Task<string> ReplaceAsync(this Regex regex, string input, Func<Match, Task<string>> replacementFn)
+        {
+            var sb = new StringBuilder();
+            var lastIndex = 0;
+
+            foreach (Match match in regex.Matches(input))
+            {
+                sb.Append(input, lastIndex, match.Index - lastIndex)
+                  .Append(await replacementFn(match).ConfigureAwait(false));
+
+                lastIndex = match.Index + match.Length;
+            }
+
+            sb.Append(input, lastIndex, input.Length - lastIndex);
+            return sb.ToString();
+        }
+
         public static void ThrowIfNull<T>(this T obj, string name) where T : class
         {
             if (obj == null)
@@ -54,7 +72,6 @@ namespace NadekoBot.Extensions
         /// </summary>
         public static async Task SendPaginatedConfirmAsync(this IMessageChannel channel, DiscordShardedClient client, int currentPage, Func<int, EmbedBuilder> pageFunc, int? lastPage = null, bool addPaginatedFooter = true)
         {
-            lastPage += 1;
             var embed = pageFunc(currentPage);
 
             if(addPaginatedFooter)
@@ -62,7 +79,7 @@ namespace NadekoBot.Extensions
 
             var msg = await channel.EmbedAsync(embed) as IUserMessage;
 
-            if (currentPage >= lastPage && lastPage == 1)
+            if (lastPage == 0)
                 return;
 
             
@@ -77,7 +94,7 @@ namespace NadekoBot.Extensions
                 {
                     if (r.Emote.Name == arrow_left.Name)
                     {
-                        if (currentPage == 1)
+                        if (currentPage == 0)
                             return;
                         var toSend = pageFunc(--currentPage);
                         if (addPaginatedFooter)
@@ -95,7 +112,10 @@ namespace NadekoBot.Extensions
                         }
                     }
                 }
-                catch (Exception ex) { Console.WriteLine(ex); }
+                catch (Exception)
+                {
+                    //ignored
+                }
             };
 
             using (msg.OnReaction(client, changePage, changePage))
@@ -109,7 +129,7 @@ namespace NadekoBot.Extensions
         private static EmbedBuilder AddPaginatedFooter(this EmbedBuilder embed, int curPage, int? lastPage)
         {
             if (lastPage != null)
-                return embed.WithFooter(efb => efb.WithText($"{curPage} / {lastPage}"));
+                return embed.WithFooter(efb => efb.WithText($"{curPage + 1} / {lastPage + 1}"));
             else
                 return embed.WithFooter(efb => efb.WithText(curPage.ToString()));
         }

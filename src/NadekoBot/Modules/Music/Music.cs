@@ -184,6 +184,44 @@ namespace NadekoBot.Modules.Music
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
+        public async Task QueueSearch([Remainder] string query)
+        {
+            var videos = (await _google.GetVideoInfosByKeywordAsync(query, 5))
+                .ToArray();
+
+            if (!videos.Any())
+            {
+                await ReplyErrorLocalized("song_not_found").ConfigureAwait(false);
+                return;
+            }
+
+            var msg = await Context.Channel.SendConfirmAsync(string.Join("\n", videos.Select((x, i) => $"`{i + 1}.`\n\t{Format.Bold(x.Name)}\n\t{x.Url}")));
+
+            try
+            {
+                var input = await GetUserInputAsync(Context.User.Id, Context.Channel.Id);
+                if (input == null
+                    || !int.TryParse(input, out var index)
+                    || (index -= 1) < 0
+                    || index >= videos.Length)
+                {
+                    try { await msg.DeleteAsync().ConfigureAwait(false); } catch { }
+                    return;
+                }
+
+                query = videos[index].Url;
+
+                await Queue(query).ConfigureAwait(false);
+            }
+            finally
+            {
+                try { await msg.DeleteAsync().ConfigureAwait(false); } catch { }
+            }
+            
+        }
+
+        [NadekoCommand, Usage, Description, Aliases]
+        [RequireContext(ContextType.Guild)]
         public async Task SoundCloudQueue([Remainder] string query)
         {
             await _music.QueueSong(((IGuildUser)Context.User), (ITextChannel)Context.Channel, ((IGuildUser)Context.User).VoiceChannel, query, musicType: MusicType.Soundcloud).ConfigureAwait(false);
@@ -206,7 +244,8 @@ namespace NadekoBot.Modules.Music
                 await ReplyErrorLocalized("no_player").ConfigureAwait(false);
                 return;
             }
-            if (page <= 0)
+
+            if (--page < 0)
                 return;
 
             try { await musicPlayer.UpdateSongDurationsAsync().ConfigureAwait(false); } catch { }
@@ -222,7 +261,7 @@ namespace NadekoBot.Modules.Music
             var lastPage = musicPlayer.Playlist.Count / itemsPerPage;
             Func<int, EmbedBuilder> printAction = curPage =>
             {
-                var startAt = itemsPerPage * (curPage - 1);
+                var startAt = itemsPerPage * curPage;
                 var number = 0 + startAt;
                 var desc = string.Join("\n", musicPlayer.Playlist
                         .Skip(startAt)
@@ -239,7 +278,7 @@ namespace NadekoBot.Modules.Music
 
 
                 var embed = new EmbedBuilder()
-                    .WithAuthor(eab => eab.WithName(GetText("player_queue", curPage, lastPage + 1))
+                    .WithAuthor(eab => eab.WithName(GetText("player_queue", curPage + 1, lastPage + 1))
                         .WithMusicIcon())
                     .WithDescription(desc)
                     .WithFooter(ef => ef.WithText($"{musicPlayer.PrettyVolume} | {musicPlayer.Playlist.Count} " +
@@ -392,7 +431,7 @@ namespace NadekoBot.Modules.Music
 
             using (var http = new HttpClient())
             {
-                var scvids = JObject.Parse(await http.GetStringAsync($"http://api.soundcloud.com/resolve?url={pl}&client_id={_creds.SoundCloudClientId}").ConfigureAwait(false))["tracks"].ToObject<SoundCloudVideo[]>();
+                var scvids = JObject.Parse(await http.GetStringAsync($"https://scapi.nadekobot.me/resolve?url={pl}").ConfigureAwait(false))["tracks"].ToObject<SoundCloudVideo[]>();
                 await _music.QueueSong(((IGuildUser)Context.User), (ITextChannel)Context.Channel, ((IGuildUser)Context.User).VoiceChannel, scvids[0].TrackLink).ConfigureAwait(false);
 
                 MusicPlayer musicPlayer;
@@ -407,7 +446,7 @@ namespace NadekoBot.Modules.Music
                         {
                             Title = svideo.FullName,
                             Provider = "SoundCloud",
-                            Uri = svideo.GetStreamLink(_creds),
+                            Uri = await svideo.StreamLink(),
                             ProviderType = MusicType.Normal,
                             Query = svideo.TrackLink,
                         }), ((IGuildUser)Context.User).Username);

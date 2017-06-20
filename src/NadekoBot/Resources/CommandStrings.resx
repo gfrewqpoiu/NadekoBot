@@ -274,10 +274,10 @@
     <value>repeat</value>
   </data>
   <data name="repeat_desc" xml:space="preserve">
-    <value>Repeat a message every `X` minutes in the current channel. You can have up to 5 repeating messages on the server in total.</value>
+    <value>Repeat a message every `X` minutes in the current channel. You can instead specify time of day for the message to be repeated at daily (make sure you've set your server's timezone). You can have up to 5 repeating messages on the server in total.</value>
   </data>
   <data name="repeat_usage" xml:space="preserve">
-    <value>`{0}repeat 5 Hello there`</value>
+    <value>`{0}repeat 5 Hello there` or `{0}repeat 17:30 tea time`</value>
   </data>
   <data name="rotateplaying_cmd" xml:space="preserve">
     <value>rotateplaying ropl</value>
@@ -1521,6 +1521,15 @@
   <data name="queue_usage" xml:space="preserve">
     <value>`{0}q Dream Of Venice`</value>
   </data>
+  <data name="queuesearch_cmd" xml:space="preserve">
+    <value>queuesearch qs yqs</value>
+  </data>
+  <data name="queuesearch_desc" xml:space="preserve">
+    <value>Search for top 5 youtube song result using keywords, and type the index of the song to play that song. Bot will join your voice channel. **You must be in a voice channel**.</value>
+  </data>
+  <data name="queuesearch_usage" xml:space="preserve">
+    <value>`{0}qs Dream Of Venice`</value>
+  </data>
   <data name="soundcloudqueue_cmd" xml:space="preserve">
     <value>soundcloudqueue sq</value>
   </data>
@@ -1641,10 +1650,10 @@
   <data name="songremove_cmd" xml:space="preserve">
     <value>songremove srm</value>
   </data>
-  <data name="remove_desc" xml:space="preserve">
+  <data name="songremove_desc" xml:space="preserve">
     <value>Remove a song by its # in the queue, or 'all' to remove all songs from the queue.</value>
   </data>
-  <data name="remove_usage" xml:space="preserve">
+  <data name="songremove_usage" xml:space="preserve">
     <value>`{0}srm 5`</value>
   </data>
   <data name="movesong_cmd" xml:space="preserve">
@@ -2779,7 +2788,7 @@
     <value>Shows a list of hangman term types.</value>
   </data>
   <data name="hangmanlist_usage" xml:space="preserve">
-    <value>`{0} hangmanlist`</value>
+    <value>`{0}hangmanlist`</value>
   </data>
   <data name="hangman_cmd" xml:space="preserve">
     <value>hangman</value>
@@ -3037,10 +3046,10 @@
     <value>waifus waifulb</value>
   </data>
   <data name="waifuleaderboard_desc" xml:space="preserve">
-    <value>Shows top 9 waifus.</value>
+    <value>Shows top 9 waifus. You can specify another page to show other waifus.</value>
   </data>
   <data name="waifuleaderboard_usage" xml:space="preserve">
-    <value>`{0}waifus`</value>
+    <value>`{0}waifus` or `{0}waifulb 3`</value>
   </data>
   <data name="divorce_cmd" xml:space="preserve">
     <value>divorce</value>
@@ -3127,7 +3136,7 @@
     <value>timezones</value>
   </data>
   <data name="timezones_desc" xml:space="preserve">
-    <value>List of all timezones available on the system to be used with `{0}timezone`.</value>
+    <value>Lists all timezones available on the system to be used with `{0}timezone`.</value>
   </data>
   <data name="timezones_usage" xml:space="preserve">
     <value>`{0}timezones`</value>
@@ -3139,7 +3148,7 @@
     <value>Sets this guilds timezone. This affects bot's time output in this server (logs, etc..)</value>
   </data>
   <data name="timezone_usage" xml:space="preserve">
-    <value>`{0}timezone`</value>
+    <value>`{0}timezone` or `{0}timezone GMT Standard Time`</value>
   </data>
   <data name="languagesetdefault_cmd" xml:space="preserve">
     <value>langsetdefault langsetd</value>

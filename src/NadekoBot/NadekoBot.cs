@@ -27,6 +27,8 @@ using NadekoBot.Services.Utility;
 using NadekoBot.Services.Help;
 using System.IO;
 using NadekoBot.Services.Pokemon;
+using NadekoBot.DataStructures;
+using NadekoBot.Extensions;
 
 namespace NadekoBot
 {
@@ -84,13 +86,13 @@ namespace NadekoBot
                 LogLevel = LogSeverity.Warning,
                 TotalShards = Credentials.TotalShards,
                 ConnectionTimeout = int.MaxValue,
-                AlwaysDownloadUsers = true,
+                AlwaysDownloadUsers = false,
             });
 
             CommandService = new CommandService(new CommandServiceConfig()
             {
                 CaseSensitiveCommands = false,
-                DefaultRunMode = RunMode.Sync,
+                DefaultRunMode = RunMode.Async,
             });
 
             //foundation services
@@ -120,11 +122,12 @@ namespace NadekoBot
             #region utility
             var crossServerTextService = new CrossServerTextService(AllGuildConfigs, Client);
             var remindService = new RemindService(Client, BotConfig, Db);
-            var repeaterService = new MessageRepeaterService(Client, AllGuildConfigs);
+            var repeaterService = new MessageRepeaterService(this, Client, AllGuildConfigs);
             var converterService = new ConverterService(Db);
             var commandMapService = new CommandMapService(AllGuildConfigs);
             var patreonRewardsService = new PatreonRewardsService(Credentials, Db, Currency);
             var verboseErrorsService = new VerboseErrorsService(AllGuildConfigs, Db, CommandHandler, helpService);
+            var pruneService = new PruneService();
             #endregion
 
             #region permissions
@@ -143,7 +146,7 @@ namespace NadekoBot
 
             var clashService = new ClashOfClansService(Client, Db, Localization, Strings);
             var musicService = new MusicService(GoogleApi, Strings, Localization, Db, soundcloudApiService, Credentials, AllGuildConfigs);
-            var crService = new CustomReactionsService(permissionsService, Db, Client, CommandHandler);
+            var crService = new CustomReactionsService(permissionsService, Db, Client, CommandHandler, BotConfig);
 
             #region Games
             var gamesService = new GamesService(Client, BotConfig, AllGuildConfigs, Strings, Images, CommandHandler);
@@ -164,6 +167,7 @@ namespace NadekoBot
             var gameVcService = new GameVoiceChannelService(Client, Db, AllGuildConfigs);
             var autoAssignRoleService = new AutoAssignRoleService(Client, AllGuildConfigs);
             var logCommandService = new LogCommandService(Client, Strings, AllGuildConfigs, Db, muteService, protectionService);
+            var guildTimezoneService = new GuildTimezoneService(AllGuildConfigs, Db);
             #endregion
 
             #region pokemon 
@@ -193,6 +197,8 @@ namespace NadekoBot
                     .Add(repeaterService)
                     .Add(converterService)
                     .Add(verboseErrorsService)
+                    .Add(patreonRewardsService)
+                    .Add(pruneService)
                 .Add<SearchesService>(searchesService)
                     .Add(streamNotificationService)
                     .Add(animeSearchService)
@@ -215,6 +221,7 @@ namespace NadekoBot
                     .Add(autoAssignRoleService)
                     .Add(protectionService)
                     .Add(logCommandService)
+                    .Add(guildTimezoneService)
                 .Add<PermissionService>(permissionsService)
                     .Add(blacklistService)
                     .Add(cmdcdsService)
@@ -232,6 +239,7 @@ namespace NadekoBot
             CommandService.AddTypeReader<ModuleInfo>(new ModuleTypeReader(CommandService));
             CommandService.AddTypeReader<ModuleOrCrInfo>(new ModuleOrCrTypeReader(CommandService));
             CommandService.AddTypeReader<IGuild>(new GuildTypeReader(Client));
+            CommandService.AddTypeReader<GuildDateTime>(new GuildDateTimeTypeReader(guildTimezoneService));
         }
 
         private async Task LoginAsync(string token)
@@ -241,14 +249,12 @@ namespace NadekoBot
             await Client.LoginAsync(TokenType.Bot, token).ConfigureAwait(false);
             await Client.StartAsync().ConfigureAwait(false);
 
-            // wait for all shards to be ready
-            int readyCount = 0;
-            foreach (var s in Client.Shards)
-                s.Ready += () => Task.FromResult(Interlocked.Increment(ref readyCount));
-
             _log.Info("Waiting for all shards to connect...");
-            while (readyCount < Client.Shards.Count)
-                await Task.Delay(100).ConfigureAwait(false);
+            while (!Client.Shards.All(x => x.ConnectionState == ConnectionState.Connected))
+            {
+                _log.Info("Connecting... {0}/{1}", Client.Shards.Count(x => x.ConnectionState == ConnectionState.Connected), Client.Shards.Count);
+                await Task.Delay(1000).ConfigureAwait(false);
+            }
         }
 
         public async Task RunAsync(params string[] args)
@@ -275,7 +281,7 @@ namespace NadekoBot
 
             var _ = await CommandService.AddModulesAsync(this.GetType().GetTypeInfo().Assembly);
 
-            
+
             //Console.WriteLine(string.Join(", ", CommandService.Commands
             //    .Distinct(x => x.Name + x.Module.Name)
             //    .SelectMany(x => x.Aliases)
@@ -283,8 +289,8 @@ namespace NadekoBot
             //    .Where(x => x.Count() > 1)
             //    .Select(x => x.Key + $"({x.Count()})")));
 
-#if GLOBAL_NADEKO
-            //unload modules which are not available on the public bot
+//unload modules which are not available on the public bot
+#if GLOBAL_NADEKO   
             CommandService
                 .Modules
                 .ToArray()
@@ -327,23 +333,16 @@ namespace NadekoBot
 
         private static void SetupLogger()
         {
-            try
+            var logConfig = new LoggingConfiguration();
+            var consoleTarget = new ColoredConsoleTarget()
             {
-                var logConfig = new LoggingConfiguration();
-                var consoleTarget = new ColoredConsoleTarget()
-                {
-                    Layout = @"${date:format=HH\:mm\:ss} ${logger} | ${message}"
-                };
-                logConfig.AddTarget("Console", consoleTarget);
+                Layout = @"${date:format=HH\:mm\:ss} ${logger} | ${message}"
+            };
+            logConfig.AddTarget("Console", consoleTarget);
 
-                logConfig.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, consoleTarget));
+            logConfig.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, consoleTarget));
 
-                LogManager.Configuration = logConfig;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+            LogManager.Configuration = logConfig;
         }
     }
 }

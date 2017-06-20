@@ -17,7 +17,7 @@ namespace NadekoBot.Services.Impl
         private readonly IBotCredentials _creds;
         private readonly DateTime _started;
 
-        public const string BotVersion = "1.42";
+        public const string BotVersion = "1.43";
 
         public string Author => "Kwoth#2560";
         public string Library => "Discord.Net";
@@ -41,26 +41,32 @@ namespace NadekoBot.Services.Impl
             _client = client;
             _creds = creds;
 
-            _started = DateTime.Now;
+            _started = DateTime.UtcNow;
             _client.MessageReceived += _ => Task.FromResult(Interlocked.Increment(ref _messageCounter));
             cmdHandler.CommandExecuted += (_, e) => Task.FromResult(Interlocked.Increment(ref _commandsRan));
 
             _client.ChannelCreated += (c) =>
             {
-                if (c is ITextChannel)
-                    Interlocked.Increment(ref _textChannels);
-                else if (c is IVoiceChannel)
-                    Interlocked.Increment(ref _voiceChannels);
+                var _ = Task.Run(() =>
+                {
+                    if (c is ITextChannel)
+                        Interlocked.Increment(ref _textChannels);
+                    else if (c is IVoiceChannel)
+                        Interlocked.Increment(ref _voiceChannels);
+                });
 
                 return Task.CompletedTask;
             };
 
             _client.ChannelDestroyed += (c) =>
             {
-                if (c is ITextChannel)
-                    Interlocked.Decrement(ref _textChannels);
-                else if (c is IVoiceChannel)
-                    Interlocked.Decrement(ref _voiceChannels);
+                var _ = Task.Run(() =>
+                {
+                    if (c is ITextChannel)
+                        Interlocked.Decrement(ref _textChannels);
+                    else if (c is IVoiceChannel)
+                        Interlocked.Decrement(ref _voiceChannels);
+                });
 
                 return Task.CompletedTask;
             };
@@ -166,7 +172,7 @@ Messages: {MessageCounter} [{MessagesPerSecond:F2}/sec] Heap: [{Heap} MB]");
         }
 
         public TimeSpan GetUptime() =>
-            DateTime.Now - _started;
+            DateTime.UtcNow - _started;
 
         public string GetUptimeString(string separator = ", ")
         {

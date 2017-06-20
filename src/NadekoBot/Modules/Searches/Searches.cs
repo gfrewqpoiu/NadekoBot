@@ -89,7 +89,7 @@ namespace NadekoBot.Modules.Searches
         public async Task Youtube([Remainder] string query = null)
         {
             if (!await ValidateQuery(Context.Channel, query).ConfigureAwait(false)) return;
-            var result = (await _google.GetVideosByKeywordsAsync(query, 1)).FirstOrDefault();
+            var result = (await _google.GetVideoLinksByKeywordAsync(query, 1)).FirstOrDefault();
             if (string.IsNullOrWhiteSpace(result))
             {
                 await ReplyErrorLocalized("no_results").ConfigureAwait(false);
@@ -515,7 +515,10 @@ namespace NadekoBot.Modules.Searches
                 var sense = data.Results.FirstOrDefault(x => x.Senses?[0].Definition != null)?.Senses[0];
 
                 if (sense?.Definition == null)
+                {
+                    await ReplyErrorLocalized("define_unknown").ConfigureAwait(false);
                     return;
+                }
 
                 var definition = sense.Definition.ToString();
                 if (!(sense.Definition is string))
@@ -634,9 +637,21 @@ namespace NadekoBot.Modules.Searches
             color = color?.Trim().Replace("#", "");
             if (string.IsNullOrWhiteSpace(color))
                 return;
+            ImageSharp.Color clr;
+            try
+            {
+                clr = ImageSharp.Color.FromHex(color);
+            }
+            catch
+            {
+                await ReplyErrorLocalized("hex_invalid").ConfigureAwait(false);
+                return;
+            }
+            
+
             var img = new ImageSharp.Image(50, 50);
 
-            img.BackgroundColor(ImageSharp.Color.FromHex(color));
+            img.BackgroundColor(clr);
 
             await Context.Channel.SendFileAsync(img.ToStream(), $"{color}.png").ConfigureAwait(false);
         }

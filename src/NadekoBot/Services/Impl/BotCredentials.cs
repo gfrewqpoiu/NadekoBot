@@ -25,17 +25,6 @@ namespace NadekoBot.Services.Impl
 
         public string LoLApiKey { get; }
         public string OsuApiKey { get; }
-        private string _soundcloudClientId;
-        public string SoundCloudClientId {
-            get {
-                return string.IsNullOrWhiteSpace(_soundcloudClientId)
-                    ? "d0bd7768e3a1a2d15430f0dccb871117"
-                    : _soundcloudClientId;
-            }
-            private set {
-                _soundcloudClientId = value;
-            }
-        }
 
         public DBConfig Db { get; }
         public int TotalShards { get; }
@@ -81,7 +70,11 @@ namespace NadekoBot.Services.Impl
                 ulong.TryParse(data[nameof(ClientId)], out clId);
                 ClientId = clId;
 
-                SoundCloudClientId = data[nameof(SoundCloudClientId)];
+                //var scId = data[nameof(SoundCloudClientId)];
+                //SoundCloudClientId = scId;
+                //SoundCloudClientId = string.IsNullOrWhiteSpace(scId)
+                //    ? 
+                //    : scId;
                 CarbonKey = data[nameof(CarbonKey)];
                 var dbSection = data.GetSection("db");
                 Db = new DBConfig(string.IsNullOrWhiteSpace(dbSection["Type"]) 

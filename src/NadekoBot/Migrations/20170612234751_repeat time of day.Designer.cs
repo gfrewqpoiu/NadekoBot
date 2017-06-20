@@ -9,9 +9,10 @@ using NadekoBot.Services.Database.Models;
 namespace NadekoBot.Migrations
 {
     [DbContext(typeof(NadekoContext))]
-    partial class NadekoSqliteContextModelSnapshot : ModelSnapshot
+    [Migration("20170612234751_repeat time of day")]
+    partial class repeattimeofday
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.1");
@@ -137,8 +138,6 @@ namespace NadekoBot.Migrations
 
                     b.Property<int>("CurrencyDropAmount");
 
-                    b.Property<int?>("CurrencyDropAmountMax");
-
                     b.Property<float>("CurrencyGenerationChance");
 
                     b.Property<int>("CurrencyGenerationCooldown");
@@ -148,8 +147,6 @@ namespace NadekoBot.Migrations
                     b.Property<string>("CurrencyPluralName");
 
                     b.Property<string>("CurrencySign");
-
-                    b.Property<bool>("CustomReactionsStartWith");
 
                     b.Property<string>("DMHelpString");
 

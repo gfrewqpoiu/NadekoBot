@@ -14,41 +14,41 @@ namespace NadekoBot.Services.Utility
     {
         private readonly Logger _log;
 
-        private CancellationTokenSource source { get; set; }
-        private CancellationToken token { get; set; }
         public Repeater Repeater { get; }
         public SocketGuild Guild { get; }
         public ITextChannel Channel { get; private set; }
-        private IUserMessage oldMsg = null;
+        public TimeSpan InitialInterval { get; private set; }
 
-        public RepeatRunner(DiscordShardedClient client, Repeater repeater, ITextChannel channel = null)
+        private IUserMessage oldMsg = null;
+        private Timer _t;
+
+        public RepeatRunner(DiscordShardedClient client, Repeater repeater)
         {
             _log = LogManager.GetCurrentClassLogger();
             Repeater = repeater;
-            Channel = channel;
 
             //todo 40 @.@ fix all of this
             Guild = client.GetGuild(repeater.GuildId);
+
+            InitialInterval = Repeater.Interval;
+
             if (Guild != null)
-                Task.Run(Run);
+                Run();
         }
 
-        private async Task Run()
+        private void Run()
         {
-            source = new CancellationTokenSource();
-            token = source.Token;
-            try
+            if (Repeater.StartTimeOfDay != null)
             {
-                while (!token.IsCancellationRequested)
-                {
-                    await Task.Delay(Repeater.Interval, token).ConfigureAwait(false);
+                if ((InitialInterval = Repeater.StartTimeOfDay.Value - DateTime.UtcNow.TimeOfDay) < TimeSpan.Zero)
+                    InitialInterval += TimeSpan.FromDays(1);
+            }
 
-                    await Trigger().ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            _t = new Timer(async (_) => {
+
+                try { await Trigger().ConfigureAwait(false); } catch { }
+
+            }, null, InitialInterval, Repeater.Interval);
         }
 
         public async Task Trigger()
@@ -93,13 +93,13 @@ namespace NadekoBot.Services.Utility
 
         public void Reset()
         {
-            source.Cancel();
-            var _ = Task.Run(Run);
+            Stop();
+            Run();
         }
 
         public void Stop()
         {
-            source.Cancel();
+            _t.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public override string ToString() =>
