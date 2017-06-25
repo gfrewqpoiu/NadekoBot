@@ -31,3 +31,4 @@
 [Notepad++]: https://notepad-plus-plus.org/
 [Invite Guide]: http://discord.kongslien.net/guide.html
 [Google Console]: https://console.developers.google.com
+[.NET Core SDK]: https://www.microsoft.com/net/core#windowscmd
