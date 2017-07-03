@@ -368,3 +368,4 @@ src/NadekoBot/NadekoBot.db
 .idea/
 
 src/NadekoBot/credentials.json
+.vscode/
