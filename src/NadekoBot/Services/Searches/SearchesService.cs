@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using NadekoBot.DataStructures;
 using NadekoBot.Extensions;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -30,6 +32,8 @@ namespace NadekoBot.Services.Searches
 
         public List<WoWJoke> WowJokes { get; } = new List<WoWJoke>();
         public List<MagicItem> MagicItems { get; } = new List<MagicItem>();
+
+        private readonly ConcurrentDictionary<ulong?, SearchImageCacher> _imageCacher = new ConcurrentDictionary<ulong?, SearchImageCacher>();
 
         public SearchesService(DiscordSocketClient client, IGoogleApiService google, DbService db)
         {
@@ -113,8 +117,9 @@ namespace NadekoBot.Services.Searches
             return (await _google.Translate(text, from, to).ConfigureAwait(false)).SanitizeMentions();
         }
 
-        public async Task<string> DapiSearch(string tag, DapiSearchType type)
+        public Task<ImageCacherObject> DapiSearch(string tag, DapiSearchType type, ulong? guild, bool isExplicit = false)
         {
+<<<<<<< HEAD
             tag = tag?.Replace(" ", "_");
             var website = "";
             switch (type)
@@ -160,16 +165,12 @@ namespace NadekoBot.Services.Searches
             {
                 return null;
             }
+=======
+            var cacher = _imageCacher.GetOrAdd(guild, (key) => new SearchImageCacher());
+            
+            return cacher.GetImage(tag, isExplicit, type);
+>>>>>>> Kwoth/1.4
         }
-    }
-
-    public enum DapiSearchType
-    {
-        Safebooru,
-        Gelbooru,
-        Konachan,
-        Rule34,
-        Yandere
     }
     
     public struct UserChannelPair
@@ -177,7 +178,6 @@ namespace NadekoBot.Services.Searches
         public ulong UserId { get; set; }
         public ulong ChannelId { get; set; }
     }
-
 
     public class StreamStatus
     {

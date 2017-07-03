@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NadekoBot.DataStructures;
+using NadekoBot.DataStructures.Replacements;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -72,22 +73,19 @@ namespace NadekoBot.Modules.Utility
                         await Context.Channel.SendMessageAsync("You cannot use Quotes from other Servers");
                         return;
                     }
-                CREmbed crembed;
-                if (CREmbed.TryParse(quote.Text, out crembed))
+                
+                var rep = new ReplacementBuilder()
+                    .WithDefault(Context)
+                    .Build();
+
+                if (CREmbed.TryParse(quote.Text, out var crembed))
                 {
-                    try
-                    {
-                        await Context.Channel.EmbedAsync(crembed.ToEmbed(), crembed.PlainText ?? "")
-                            .ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.Warn("Sending CREmbed failed");
-                        _log.Warn(ex);
-                    }
+                    rep.Replace(crembed);
+                    await Context.Channel.EmbedAsync(crembed.ToEmbed(), crembed.PlainText?.SanitizeMentions() ?? "")
+                        .ConfigureAwait(false);
                     return;
                 }
-                await Context.Channel.SendMessageAsync($"`#{quote.Id}` 📣 " + quote.Text.SanitizeMentions());
+                await Context.Channel.SendMessageAsync($"`#{quote.Id}` 📣 " + rep.Replace(quote.Text)?.SanitizeMentions());
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -124,29 +122,28 @@ namespace NadekoBot.Modules.Utility
                 using (var uow = _db.UnitOfWork)
                 { 
                     var qfromid = uow.Quotes.Get(id);
-                    CREmbed crembed;
-                    
+
+                    var rep = new ReplacementBuilder()
+                        .WithDefault(Context)
+                        .Build();
+
                     if (qfromid == null)
                     {
                         await Context.Channel.SendErrorAsync(GetText("quotes_notfound"));
                     }
-                    else if (CREmbed.TryParse(qfromid.Text, out crembed))
+                    else if (CREmbed.TryParse(qfromid.Text, out var crembed))
                     {
-                        try 
-                        {
-                            await Context.Channel.EmbedAsync(crembed.ToEmbed(), crembed.PlainText ?? "")
-                                .ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.Warn("Sending CREmbed failed");
-                            _log.Warn(ex);    
-                        } 
-                        return;
+                        rep.Replace(crembed);
+
+                        await Context.Channel.EmbedAsync(crembed.ToEmbed(), crembed.PlainText?.SanitizeMentions() ?? "")
+                            .ConfigureAwait(false);
                     }
-                    
-                    else { await Context.Channel.SendMessageAsync($"`#{qfromid.Id}` 🗯️ " + qfromid.Keyword.ToLowerInvariant().SanitizeMentions() + ":  " +
-                                                       qfromid.Text.SanitizeMentions()); }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync($"`#{qfromid.Id}` 🗯️ " + qfromid.Keyword.ToLowerInvariant().SanitizeMentions() + ":  " +
+                                                    rep.Replace(qfromid.Text)?.SanitizeMentions());
+                    }
+
                 }
             }        
                           
