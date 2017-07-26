@@ -31,8 +31,11 @@
   
   <ItemGroup>
     <Compile Remove="data\**\*;credentials.json" />
+    <Compile Remove="Modules\Music\Classes\**" />
     <Compile Remove="Modules\Utility\Models\**" />
+    <EmbeddedResource Remove="Modules\Music\Classes\**" />
     <EmbeddedResource Remove="Modules\Utility\Models\**" />
+    <None Remove="Modules\Music\Classes\**" />
     <None Remove="Modules\Utility\Models\**" />
     <None Update="credentials_example.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -55,14 +58,14 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.9.9" />
-    <PackageReference Include="Discord.Net" Version="1.0.0-rc3-00746" />
+    <PackageReference Include="Discord.Net" Version="1.0.2-build-00797" />
     <PackageReference Include="libvideo" Version="1.0.1" />
     <PackageReference Include="CoreCLR-NCalc" Version="2.1.2" />
     <PackageReference Include="Google.Apis.Urlshortener.v1" Version="1.19.0.138" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.20.0.701" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.20.0.466" />
-    <PackageReference Include="ImageSharp" Version="1.0.0-alpha4-00031" />
-    <PackageReference Include="ImageSharp.Drawing" Version="1.0.0-alpha4-00031" />
+    <PackageReference Include="ImageSharp" Version="1.0.0-alpha9-00173" />
+    <PackageReference Include="ImageSharp.Drawing" Version="1.0.0-alpha9-00168" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.1" />
@@ -74,6 +77,7 @@
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
     <PackageReference Include="NLog" Version="5.0.0-beta03" />
+    <PackageReference Include="NYoutubeDL" Version="0.4.4" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0-preview1-25305-02" />
     <PackageReference Include="System.Xml.XPath" Version="4.3.0" />
   </ItemGroup>
@@ -86,10 +90,5 @@
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Modules\Music\Classes\" />
-    <Folder Include="Utility\Services\" />
   </ItemGroup>
 </Project>

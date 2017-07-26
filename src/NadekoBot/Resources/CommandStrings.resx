@@ -814,7 +814,7 @@
     <value>serverinfo sinfo</value>
   </data>
   <data name="serverinfo_desc" xml:space="preserve">
-    <value>Shows info about the server the bot is on. If no channel is supplied, it defaults to current one.</value>
+    <value>Shows info about the server the bot is on. If no server is supplied, it defaults to current one.</value>
   </data>
   <data name="serverinfo_usage" xml:space="preserve">
     <value>`{0}sinfo Some Server`</value>
@@ -1207,7 +1207,7 @@
     <value>`{0}drawnew` or `{0}drawnew 5`</value>
   </data>
   <data name="shuffleplaylist_cmd" xml:space="preserve">
-    <value>playlistshuffle plsh</value>
+    <value>shuffle sh plsh</value>
   </data>
   <data name="shuffleplaylist_desc" xml:space="preserve">
     <value>Shuffles the current playlist.</value>
@@ -1386,15 +1386,6 @@
   <data name="typeadd_usage" xml:space="preserve">
     <value>`{0}typeadd wordswords`</value>
   </data>
-  <data name="poll_cmd" xml:space="preserve">
-    <value>poll</value>
-  </data>
-  <data name="poll_desc" xml:space="preserve">
-    <value>Creates a poll which requires users to send the number of the voting option to the bot.</value>
-  </data>
-  <data name="poll_usage" xml:space="preserve">
-    <value>`{0}poll Question?;Answer1;Answ 2;A_3`</value>
-  </data>
   <data name="pollend_cmd" xml:space="preserve">
     <value>pollend</value>
   </data>
@@ -1485,11 +1476,20 @@
   <data name="next_usage" xml:space="preserve">
     <value>`{0}n` or `{0}n 5`</value>
   </data>
+  <data name="play_cmd" xml:space="preserve">
+    <value>play start</value>
+  </data>
+  <data name="play_desc" xml:space="preserve">
+    <value>If no arguments are specified, acts as `{0}next 1` command. If you specify a song number, it will jump to that song. If you specify a search query, acts as a `{0}q` command</value>
+  </data>
+  <data name="play_usage" xml:space="preserve">
+    <value>`{0}play` or `{0}play 5` or `{0}play Dream Of Venice`</value>
+  </data>
   <data name="stop_cmd" xml:space="preserve">
     <value>stop s</value>
   </data>
   <data name="stop_desc" xml:space="preserve">
-    <value>Stops the music and clears the playlist. Stays in the channel.</value>
+    <value>Stops the music and preserves the current song index. Stays in the channel.</value>
   </data>
   <data name="stop_usage" xml:space="preserve">
     <value>`{0}s`</value>
@@ -1543,7 +1543,7 @@
     <value>listqueue lq</value>
   </data>
   <data name="listqueue_desc" xml:space="preserve">
-    <value>Lists 15 currently queued songs per page. Default page is 1.</value>
+    <value>Lists 10 currently queued songs per page. Default page is 1.</value>
   </data>
   <data name="listqueue_usage" xml:space="preserve">
     <value>`{0}lq` or `{0}lq 2`</value>
@@ -1651,7 +1651,7 @@
     <value>songremove srm</value>
   </data>
   <data name="songremove_desc" xml:space="preserve">
-    <value>Remove a song by its # in the queue, or 'all' to remove all songs from the queue.</value>
+    <value>Remove a song by its # in the queue, or 'all' to remove all songs from the queue and reset the song index.</value>
   </data>
   <data name="songremove_usage" xml:space="preserve">
     <value>`{0}srm 5`</value>
@@ -1709,6 +1709,15 @@
   </data>
   <data name="save_usage" xml:space="preserve">
     <value>`{0}save classical1`</value>
+  </data>
+    <data name="streamrole_cmd" xml:space="preserve">
+    <value>streamrole</value>
+  </data>
+  <data name="streamrole_desc" xml:space="preserve">
+    <value>Sets a role which is monitored for streamers (FromRole), and a role to add if a user from 'FromRole' is streaming (AddRole). When a user from 'FromRole' starts streaming, they will receive an 'AddRole'. Provide no arguments to disable</value>
+  </data>
+  <data name="streamrole_usage" xml:space="preserve">
+    <value>`{0}streamrole "Eligible Streamers" "Featured Streams"`</value>
   </data>
   <data name="load_cmd" xml:space="preserve">
     <value>load</value>
@@ -2592,13 +2601,13 @@
   <data name="togethertube_usage" xml:space="preserve">
     <value>`{0}totube`</value>
   </data>
-  <data name="publicpoll_cmd" xml:space="preserve">
-    <value>publicpoll ppoll</value>
+  <data name="poll_cmd" xml:space="preserve">
+    <value>poll ppoll</value>
   </data>
-  <data name="publicpoll_desc" xml:space="preserve">
+  <data name="poll_desc" xml:space="preserve">
     <value>Creates a public poll which requires users to type a number of the voting option in the channel command is ran in.</value>
   </data>
-  <data name="publicpoll_usage" xml:space="preserve">
+  <data name="poll_usage" xml:space="preserve">
     <value>`{0}ppoll Question?;Answer1;Answ 2;A_3`</value>
   </data>
   <data name="autotranslang_cmd" xml:space="preserve">
@@ -2798,6 +2807,15 @@
   </data>
   <data name="hangman_usage" xml:space="preserve">
     <value>`{0}hangman` or `{0}hangman movies`</value>
+  </data>
+  <data name="hangmanstop_cmd" xml:space="preserve">
+    <value>hangmanstop</value>
+  </data>
+  <data name="hangmanstop_desc" xml:space="preserve">
+    <value>Stops the active hangman game on this channel if it exists.</value>
+  </data>
+  <data name="hangmanstop_usage" xml:space="preserve">
+    <value>`{0}hangmanstop`</value>
   </data>
   <data name="crstatsclear_cmd" xml:space="preserve">
     <value>crstatsclear</value>
@@ -3240,6 +3258,15 @@
   <data name="crdm_usage" xml:space="preserve">
     <value>`{0}crdm 44`</value>
   </data>
+  <data name="crca_cmd" xml:space="preserve">
+    <value>crca</value>
+  </data>
+  <data name="crca_desc" xml:space="preserve">
+    <value>Toggles whether the custom reaction will trigger if the triggering message contains the keyword (instead of only starting with it).</value>
+  </data>
+  <data name="crca_usage" xml:space="preserve">
+    <value>`{0}crca 44`</value>
+  </data>
   <data name="aliaslist_cmd" xml:space="preserve">
     <value>aliaslist cmdmaplist aliases</value>
   </data>
@@ -3266,6 +3293,15 @@
   </data>
   <data name="warnlog_usage" xml:space="preserve">
     <value>`{0}warnlog @b1nzy`</value>
+  </data>
+  <data name="warnlogall_cmd" xml:space="preserve">
+    <value>warnlogall</value>
+  </data>
+  <data name="warnlogall_desc" xml:space="preserve">
+    <value>See a list of all warnings on the server. 15 users per page.</value>
+  </data>
+  <data name="warnlogall_usage" xml:space="preserve">
+    <value>`{0}warnlogall` or `{0}warnlogall 2`</value>
   </data>
   <data name="warn_cmd" xml:space="preserve">
     <value>warn</value>
@@ -3527,5 +3563,50 @@
   </data>
   <data name="verboseerror_desc" xml:space="preserve">
     <value>Toggles whether the bot should print command errors when a command is incorrectly used.</value>
+  </data>
+  <data name="streamrolekeyword_cmd" xml:space="preserve">
+    <value>streamrolekw srkw</value>
+  </data>
+  <data name="streamrolekeyword_usage" xml:space="preserve">
+    <value>`{0}srkw` or `{0}srkw PUBG`</value>
+  </data>
+  <data name="streamrolekeyword_desc" xml:space="preserve">
+    <value>Sets keyword which is required in the stream's title in order for the streamrole to apply. Provide no keyword in order to reset.</value>
+  </data>
+  <data name="streamroleblacklist_cmd" xml:space="preserve">
+    <value>streamrolebl srbl</value>
+  </data>
+  <data name="streamroleblacklist_usage" xml:space="preserve">
+    <value>`{0}srbl add @b1nzy#1234` or `{0}srbl rem @b1nzy#1234`</value>
+  </data>
+  <data name="streamroleblacklist_desc" xml:space="preserve">
+    <value>Adds or removes a blacklisted user. Blacklisted users will never receive the stream role.</value>
+  </data>
+  <data name="streamrolewhitelist_cmd" xml:space="preserve">
+    <value>streamrolewl srwl</value>
+  </data>
+  <data name="streamrolewhitelist_usage" xml:space="preserve">
+    <value>`{0}srwl add @b1nzy#1234` or `{0}srwl rem @b1nzy#1234`</value>
+  </data>
+  <data name="streamrolewhitelist_desc" xml:space="preserve">
+    <value>Adds or removes a whitelisted user. Whitelisted users will receive the stream role even if they don't have the specified keyword in their stream title.</value>
+  </data>
+  <data name="botconfigedit_cmd" xml:space="preserve">
+    <value>botconfigedit bce</value>
+  </data>
+  <data name="botconfigedit_usage" xml:space="preserve">
+    <value>`{0}bce CurrencyName b1nzy` or `{0}bce`</value>
+  </data>
+  <data name="botconfigedit_desc" xml:space="preserve">
+    <value>Sets one of available bot config settings to a specified value. Use the command without any parameters to get a list of available settings.</value>
+  </data>
+  <data name="nsfwtagblacklist_cmd" xml:space="preserve">
+    <value>nsfwtagbl nsfwtbl</value>
+  </data>
+  <data name="nsfwtagblacklist_usage" xml:space="preserve">
+    <value>`{0}nsfwtbl poop`</value>
+  </data>
+  <data name="nsfwtagblacklist_desc" xml:space="preserve">
+    <value>Toggles whether the tag is blacklisted or not in nsfw searches. Provide no parameters to see the list of blacklisted tags.</value>
   </data>
 </root>

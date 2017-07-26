@@ -6,6 +6,7 @@ using System.Linq;
 using NLog;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Immutable;
+using NadekoBot.Common;
 
 namespace NadekoBot.Services.Impl
 {
@@ -25,6 +26,7 @@ namespace NadekoBot.Services.Impl
 
         public string LoLApiKey { get; }
         public string OsuApiKey { get; }
+        public string CleverbotApiKey { get; }
 
         public DBConfig Db { get; }
         public int TotalShards { get; }
@@ -35,6 +37,8 @@ namespace NadekoBot.Services.Impl
         public string ShardRunCommand { get; }
         public string ShardRunArguments { get; }
         public int ShardRunPort { get; }
+
+        public string PatreonCampaignId { get; }
 
         public BotCredentials()
         {
@@ -64,8 +68,10 @@ namespace NadekoBot.Services.Impl
                 MashapeKey = data[nameof(MashapeKey)];
                 OsuApiKey = data[nameof(OsuApiKey)];
                 PatreonAccessToken = data[nameof(PatreonAccessToken)];
+                PatreonCampaignId = data[nameof(PatreonCampaignId)] ?? "334038";
                 ShardRunCommand = data[nameof(ShardRunCommand)];
                 ShardRunArguments = data[nameof(ShardRunArguments)];
+                CleverbotApiKey = data[nameof(CleverbotApiKey)];
                 if (string.IsNullOrWhiteSpace(ShardRunCommand))
                     ShardRunCommand = "dotnet";
                 if (string.IsNullOrWhiteSpace(ShardRunArguments))
@@ -117,10 +123,12 @@ namespace NadekoBot.Services.Impl
             public string MashapeKey { get; set; } = "";
             public string OsuApiKey { get; set; } = "";
             public string SoundCloudClientId { get; set; } = "";
+            public string CleverbotApiKey { get; } = "";
             public string CarbonKey { get; set; } = "";
             public DBConfig Db { get; set; } = new DBConfig("sqlite", "Filename=./data/NadekoBot.db");
             public int TotalShards { get; set; } = 1;
             public string PatreonAccessToken { get; set; } = "";
+            public string PatreonCampaignId { get; set; } = "334038";
 
             public string ShardRunCommand { get; set; } = "";
             public string ShardRunArguments { get; set; } = "";
