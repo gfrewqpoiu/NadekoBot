@@ -72,7 +72,6 @@ namespace NadekoBot.Modules.Utility
                         await Context.Channel.SendMessageAsync("You cannot use Quotes from other Servers");
                         return;
                     }
-
                 var rep = new ReplacementBuilder()
                     .WithDefault(Context)
                     .Build();

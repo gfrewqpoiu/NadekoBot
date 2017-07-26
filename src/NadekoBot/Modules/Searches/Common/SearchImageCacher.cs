@@ -104,7 +104,7 @@ namespace NadekoBot.Modules.Searches.Common
                     website = $"http://danbooru.donmai.us/posts.json?limit=200&tags={tag}";
                     break;
                 case DapiSearchType.Gelbooru:
-                    website = $"http://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1000&tags={tag}";
+                    website = $"http://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1000&tags={tag}+-loli+-shota";
                     break;
                 case DapiSearchType.Rule34:
                     website = $"https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=100&tags={tag}";
@@ -113,7 +113,7 @@ namespace NadekoBot.Modules.Searches.Common
                     website = $"https://konachan.com/post.json?s=post&q=index&limit=1000&tags={tag}";
                     break;
                 case DapiSearchType.Yandere:
-                    website = $"https://yande.re/post.json?limit=1000&tags={tag}";
+                    website = $"https://yande.re/post.json?limit=1000&tags={tag}+-loli+-shota";
                     break;
             }
 
