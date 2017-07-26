@@ -356,3 +356,4 @@ __pycache__/
 
 ### VisualStudio Patch ###
 build/
+src/NadekoBot/NadekoBot.db
