@@ -5,23 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NadekoBot.Common.Attributes;
 using NadekoBot.Services;
-using NadekoBot.Attributes;
+using NadekoBot.Modules.Administration.Services;
 using NadekoBot.Services.Database.Models;
-using NadekoBot.Services.Administration;
 
 namespace NadekoBot.Modules.Administration
 {
-    public partial class Administration : NadekoTopLevelModule
+    public partial class Administration : NadekoTopLevelModule<AdministrationService>
     {
         private IGuild _nadekoSupportServer;
         private readonly DbService _db;
-        private readonly AdministrationService _admin;
 
-        public Administration(DbService db, AdministrationService admin)
+        public Administration(DbService db)
         {
             _db = db;
-            _admin = admin;
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -39,12 +37,12 @@ namespace NadekoBot.Modules.Administration
             }
             if (enabled)
             {
-                _admin.DeleteMessagesOnCommand.Add(Context.Guild.Id);
+                _service.DeleteMessagesOnCommand.Add(Context.Guild.Id);
                 await ReplyConfirmLocalized("delmsg_on").ConfigureAwait(false);
             }
             else
             {
-                _admin.DeleteMessagesOnCommand.TryRemove(Context.Guild.Id);
+                _service.DeleteMessagesOnCommand.TryRemove(Context.Guild.Id);
                 await ReplyConfirmLocalized("delmsg_off").ConfigureAwait(false);
             }
         }
@@ -133,9 +131,8 @@ namespace NadekoBot.Modules.Administration
                 await user.RemoveRolesAsync(userRoles).ConfigureAwait(false);
                 await ReplyConfirmLocalized("rar", Format.Bold(user.ToString())).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex);
                 await ReplyErrorLocalized("rar_err").ConfigureAwait(false);
             }
         }

@@ -2,21 +2,21 @@
 using Discord;
 using NadekoBot.Services;
 using System.Threading.Tasks;
-using NadekoBot.Attributes;
 using System;
+using NadekoBot.Common;
+using NadekoBot.Common.Attributes;
 using NadekoBot.Extensions;
-using NadekoBot.Services.Games;
+using NadekoBot.Modules.Games.Common;
+using NadekoBot.Modules.Games.Services;
 
 namespace NadekoBot.Modules.Games
 {
-    public partial class Games : NadekoTopLevelModule
+    public partial class Games : NadekoTopLevelModule<GamesService>
     {
-        private readonly GamesService _games;
         private readonly IImagesService _images;
 
-        public Games(GamesService games, IImagesService images)
+        public Games(IImagesService images)
         {
-            _games = games;
             _images = images;
         }
 
@@ -40,7 +40,7 @@ namespace NadekoBot.Modules.Games
 
             await Context.Channel.EmbedAsync(new EmbedBuilder().WithColor(NadekoBot.OkColor)
                                .AddField(efb => efb.WithName("❓ " + GetText("question") ).WithValue(question).WithIsInline(false))
-                               .AddField(efb => efb.WithName("🎱 " + GetText("8ball")).WithValue(_games.EightBallResponses[new NadekoRandom().Next(0, _games.EightBallResponses.Length)]).WithIsInline(false)));
+                               .AddField(efb => efb.WithName("🎱 " + GetText("8ball")).WithValue(_service.EightBallResponses[new NadekoRandom().Next(0, _service.EightBallResponses.Length)]).WithIsInline(false)));
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -100,7 +100,7 @@ namespace NadekoBot.Modules.Games
         [RequireContext(ContextType.Guild)]
         public async Task RateGirl(IGuildUser usr)
         {
-            var gr = _games.GirlRatings.GetOrAdd(usr.Id, GetGirl);
+            var gr = _service.GirlRatings.GetOrAdd(usr.Id, GetGirl);
             var img = await gr.Url;
             await Context.Channel.EmbedAsync(new EmbedBuilder().WithOkColor()
                 .WithTitle("Girl Rating For " + usr)

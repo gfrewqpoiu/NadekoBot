@@ -16,7 +16,9 @@ If you do not see `credentials.json` you will need to rename `credentials_exampl
   "GoogleApiKey": "AIzaSyDSci1sdlWQOWNVj1vlXxxxxxbk0oWMEzM",
   "MashapeKey": "4UrKpcWXc2mshS8RKi00000y8Kf5p1Q8kI6jsn32bmd8oVWiY7",
   "OsuApiKey": "4c8c8fdff8e1234581725db27fd140a7d93320d6",
+  "CleverbotApiKey": "",
   "PatreonAccessToken": "",
+  "PatreonCampaignId": "334038",
   "Db": null,
   "TotalShards": 1,
   "ShardRunCommand": "",
@@ -147,14 +149,19 @@ It should look like:
 	- Required for Urban Disctionary, Hashtag search, and Hearthstone cards.
 	- You need to create an account on their [api marketplace](https://market.mashape.com/), after that go to `market.mashape.com/YOURNAMEHERE/applications/default-application` and press **Get the keys** in the top right corner.
     - Copy the key and paste it into `credentials.json`
-- **LOLAPIKey** 
+- **LoLApiKey** 
 	- Required for all League of Legends commands. 
-    - You can get this key [here](http://api.champion.gg/)
-- **OsuAPIKey** 
+    - You can get this key [here.](http://api.champion.gg/)
+- **OsuApiKey** 
 	- Required for Osu commands
-	- You can get this key [here.](https://osu.ppy.sh/p/api) 		
+	- You can get this key [here.](https://osu.ppy.sh/p/api) 
+- **CleverbotApiKey**
+	- Required if you want to use official cleverobot, instead of program-o
+	- you can get this key [here.](http://www.cleverbot.com/api/)
 - **PatreonAccessToken**
 	- For Patreon creators only.
+- **PatreonCampaignId**
+	- For Patreon creators only. Id of your campaign.
 - **TotalShards** 
 	- Required if the bot will be connected to more than 1500 servers. 
 	- Most likely unnecessary to change until your bot is added to more than 1500 servers.
@@ -182,6 +189,8 @@ in order to open the database file you will need [DB Browser for SQLite](http://
 - click on **Apply** 
 - click on **Write Changes**
 
+![nadekodb](https://cdn.discordapp.com/attachments/251504306010849280/254067055240806400/nadekodb.gif)
+
 and that will save all the changes.
 
 ## Sharding your bot
@@ -202,7 +211,6 @@ and that will save all the changes.
 	- Bot uses a random UDP port in [5000, 6000) range for communication between shards
 
 
-![nadekodb](https://cdn.discordapp.com/attachments/251504306010849280/254067055240806400/nadekodb.gif)
 
 [Google Console]: https://console.developers.google.com
 [DiscordApp]: https://discordapp.com/developers/applications/me

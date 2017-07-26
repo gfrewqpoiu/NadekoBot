@@ -1,6 +1,5 @@
 using Discord;
 using Discord.Commands;
-using NadekoBot.Attributes;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,9 +15,10 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Discord.WebSocket;
 using System.Diagnostics;
+using NadekoBot.Common;
+using NadekoBot.Common.Attributes;
 using Color = Discord.Color;
 using NadekoBot.Services;
-using NadekoBot.DataStructures;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -28,14 +28,14 @@ namespace NadekoBot.Modules.Utility
         private readonly DiscordSocketClient _client;
         private readonly IStatsService _stats;
         private readonly IBotCredentials _creds;
-        private readonly NadekoBot _bot;
+        private readonly ShardsCoordinator _shardCoord;
 
-        public Utility(NadekoBot bot, DiscordSocketClient client, IStatsService stats, IBotCredentials creds)
+        public Utility(NadekoBot nadeko, DiscordSocketClient client, IStatsService stats, IBotCredentials creds)
         {
             _client = client;
             _stats = stats;
             _creds = creds;
-            _bot = bot;
+            _shardCoord = nadeko.ShardCoord;
         }        
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -59,10 +59,10 @@ namespace NadekoBot.Modules.Utility
                 }
                 return;
             }
-            
+
             var hexColors = hexes.Select(hex =>
             {
-                try { return (ImageSharp.Color?)ImageSharp.Color.FromHex(hex.Replace("#", "")); } catch { return null; }
+                try { return (Rgba32?)Rgba32.FromHex(hex.Replace("#", "")); } catch { return null; }
             })
             .Where(c => c != null)
             .Select(c => c.Value)
@@ -76,7 +76,7 @@ namespace NadekoBot.Modules.Utility
 
             var images = hexColors.Select(color =>
             {
-                var img = new ImageSharp.Image(50, 50);
+                var img = new ImageSharp.Image<Rgba32>(50, 50);
                 img.BackgroundColor(color);
                 return img;
             }).Merge().ToStream();
@@ -161,11 +161,12 @@ namespace NadekoBot.Modules.Utility
             var usrs = (await Context.Guild.GetUsersAsync()).ToArray();
             var roleUsers = usrs.Where(u => u.RoleIds.Contains(role.Id)).Select(u => u.ToString())
                 .ToArray();
+            var inroleusers = string.Join(", ", roleUsers
+                    .OrderBy(x => rng.Next())
+                    .Take(50));
             var embed = new EmbedBuilder().WithOkColor()
                 .WithTitle("ℹ️ " + Format.Bold(GetText("inrole_list", Format.Bold(role.Name))) + $" - {roleUsers.Length}")
-                .WithDescription(string.Join(", ", roleUsers
-                    .OrderBy(x => rng.Next())
-                    .Take(50)));
+                .WithDescription($"```css\n[{role.Name}]\n{inroleusers}```");
             await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
         }
 
@@ -294,7 +295,7 @@ namespace NadekoBot.Modules.Utility
         {
             if (--page < 0)
                 return;
-            var statuses = _bot.ShardCoord.Statuses.ToArray()
+            var statuses = _shardCoord.Statuses.ToArray()
                 .Where(x => x != null);
 
             var status = string.Join(", ", statuses
@@ -304,8 +305,13 @@ namespace NadekoBot.Modules.Utility
 
             var allShardStrings = statuses
                 .Select(x =>
-                    GetText("shard_stats_txt", x.ShardId.ToString(),
-                        Format.Bold(x.ConnectionState.ToString()), Format.Bold(x.Guilds.ToString())))
+                {
+                    var timeDiff = DateTime.UtcNow - x.Time;
+                    if (timeDiff > TimeSpan.FromSeconds(20))
+                        return $"Shard #{Format.Bold(x.ShardId.ToString())} **UNRESPONSIVE** for {timeDiff.ToString(@"hh\:mm\:ss")}";
+                    return GetText("shard_stats_txt", x.ShardId.ToString(),
+                        Format.Bold(x.ConnectionState.ToString()), Format.Bold(x.Guilds.ToString()), timeDiff.ToString(@"hh\:mm\:ss"));
+                        })
                 .ToArray();
 
             await Context.Channel.SendPaginatedConfirmAsync(_client, page, (curPage) =>
@@ -334,7 +340,7 @@ namespace NadekoBot.Modules.Utility
                                           .WithIconUrl("https://cdn.discordapp.com/avatars/116275390695079945/b21045e778ef21c96d175400e779f0fb.jpg"))
                     .AddField(efb => efb.WithName(GetText("author")).WithValue(_stats.Author).WithIsInline(true))
                     .AddField(efb => efb.WithName(GetText("botid")).WithValue(_client.CurrentUser.Id.ToString()).WithIsInline(true))
-                    .AddField(efb => efb.WithName(GetText("shard")).WithValue($"#{_bot.ShardId} / {_creds.TotalShards}").WithIsInline(true))
+                    .AddField(efb => efb.WithName(GetText("shard")).WithValue($"#{_client.ShardId} / {_creds.TotalShards}").WithIsInline(true))
                     .AddField(efb => efb.WithName(GetText("commands_ran")).WithValue(_stats.CommandsRan.ToString()).WithIsInline(true))
                     .AddField(efb => efb.WithName(GetText("messages")).WithValue($"{_stats.MessageCounter} ({_stats.MessagesPerSecond:F2}/sec)").WithIsInline(true))
                     .AddField(efb => efb.WithName(GetText("memory")).WithValue($"{_stats.Heap} MB").WithIsInline(true))
