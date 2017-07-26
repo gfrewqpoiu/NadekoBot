@@ -58,7 +58,7 @@ namespace NadekoBot.Modules.Utility
 
                 Quote quote;
                 using (var uow = _db.UnitOfWork)
-                {if (Int32.TryParse(keyword, out id))
+                {if (int.TryParse(keyword, out id))
                     quote = uow.Quotes.Get(id);
                 else
                     quote =
@@ -154,7 +154,7 @@ namespace NadekoBot.Modules.Utility
 
                 int isint = -1;
 
-                if (Int32.TryParse(keyword, out isint))
+                if (int.TryParse(keyword, out isint))
                     return;
 
                 keyword = keyword.ToUpperInvariant();
