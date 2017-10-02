@@ -132,10 +132,10 @@ namespace NadekoBot.Extensions
         public static string ToJson<T>(this T any, Formatting formatting = Formatting.Indented) =>
             JsonConvert.SerializeObject(any, formatting);
 
-        public static Stream ToStream(this ImageSharp.Image<Rgba32> img)
+        public static MemoryStream ToStream(this ImageSharp.Image<Rgba32> img)
         {
             var imageStream = new MemoryStream();
-            img.SaveAsPng(imageStream);
+            img.SaveAsPng(imageStream, new ImageSharp.Formats.PngEncoder() { CompressionLevel = 9});
             imageStream.Position = 0;
             return imageStream;
         }

@@ -2,6 +2,10 @@
 {
     public enum BotConfigEditType
     {
+        BetflipMultiplier,
+        Betroll100Multiplier,
+        Betroll67Multiplier,
+        Betroll91Multiplier,
         CurrencyGenerationChance,
         CurrencyGenerationCooldown,
         CurrencyName,
@@ -13,6 +17,8 @@
         CurrencyDropAmountMax,
         MinimumBetAmount,
         TriviaCurrencyReward,
+        XpPerMessage,
+        XpMinutesTimeout,
         
         //ErrorColor, //after i fix the nadekobot.cs static variables
         //OkColor
