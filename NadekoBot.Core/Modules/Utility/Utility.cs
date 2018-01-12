@@ -70,7 +70,7 @@ namespace NadekoBot.Modules.Utility
             }
             var rng = new NadekoRandom();
             var arr = await Task.Run(() => socketGuild.Users
-                    .Where(u => u.Game?.Name?.ToUpperInvariant() == game)
+                    .Where(u => u.Activity?.Name?.ToUpperInvariant() == game)
                     .Select(u => u.Username)
                     .OrderBy(x => rng.Next())
                     .Take(60)
@@ -106,22 +106,16 @@ namespace NadekoBot.Modules.Utility
             }, roleUsers.Length, 20).ConfigureAwait(false);
         }
 
-        [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        public async Task reverse([Remainder] string arg = null)
-        {
-            char[] arr = arg.ToCharArray();
-            Array.Reverse(arr);
-            await Context.Channel.SendConfirmAsync(new string(arr));
-        }
+        public enum MeOrBot { Me, Bot }
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
-        public async Task CheckMyPerms()
+        public async Task CheckPerms(MeOrBot who = MeOrBot.Me)
         {
-
             StringBuilder builder = new StringBuilder();
-            var user = (IGuildUser) Context.User;
+            var user = who == MeOrBot.Me
+                ? (IGuildUser)Context.User
+                : ((SocketGuild)Context.Guild).CurrentUser;
             var perms = user.GetPermissions((ITextChannel)Context.Channel);
             foreach (var p in perms.GetType().GetProperties().Where(p => !p.GetGetMethod().GetParameters().Any()))
             {

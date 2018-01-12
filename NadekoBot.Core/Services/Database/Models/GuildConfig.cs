@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NadekoBot.Common.Collections;
+using System;
 using System.Collections.Generic;
 
 namespace NadekoBot.Core.Services.Database.Models
@@ -10,6 +11,7 @@ namespace NadekoBot.Core.Services.Database.Models
         public string Prefix { get; set; } = null;
 
         public bool DeleteMessageOnCommand { get; set; }
+        public HashSet<DelMsgOnCmdChannel> DelMsgOnCmdChannels { get; set; } = new HashSet<DelMsgOnCmdChannel>();
         public ulong AutoAssignRoleId { get; set; }
         //greet stuff
         public bool AutoDeleteGreetMessages { get; set; } //unused
@@ -92,8 +94,25 @@ namespace NadekoBot.Core.Services.Database.Models
         public XpSettings XpSettings { get; set; }
         public List<FeedSub> FeedSubs { get; set; } = new List<FeedSub>();
         public bool AutoDcFromVc { get; set; }
+        public MusicSettings MusicSettings { get; set; } = new MusicSettings();
+        public IndexedCollection<ReactionRoleMessage> ReactionRoleMessages { get; set; } = new IndexedCollection<ReactionRoleMessage>();
+    }
 
-        //public List<ProtectionIgnoredChannel> ProtectionIgnoredChannels { get; set; } = new List<ProtectionIgnoredChannel>();
+    public class DelMsgOnCmdChannel : DbEntity
+    {
+        public ulong ChannelId { get; set; }
+        public bool State { get; set; }
+
+        public override int GetHashCode()
+        {
+            return ChannelId.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DelMsgOnCmdChannel x
+                && x.ChannelId == ChannelId;
+        }
     }
 
     public class NsfwBlacklitedTag : DbEntity

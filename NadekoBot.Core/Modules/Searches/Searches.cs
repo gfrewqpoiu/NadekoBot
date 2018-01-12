@@ -69,22 +69,12 @@ namespace NadekoBot.Modules.Searches
 
             if (nearest != null)
             {
-                //wrap this into some class, ther'es the same code in execsql too
-                var msg = await Context.Channel.EmbedAsync(new EmbedBuilder()
-                        .WithOkColor()
+                var embed = new EmbedBuilder()
                         .WithTitle(GetText("crypto_not_found"))
-                        .WithDescription(GetText("did_you_mean", Format.Bold($"{crypto.Name} ({crypto.Symbol})")))
-                        .WithFooter("Y/n")).ConfigureAwait(false);
+                        .WithDescription(GetText("did_you_mean", Format.Bold($"{crypto.Name} ({crypto.Symbol})")));
 
-                var input = await GetUserInputAsync(Context.User.Id, Context.Channel.Id);
-                input = input?.ToLowerInvariant().ToString();
-
-                if (input != "yes" && input != "y")
-                {
-                    var __ = msg.DeleteAsync();
+                if (!await PromptUserConfirmAsync(embed))
                     return;
-                }
-                var _ = msg.DeleteAsync();
             }
 
             await Context.Channel.EmbedAsync(new EmbedBuilder()
@@ -122,7 +112,7 @@ namespace NadekoBot.Modules.Searches
                 return;
 
             var rep = new ReplacementBuilder()
-                        .WithDefault(Context.User, Context.Channel, Context.Guild, (DiscordSocketClient)Context.Client)
+                        .WithDefault(Context.User, Context.Channel, (SocketGuild)Context.Guild, (DiscordSocketClient)Context.Client)
                         .Build();
 
             if (CREmbed.TryParse(message, out var embedData))
@@ -153,25 +143,34 @@ namespace NadekoBot.Modules.Searches
             if (string.IsNullOrWhiteSpace(query))
                 return;
 
+            var embed = new EmbedBuilder();
             string response;
-            response = await _service.Http.GetStringAsync($"http://api.openweathermap.org/data/2.5/weather?q={query}&appid=42cd627dd60debf25a5739e50a217d74&units=metric").ConfigureAwait(false);
+            try
+            {
+                response = await _service.Http.GetStringAsync($"http://api.openweathermap.org/data/2.5/weather?q={query}&appid=42cd627dd60debf25a5739e50a217d74&units=metric").ConfigureAwait(false);
 
-            var data = JsonConvert.DeserializeObject<WeatherData>(response);
+                var data = JsonConvert.DeserializeObject<WeatherData>(response);
 
-            Func<double, double> f = StandardConversions.CelsiusToFahrenheit;
+                Func<double, double> f = StandardConversions.CelsiusToFahrenheit;
 
-            var embed = new EmbedBuilder()
-                .AddField(fb => fb.WithName("🌍 " + Format.Bold(GetText("location"))).WithValue($"[{data.Name + ", " + data.Sys.Country}](https://openweathermap.org/city/{data.Id})").WithIsInline(true))
-                .AddField(fb => fb.WithName("📏 " + Format.Bold(GetText("latlong"))).WithValue($"{data.Coord.Lat}, {data.Coord.Lon}").WithIsInline(true))
-                .AddField(fb => fb.WithName("☁ " + Format.Bold(GetText("condition"))).WithValue(string.Join(", ", data.Weather.Select(w => w.Main))).WithIsInline(true))
-                .AddField(fb => fb.WithName("😓 " + Format.Bold(GetText("humidity"))).WithValue($"{data.Main.Humidity}%").WithIsInline(true))
-                .AddField(fb => fb.WithName("💨 " + Format.Bold(GetText("wind_speed"))).WithValue(data.Wind.Speed + " m/s").WithIsInline(true))
-                .AddField(fb => fb.WithName("🌡 " + Format.Bold(GetText("temperature"))).WithValue($"{data.Main.Temp:F1}°C / {f(data.Main.Temp):F1}°F").WithIsInline(true))
-                .AddField(fb => fb.WithName("🔆 " + Format.Bold(GetText("min_max"))).WithValue($"{data.Main.TempMin:F1}°C - {data.Main.TempMax:F1}°C\n{f(data.Main.TempMin):F1}°F - {f(data.Main.TempMax):F1}°F").WithIsInline(true))
-                .AddField(fb => fb.WithName("🌄 " + Format.Bold(GetText("sunrise"))).WithValue($"{data.Sys.Sunrise.ToUnixTimestamp():HH:mm} UTC").WithIsInline(true))
-                .AddField(fb => fb.WithName("🌇 " + Format.Bold(GetText("sunset"))).WithValue($"{data.Sys.Sunset.ToUnixTimestamp():HH:mm} UTC").WithIsInline(true))
-                .WithOkColor()
-                .WithFooter(efb => efb.WithText("Powered by openweathermap.org").WithIconUrl($"http://openweathermap.org/img/w/{data.Weather[0].Icon}.png"));
+                embed
+                    .AddField(fb => fb.WithName("🌍 " + Format.Bold(GetText("location"))).WithValue($"[{data.Name + ", " + data.Sys.Country}](https://openweathermap.org/city/{data.Id})").WithIsInline(true))
+                    .AddField(fb => fb.WithName("📏 " + Format.Bold(GetText("latlong"))).WithValue($"{data.Coord.Lat}, {data.Coord.Lon}").WithIsInline(true))
+                    .AddField(fb => fb.WithName("☁ " + Format.Bold(GetText("condition"))).WithValue(string.Join(", ", data.Weather.Select(w => w.Main))).WithIsInline(true))
+                    .AddField(fb => fb.WithName("😓 " + Format.Bold(GetText("humidity"))).WithValue($"{data.Main.Humidity}%").WithIsInline(true))
+                    .AddField(fb => fb.WithName("💨 " + Format.Bold(GetText("wind_speed"))).WithValue(data.Wind.Speed + " m/s").WithIsInline(true))
+                    .AddField(fb => fb.WithName("🌡 " + Format.Bold(GetText("temperature"))).WithValue($"{data.Main.Temp:F1}°C / {f(data.Main.Temp):F1}°F").WithIsInline(true))
+                    .AddField(fb => fb.WithName("🔆 " + Format.Bold(GetText("min_max"))).WithValue($"{data.Main.TempMin:F1}°C - {data.Main.TempMax:F1}°C\n{f(data.Main.TempMin):F1}°F - {f(data.Main.TempMax):F1}°F").WithIsInline(true))
+                    .AddField(fb => fb.WithName("🌄 " + Format.Bold(GetText("sunrise"))).WithValue($"{data.Sys.Sunrise.ToUnixTimestamp():HH:mm} UTC").WithIsInline(true))
+                    .AddField(fb => fb.WithName("🌇 " + Format.Bold(GetText("sunset"))).WithValue($"{data.Sys.Sunset.ToUnixTimestamp():HH:mm} UTC").WithIsInline(true))
+                    .WithOkColor()
+                    .WithFooter(efb => efb.WithText("Powered by openweathermap.org").WithIconUrl($"http://openweathermap.org/img/w/{data.Weather[0].Icon}.png"));
+            }
+            catch
+            {
+                embed.WithDescription(GetText("city_not_found"))
+                    .WithErrorColor();
+            }
             await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
         }
 
@@ -388,7 +387,7 @@ namespace NadekoBot.Modules.Searches
 
             terms = WebUtility.UrlEncode(terms).Replace(' ', '+');
 
-            var fullQueryLink = $"https://www.google.com/search?q={ terms }&gws_rd=cr,ssl";
+            var fullQueryLink = $"https://www.google.ca/search?q={ terms }&gws_rd=cr,ssl";
             var config = Configuration.Default.WithDefaultLoader();
             var document = await BrowsingContext.New(config).OpenAsync(fullQueryLink);
 
@@ -426,9 +425,11 @@ namespace NadekoBot.Modules.Searches
                 .WithFooter(efb => efb.WithText(totalResults));
 
             var desc = await Task.WhenAll(results.Select(async res =>
-                    $"[{Format.Bold(res?.Title)}]({(await _google.ShortenUrl(res?.Link))})\n{res?.Text}\n\n"))
+                    $"[{Format.Bold(res?.Title)}]({(await _google.ShortenUrl(res?.Link))})\n{res?.Text?.TrimTo(400 - res.Value.Title.Length - res.Value.Link.Length)}\n\n"))
                 .ConfigureAwait(false);
-            await Context.Channel.EmbedAsync(embed.WithDescription(string.Concat(desc))).ConfigureAwait(false);
+            var descStr = string.Concat(desc);
+            _log.Info(descStr.Length);
+            await Context.Channel.EmbedAsync(embed.WithDescription(descStr)).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]

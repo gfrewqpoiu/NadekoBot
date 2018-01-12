@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Modules.Games.Common;
 using NadekoBot.Modules.Games.Services;
+using NadekoBot.Core.Common;
 
 namespace NadekoBot.Modules.Games
 {
@@ -28,11 +29,13 @@ namespace NadekoBot.Modules.Games
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
-            public async Task TypeStart()
+            [NadekoOptions(typeof(TypingGame.Options))]
+            public async Task TypeStart(params string[] args)
             {
+                var (options, _) = OptionsParser.Default.ParseFrom(new TypingGame.Options(), args);
                 var channel = (ITextChannel)Context.Channel;
 
-                var game = _service.RunningContests.GetOrAdd(channel.Guild.Id, id => new TypingGame(_games, _client, channel, Prefix));
+                var game = _service.RunningContests.GetOrAdd(channel.Guild.Id, id => new TypingGame(_games, _client, channel, Prefix, options));
 
                 if (game.IsActive)
                 {
@@ -109,7 +112,7 @@ namespace NadekoBot.Modules.Games
 
                 var removed = _games.TypingArticles[index];
                 _games.TypingArticles.RemoveAt(index);
-
+                
                 File.WriteAllText(_games.TypingArticlesPath, JsonConvert.SerializeObject(_games.TypingArticles));
 
                 await channel.SendConfirmAsync($"`Removed typing article:` #{index + 1} - {removed.Text.TrimTo(50)}")

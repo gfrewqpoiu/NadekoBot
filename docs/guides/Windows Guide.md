@@ -2,7 +2,7 @@
 
 #### Prerequisites 
 - [Notepad++][Notepad++] (or some other decent text editor)
-- Windows 8 or later
+- Windows 8 or later, 64 bit. If you have Windows 7, use the [Docker Guide](https://nadekobot.readthedocs.io/en/latest/guides/Docker%20Guide/). If you have a 32 bit Windows machine, use the [From Source](https://nadekobot.readthedocs.io/en/latest/guides/From%20Source/) guide.   
 - [Create Discord Bot application](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#creating-discord-bot-application) and [Invite the bot to your server](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#inviting-your-bot-to-your-server). 
 
 #### Guide 
@@ -11,7 +11,7 @@
 - Press **`Install ffmpeg`** and **`Install youtube-dl`** if you want music features.  
 ***NOTE:** RESTART YOUR PC IF YOU DO.*
 - Press **`Update`** and go through the installation wizard.			
-***NOTE:** If you're upgrading from 1.3, DO NOT select your old nadekobot folder. Install it in a separate directory and read the [upgrading guide](http://nadekobot.readthedocs.io/en/latest/guides/Upgrading%20Guide/).*
+***NOTE:** If you're upgrading from 1.3, DO NOT select your old nadekobot folder.*
 - When installation is finished, make sure **`Open credentials.json`** is checked. 			
 ***NOTE:** Make sure to open it with Notepad++ or some other decent text editor.*
 - [Set up credentials.json](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#setting-up-credentialsjson-file) file.
