@@ -63,9 +63,9 @@ namespace NadekoBot.Modules.Gambling
                         await ReplyErrorLocalized("not_enough", _bc.BotConfig.CurrencySign).ConfigureAwait(false);
                         return;
                     }
-                    bj.Start();
                     bj.StateUpdated += Bj_StateUpdated;
                     bj.GameEnded += Bj_GameEnded;
+                    bj.Start();
 
                     await ReplyConfirmLocalized("bj_created").ConfigureAwait(false);
                 }
@@ -73,6 +73,10 @@ namespace NadekoBot.Modules.Gambling
                 {
                     if(bj.Join(Context.User, amount))
                         await ReplyConfirmLocalized("bj_joined").ConfigureAwait(false);
+                    else
+                    {
+                        _log.Info($"{Context.User} can't join a blackjack game as it's in " + bj.State.ToString() + " state already.");
+                    }
                 }
 
                 await Context.Message.DeleteAsync();
@@ -94,12 +98,23 @@ namespace NadekoBot.Modules.Gambling
                     }
 
                     var c = bj.Dealer.Cards.Select(x => x.GetEmojiString());
+                    var dealerIcon = "❔ ";
+                    if (bj.State == Blackjack.GameState.Ended)
+                    {
+                        if (bj.Dealer.GetHandValue() == 21)
+                            dealerIcon = "💰 ";
+                        else if (bj.Dealer.GetHandValue() > 21)
+                            dealerIcon = "💥 ";
+                        else
+                            dealerIcon = "🏁 ";
+                    }
+
                     var cStr = string.Concat(c.Select(x => x.Substring(0, x.Length - 1) + " "));
                     cStr += "\n" + string.Concat(c.Select(x => x.Last() + " "));
                     var embed = new EmbedBuilder()
                         .WithOkColor()
                         .WithTitle("BlackJack")
-                        .AddField($"Dealer's Hand", cStr);
+                        .AddField($"{dealerIcon} Dealer's Hand | Value: {bj.Dealer.GetHandValue()}", cStr);
 
                     if (bj.CurrentUser != null)
                     {
@@ -111,7 +126,7 @@ namespace NadekoBot.Modules.Gambling
                         c = p.Cards.Select(x => x.GetEmojiString());
                         cStr = "-\t" + string.Concat(c.Select(x => x.Substring(0, x.Length - 1) + " "));
                         cStr += "\n-\t" + string.Concat(c.Select(x => x.Last() + " "));
-                        var full = $"{p.DiscordUser.ToString().TrimTo(20)} | Bet: {p.Bet}";
+                        var full = $"{p.DiscordUser.ToString().TrimTo(20)} | Bet: {p.Bet} | Value: {p.GetHandValue()}";
                         if (bj.State == Blackjack.GameState.Ended)
                         {
                             if (p.State == User.UserState.Lost)
@@ -155,19 +170,17 @@ namespace NadekoBot.Modules.Gambling
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
-            public Task Hit() => BlackJack(BjAction.Hit);
+            public Task Hit() => InternalBlackJack(BjAction.Hit);
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
-            public Task Stand() => BlackJack(BjAction.Stand);
+            public Task Stand() => InternalBlackJack(BjAction.Stand);
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
-            public Task Double() => BlackJack(BjAction.Double);
-
-            [NadekoCommand, Usage, Description, Aliases]
-            [RequireContext(ContextType.Guild)]
-            public async Task BlackJack(BjAction a)
+            public Task Double() => InternalBlackJack(BjAction.Double);
+            
+            public async Task InternalBlackJack(BjAction a)
             {
                 if (!_service.Games.TryGetValue(Context.Channel.Id, out var bj))
                     return;

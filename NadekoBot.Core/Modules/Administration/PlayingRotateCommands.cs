@@ -7,6 +7,7 @@ using NadekoBot.Common.Attributes;
 using NadekoBot.Modules.Administration.Services;
 using Microsoft.EntityFrameworkCore;
 using NadekoBot.Core.Common;
+using Discord;
 
 namespace NadekoBot.Modules.Administration
 {
@@ -17,10 +18,12 @@ namespace NadekoBot.Modules.Administration
         {
             private static readonly object _locker = new object();
             private readonly DbService _db;
+            private readonly IBotConfigProvider _bcp;
 
-            public PlayingRotateCommands(DbService db)
+            public PlayingRotateCommands(DbService db, IBotConfigProvider bcp)
             {
                 _db = db;
+                _bcp = bcp;
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -43,7 +46,7 @@ namespace NadekoBot.Modules.Administration
 
             [NadekoCommand, Usage, Description, Aliases]
             [OwnerOnly]
-            public async Task AddPlaying(PlayingType t,[Remainder] string status)
+            public async Task AddPlaying(ActivityType t,[Remainder] string status)
             {
                 using (var uow = _db.UnitOfWork)
                 {
@@ -52,6 +55,8 @@ namespace NadekoBot.Modules.Administration
                     config.RotatingStatusMessages.Add(toAdd);
                     await uow.CompleteAsync();
                 }
+
+                _bcp.Reload();
 
                 await ReplyConfirmLocalized("ropl_added").ConfigureAwait(false);
             }
@@ -89,6 +94,8 @@ namespace NadekoBot.Modules.Administration
                     config.RotatingStatusMessages.RemoveAt(index);
                     await uow.CompleteAsync();
                 }
+
+                _bcp.Reload();
                 await ReplyConfirmLocalized("reprm", msg).ConfigureAwait(false);
             }
         }

@@ -1,3 +1,4 @@
+
 {
   "h": {
     "Cmd": "help h",
@@ -140,7 +141,7 @@
   },
   "addplaying": {
     "Cmd": "addplaying adpl",
-    "Desc": "Adds a specified string to the list of playing strings to rotate. You have to pick either 'Playing', 'Watching' or 'ListeningTo' as the first parameter. Supported placeholders: `%servers%`, `%users%`, `%playing%`, `%queued%`, `%time%`, `%shardid%`, `%shardcount%`, `%shardguilds%`.",
+    "Desc": "Adds a specified string to the list of playing strings to rotate. You have to pick either 'Playing', 'Watching' or 'Listening' as the first parameter. Supported placeholders: `%servers%`, `%users%`, `%playing%`, `%queued%`, `%time%`, `%shardid%`, `%shardcount%`, `%shardguilds%`.",
     "Usage": [
       "{0}adpl Playing with you",
       "{0}adpl Watching you sleep"
@@ -493,11 +494,11 @@
   },
   "setgame": {
     "Cmd": "setgame",
-    "Desc": "Sets the bots game status to either Playing, ListeningTo, or Watching.",
+    "Desc": "Sets the bots game status to either Playing, Listening, or Watching.",
     "Usage": [
       "{0}setgame Playing with snakes.",
       "{0}setgame Watching anime.",
-      "{0}setgame ListeningTo music."
+      "{0}setgame Listening music."
     ]
   },
   "send": {
@@ -2785,7 +2786,7 @@
   },
   "prefix": {
     "Cmd": "prefix",
-    "Desc": "Sets this server's prefix for all bot commands. Provide no arguments to see the current server prefix.",
+    "Desc": "Sets this server's prefix for all bot commands. Provide no arguments to see the current server prefix. **Setting prefix requires Administrator server permission.**",
     "Usage": [
       "{0}prefix +"
     ]
