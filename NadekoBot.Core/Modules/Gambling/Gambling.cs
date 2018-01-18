@@ -469,8 +469,8 @@ namespace NadekoBot.Modules.Gambling
                 else
                 {
                     str += "Bad luck, here have a consolation flower";
-                    await _currency.AddAsync(Context.User, "Betroll Consolation",
-                        (int) (1), false).ConfigureAwait(false);
+                    await _cs.AddAsync(Context.User, "Betroll Consolation",
+                        (int) (1), false, gamble: true).ConfigureAwait(false);
                 }
             }
             else if (rnd < 67)
