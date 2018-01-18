@@ -9,6 +9,7 @@ Some features have their own specific placeholders which are noted in that featu
 - `%shardid%` - Shard id
 - `%server%` - Server name  
 - `%sid%` - Server Id  
+- `%members%` - Number of members in the guild
 - `%channel%` - Channel mention  
 - `%chname%` - Channel mention
 - `%cid%` - Channel Id  
@@ -19,7 +20,8 @@ Some features have their own specific placeholders which are noted in that featu
 - `%rngX-Y%` - Replace X and Y with the range (for example `%rng5-10%` - random between 5 and 10)
 - `%time%` - Bot time
 - `%server_time%` - Time on this server, set with `.timezone` command
+- `%target%` - Used only in custom reactions, it shows the part of the message after the trigger
 
-**If you're using placeholders in embeds, don't use %user% and  in titles, footers and field names. They will not show properly.**
+**If you're using placeholders in embeds, don't use %user% and %mention% in titles, footers and field names. They will not show properly.**
 
 ![img](http://i.imgur.com/lNNNfs1.png)

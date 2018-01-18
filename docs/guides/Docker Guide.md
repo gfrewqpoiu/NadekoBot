@@ -1,60 +1,105 @@
-# NadekoBot a Discord bot 
-Nadeko is written in C# and Discord.net for more information visit <https://github.com/Kwoth/NadekoBot>
+# Setting up NadekoBot on Docker
+Nadeko is written in C# and Discord.Net for more information visit <https://github.com/Kwoth/NadekoBot>
 
-## Install Docker
-Follow the respective guide for your operating system found here [Docker Engine Install Guide](https://docs.docker.com/engine/installation/)
+## Before you start ...
 
-## Nadeko Setup Guide
-For this guide we will be using the folder /nadeko as our config root folder.
+... If your PC falls under any of the following cases, please grab Docker Toolbox instead.
 
-```bash
-docker create --name=nadeko -v /nadeko/conf/:/root/nadeko -v /nadeko/data:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp1.1/data uirel/nadeko:1.4
-```
--If you are coming from a previous version of nadeko (the old docker) make sure your credentials.json has been copied into this directory and is the only thing in this folder. 
+For Windows [[Download Link](https://download.docker.com/win/stable/DockerToolbox.exe)]
+- Any Windows version without Hyper-V Support
+- Windows 10 Home Edition
+- Windows 8 and earlier
 
--If you are making a fresh install, create your credentials.json from the following guide and place it in the /nadeko folder [Nadeko JSON Guide](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/)
+For Mac [[Download Link](https://download.docker.com/mac/stable/DockerToolbox.pkg)]
+- Any version between 10.8 “Mountain Lion” and 10.10.2 "Yosemite"
 
-Next start the docker up with 
+## Prerequisites
+- [Docker](https://store.docker.com/search?type=edition&offering=community) or [Docker Toolbox](https://www.docker.com/products/docker-toolbox).
+- [Create Discord Bot application](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#creating-discord-bot-application) and [Invite the bot to your server](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#inviting-your-bot-to-your-server). 
+- Have your [credentials.json](http://nadekobot.readthedocs.io/en/latest/JSON%20Explanations/#setting-up-your-credentials) in your home folder. To go to your home folder on ...
+- Linux: **cd ~**
+- Mac: **⌘ + Shift + H**
+- Windows: Enter **%userprofile%** in your address bar
 
-`docker start nadeko; docker logs -f nadeko`
+## Fool-proof Quick start guide - Just want to get things working
 
-The docker will start and the log file will start scrolling past. Depending on hardware the bot start can take up to 5 minutes on a small DigitalOcean droplet.
-Once the log ends with "NadekoBot | Starting NadekoBot v1.0-rc2" the bot is ready and can be invited to your server. Ctrl+C at this point to stop viewing the logs.
-
-After a few moments you should be able to invite Nadeko to your server. If you cannot check the log file for errors. 
-
-## Monitoring
-
-* Monitor the logs of the container in realtime `docker logs -f nadeko`.
-
-## Updates
-
-# Manual
-Updates are handled by pulling the new layer of the Docker Container which contains a pre compiled update to Nadeko.
-The following commands are required for the default options
-
-`docker pull uirel/nadeko:latest`
-
-`docker stop nadeko; docker rm nadeko`
+Just copy everything down below (in one block of text), and paste it to your console, and it should perform it's magic on its own.
 
 ```
-docker create --name=nadeko -v /nadeko/conf/:/root/nadeko -v /nadeko/data:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp1.1/data uirel/nadeko:1.4
+docker pull willysunny/nadecker:latest
+docker stop nadeko
+docker cp nadeko:/root/nadeko/credentials.json credentials.json
+docker cp nadeko:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data/NadekoBot.db NadekoBot.db
+docker rm nadeko
+docker create --name=nadeko -v /nadeko/conf:/root/nadeko -v /nadeko/data/:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data willysunny/nadecker:latest
+docker cp credentials.json nadeko:/root/nadeko
+docker cp NadekoBot.db nadeko:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data/NadekoBot.db
+docker start -a nadeko
 ```
 
-`docker start nadeko`
+First time install might encounter a few errors along the way (Namely step 2, 3, 4, 5, 8), this is to be expected, as you do not have the settings/files set up.
 
+## Step-by-step Explanation
 
-# Automatic Updates
-Automatic update are now handled by watchertower [WatchTower GitHub](https://github.com/CenturyLinkLabs/watchtower)
-To setup watchtower to keep Nadeko up-to-date for you with the default settings use the following command
+### 1. Grabbing the latest build
 
-```bash
-docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock centurylink/watchtower --cleanup nadeko
-```
+**Command:** `docker pull willysunny/nadecker:latest`
 
-This will check for updates to the docker every 5 minutes and update immediately. Alternatively using the `--interval X` command to change the interval, where X is the amount of time in seconds to wait. eg 21600 for 6 hours.
+This will grab the latest Nadeko Docker image file from the internet and get ready to be used later.
 
+### 2. Stopping any existing Nadekobot container
 
-If you have any issues with the docker setup, please ask in #help but indicate you are using the docker.
+**Command:** `docker stop nadeko`
 
-For information about configuring your bot or its functionality, please check the <http://nadekobot.readthedocs.io/en/latest> guides.
+This will stop previously running docker container (if exist)
+
+### 3. Backup your credentials.json file
+
+**Command:** `docker cp nadeko:/root/nadeko/credentials.json credentials.json`
+
+Technically speaking, you do not need to run this. But for the sake of fool-proof, this would make a copy of the credentials.json from the docker container and put it to your home folder.
+
+### 4. Backup your NadekoBot.db file
+
+**Command:** `docker cp nadeko:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data/NadekoBot.db NadekoBot.db`
+
+Again, you most likely do not need to run this. But for the sake of fool-proof, this would make a copy of the NadekoBot.db from the docker container and put it to your home folder.
+
+### 5. Remove the current NadekoBot container
+
+**Command:** `docker rm nadeko`
+
+This will delete the bot container, along with any of its settings inside. (That's why we made the backup of the two important files above)
+
+### 6. Creating a new NadekoBot container with updated files
+
+**Command:** `docker create --name=nadeko -v /nadeko/conf:/root/nadeko -v /nadeko/data/:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data willysunny/nadecker:latest`
+
+This command will build a new nadekobot container based on the files we've pulled from **__Step 1__**.
+
+And it will link two folders from your local drive and store the data within. Namely your **__credentials.json__**, which is saved under **__/nadeko/conf__**,  and **__NadekoBot.db__**, which is saved under **__/nadeko/data__**.
+
+However, in the case if you did not create the folders before hand, or if you were using Windows and did not set up permission right, no files will be generated. (This is why there's the fool-proof steps 3, 4, 7 and 8)
+
+### 7. Copy credentials.json file back into the container
+
+**Command:** `docker cp credentials.json nadeko:/root/nadeko`
+
+Technically speaking, if the file exists in /nadeko/conf, then you do not need to run this. But for the sake of fool-proof, this command makes a copy of the credentials.json from your home folder and it'll be placed in the docker container.
+
+### 8. Copy NadekoBot.db database back into the container
+
+**Command:** `docker cp NadekoBot.db nadeko:/opt/NadekoBot/src/NadekoBot/bin/Release/netcoreapp2.0/data/NadekoBot.db`
+
+As I've been saying, this is yet another redundent step, just to make the whole thing fool-proof. This command copies the database with all the user info (such as the currency, experience, level, waifus, etc) and put it into the container.
+
+### 9. Start the bot!
+
+**Command:** `docker start -a nadeko`
+
+This would start the bot and attach the output of the bot on screen, similiar to you running `docker logs -f nadeko` after the bot has started.
+
+### Additional Info
+If you have any issues with the docker setup, please ask in #help channel on our [Discord server](https://discordapp.com/invite/nadekobot) but indicate you are using the docker.
+
+For information about configuring your bot or its functionality, please check the [documentation](http://nadekobot.readthedocs.io/en/latest).

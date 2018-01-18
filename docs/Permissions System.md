@@ -3,8 +3,6 @@ Permissions Overview
 Have you ever felt confused or even overwhelmed when trying to set Nadeko's permissions? In this guide we will be explaining how to use the 
 permission commands correctly and even cover a few common questions! Every command we discuss here can be found in the [Commands List](http://nadekobot.readthedocs.io/en/latest/Commands%20List/#permissions).
 
-**To see the guide, [click here](http://nadekobot.readthedocs.io/en/latest/Permissions%20System/)**
-
 Why do we use the Permissions Commands?
 ------------------------------
 Permissions are very handy at setting who can use what commands in a server. By default, the NSFW module is blocked, but nothing else is. If something is a bot owner only command, it can only be ran by the bot owner, the person who is running the bot, or has their ID in [`credentials.json`](http://nadekobot.readthedocs.io/en/1.0/JSON%20Explanations/ "Setting up your credentials"). 
@@ -16,10 +14,9 @@ With the permissions system it possible to restrict who can skip the current son
 First Time Setup
 ------------------
 To change permissions you **must** meet the following requirements:
+**Be the owner of the server.**
 
-**Be the owner of the server**
-
-**If you are NOT the server owner, get the role specified by `.permrole` (By default, this is Nadeko)**
+**If you are NOT the server owner, get the role specified by `.permrole` (By default, this is Nadeko).**
 
 If you have an existing role called `Nadeko` but can't assign it to yourself, create a new role called `Nadeko` and assign that to yourself.
 ![img0](https://i.imgur.com/5QKZqqy.gif)
@@ -28,7 +25,7 @@ If you would like to set a different role, such as `Admins`, to be the role requ
 
 Basics & Hierarchy
 -----
-The [Commands List](http://nadekobot.readthedocs.io/en/1.0/Commands%20List/#permissions) is a great resource which lists **all** the available commands, however we'll go over a few commands here.
+The [Commands List](http://nadekobot.readthedocs.io/en/latest/Commands%20List/#permissions) is a great resource which lists **all** the available commands, however we'll go over a few commands here.
 
 Firstly, let's explain how the permissions system works - It's simple once you figure out how each command works!
 The permissions system works as a chain, everytime a command is used, the permissions chain is checked. Starting from the top of the chain, the command is compared to a rule, if it isn't either allowed or disallowed by that rule it proceeds to check the next rule all the way till it reaches the bottom rule, which allows all commands.
