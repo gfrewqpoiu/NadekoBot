@@ -14,7 +14,6 @@ With the permissions system it possible to restrict who can skip the current son
 First Time Setup
 ------------------
 To change permissions you **must** meet the following requirements:
-
 **Be the owner of the server.**
 
 **If you are NOT the server owner, get the role specified by `.permrole` (By default, this is Nadeko).**
