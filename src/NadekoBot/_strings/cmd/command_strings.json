@@ -221,9 +221,10 @@
   },
   "lsar": {
     "Cmd": "lsar",
-    "Desc": "Lists all self-assignable roles.",
+    "Desc": "Lists self-assignable roles. Shows 20 roles per page.",
     "Usage": [
-      "{0}lsar"
+      "{0}lsar",
+      "{0}lsar 2"
     ]
   },
   "tesar": {
@@ -1107,8 +1108,9 @@
   },
   "rps": {
     "Cmd": "rps",
-    "Desc": "Play a game of Rocket-Paperclip-Scissors with Nadeko.",
+    "Desc": "Play a game of Rocket-Paperclip-Scissors with Nadeko. You can bet on it. Multiplier is the same as on betflip.",
     "Usage": [
+      "{0}rps r 100",
       "{0}rps scissors"
     ]
   },
@@ -1405,12 +1407,19 @@
       "{0}mixer SomeStreamer"
     ]
   },
-  "removestream": {
-    "Cmd": "removestream rms",
-    "Desc": "Removes notifications of a certain streamer from a certain platform on this channel.",
+  "streamremove": {
+    "Cmd": "streamremove strm",
+    "Desc": "Removes notifications of a specified stream on the specified platform on this channel. You can also just specify an url.",
     "Usage": [
-      "{0}rms Twitch SomeGuy",
-      "{0}rms mixer SomeOtherGuy"
+      "{0}strm Twitch SomeGuy",
+      "{0}strm twitch.tv/someguy"
+    ]
+  },
+  "streamadd": {
+    "Cmd": "streamadd stadd",
+    "Desc": "Notifies this channel when the user's stream on the specified URL goes online or offline.",
+    "Usage": [
+      "{0}strm twitch.tv/someguy"
     ]
   },
   "liststreams": {
@@ -1660,10 +1669,11 @@
     ]
   },
   "color": {
-    "Cmd": "color",
-    "Desc": "Shows you what color corresponds to that hex.",
+    "Cmd": "color clr",
+    "Desc": "Shows you which colors correspond to the inputed hexes.",
     "Usage": [
-      "{0}color 00ff00"
+      "{0}color 00ff00",
+      "{0}color f00 0f0 00f"
     ]
   },
   "videocall": {
@@ -2316,11 +2326,12 @@
       "{0}cmdcost 1 {0}8ball"
     ]
   },
-  "startevent": {
-    "Cmd": "startevent",
-    "Desc": "Starts one of the events seen on public nadeko. `reaction` and `sneakygamestatus` are the only 2 available now.",
+  "eventstart": {
+    "Cmd": "eventstart",
+    "Desc": "Starts one of the events seen on public nadeko. Events: `reaction`",
     "Usage": [
-      "{0}startevent reaction"
+      "{0}eventstart reaction",
+      "{0}eventstart reaction -d 1 -a 50 --pot-size 1500"
     ]
   },
   "slotstats": {
@@ -2648,8 +2659,9 @@
   },
   "warnclear": {
     "Cmd": "warnclear warnc",
-    "Desc": "Clears all warnings from a certain user.",
+    "Desc": "Clears all warnings from a certain user. You can specify a number to clear a specific one.",
     "Usage": [
+      "{0}warnclear @PoorDude 3",
       "{0}warnclear @PoorDude"
     ]
   },
