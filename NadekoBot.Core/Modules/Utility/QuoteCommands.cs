@@ -59,15 +59,11 @@ namespace NadekoBot.Modules.Utility
             {
                 if (string.IsNullOrWhiteSpace(keyword))
                     return;
-                int id = -1;
                 keyword = keyword.ToUpperInvariant();
 
                 Quote quote;
                 using (var uow = _db.UnitOfWork)
-                {if (System.Int32.TryParse(keyword, out id))
-                    quote = uow.Quotes.Get(id);
-                else
-                    quote =
+                {quote =
                         await uow.Quotes.GetRandomQuoteByKeywordAsync(Context.Guild.Id, keyword);
                 }
                 if (quote == null)

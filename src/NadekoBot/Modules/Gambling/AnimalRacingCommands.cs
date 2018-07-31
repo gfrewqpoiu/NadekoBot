@@ -38,7 +38,7 @@ namespace NadekoBot.Modules.Gambling
             [NadekoOptions(typeof(RaceOptions))]
             public Task Race(params string[] args)
             {
-                var (options, success) = OptionsParser.Default.ParseFrom(new RaceOptions(), args);
+                var (options, success) = OptionsParser.ParseFrom(new RaceOptions(), args);
 
                 var ar = new AnimalRace(options, _cs, _bc.BotConfig.RaceAnimals.Shuffle().ToArray());
                 if (!_service.AnimalRaces.TryAdd(Context.Guild.Id, ar))
