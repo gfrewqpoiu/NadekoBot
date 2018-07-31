@@ -23,7 +23,8 @@ If you do not see `credentials.json` you will need to rename `credentials_exampl
   "RestartCommand": null,
   "ShardRunCommand": "",
   "ShardRunArguments": "",
-  "ShardRunPort": null
+  "ShardRunPort": null,
+  "TwitchClientId": null,
 }
 ```
 -----
@@ -159,6 +160,12 @@ It should look like:
 	- For Patreon creators only.
 - **PatreonCampaignId**
 	- For Patreon creators only. Id of your campaign.
+- **TwitchClientId**
+	- Optional. In order to avoid ratelimits that may happen if you use .twitch/.stadd function extensively.
+	- [How to get it](https://blog.twitch.tv/client-id-required-for-kraken-api-calls-afbb8e95f843)
+		- Go to [connections page](https://www.twitch.tv/settings/connections) on twitch and register you applicaiton.
+		- Once registered, find your application under Other Connections on the Connections page. Click Edit
+		- You will see your Client ID on the edit page.
 
 ##### Additional Settings
 
@@ -225,7 +232,7 @@ and that will save all the changes.
 - **ShardRunArguments**
 	- Arguments to the shard run command
 	- Required if you're sharding your bot on windows using .exe, or in a custom way. 
-	- This internally defaults to `run -c Release -- {0} {1} {2}` which will be enough to run linux and other 'from source' setups
+	- This internally defaults to `run -c Release --no-build -- {0} {1} {2}` which will be enough to run linux and other 'from source' setups
 	- {0} will be replaced by the `shard ID` of the shard being ran, {1} by the shard 0's process id, and {2} by the port shard communication is happening on
 	- If shard0 (main window) is closed, all other shards will close too
 	- For example, if you want to shard your NadekoBot which you installed using windows installer, you would want to set it to `{0} {1} {2}`

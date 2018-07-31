@@ -19,12 +19,23 @@ using Newtonsoft.Json;
 
 namespace NadekoBot.Modules.CustomReactions.Services
 {
-    public class CustomReactionsService : IEarlyBlockingExecutor, INService
+    public class CustomReactionsService : IEarlyBehavior, INService
     {
-        public CustomReaction[] GlobalReactions = new CustomReaction[] { };
-        public ConcurrentDictionary<ulong, CustomReaction[]> GuildReactions { get; } = new ConcurrentDictionary<ulong, CustomReaction[]>();
+        public enum CrField
+        {
+            AutoDelete,
+            DmResponse,
+            ContainsAnywhere,
+            Message,
+        }
+        //todo move all logic inside and this can become a property
+        public CustomReaction[] GlobalReactions = Array.Empty<CustomReaction>();
+        public ConcurrentDictionary<ulong, CustomReaction[]> GuildReactions = new ConcurrentDictionary<ulong, CustomReaction[]>();
 
         public ConcurrentDictionary<string, uint> ReactionStats { get; } = new ConcurrentDictionary<string, uint>();
+
+        public int Priority => -1;
+        public ModuleBehaviorType BehaviorType => ModuleBehaviorType.Executor;
 
         private readonly Logger _log;
         private readonly DbService _db;
@@ -34,10 +45,11 @@ namespace NadekoBot.Modules.CustomReactions.Services
         private readonly IBotConfigProvider _bc;
         private readonly NadekoStrings _strings;
         private readonly IDataCache _cache;
+        private readonly GlobalPermissionService _gperm;
 
         public CustomReactionsService(PermissionService perms, DbService db, NadekoStrings strings,
-            DiscordSocketClient client, CommandHandler cmd, IBotConfigProvider bc, IUnitOfWork uow, 
-            IDataCache cache)
+            DiscordSocketClient client, CommandHandler cmd, IBotConfigProvider bc, IUnitOfWork uow,
+            IDataCache cache, GlobalPermissionService gperm, NadekoBot bot)
         {
             _log = LogManager.GetCurrentClassLogger();
             _db = db;
@@ -47,6 +59,7 @@ namespace NadekoBot.Modules.CustomReactions.Services
             _bc = bc;
             _strings = strings;
             _cache = cache;
+            _gperm = gperm;
 
             var sub = _cache.Redis.GetSubscriber();
             sub.Subscribe(_client.CurrentUser.Id + "_gcr.added", (ch, msg) =>
@@ -61,53 +74,47 @@ namespace NadekoBot.Modules.CustomReactions.Services
             }, StackExchange.Redis.CommandFlags.FireAndForget);
             sub.Subscribe(_client.CurrentUser.Id + "_gcr.edited", (ch, msg) =>
             {
-                var obj = new { Id = 0, Message = "" };
+                var obj = new { Id = 0, Res = "", Ad = false, Dm = false, Ca = false };
                 obj = JsonConvert.DeserializeAnonymousType(msg, obj);
                 var gcr = GlobalReactions.FirstOrDefault(x => x.Id == obj.Id);
                 if (gcr != null)
-                    gcr.Response = obj.Message;
-            }, StackExchange.Redis.CommandFlags.FireAndForget);
-            sub.Subscribe(_client.CurrentUser.Id + "_crad.toggle", (ch, msg) =>
-            {
-                var obj = new { Id = 0, Value = false };
-                obj = JsonConvert.DeserializeAnonymousType(msg, obj);
-                var gcr = GlobalReactions.FirstOrDefault(x => x.Id == obj.Id);
-                if (gcr != null)
-                    gcr.AutoDeleteTrigger = obj.Value;
-            }, StackExchange.Redis.CommandFlags.FireAndForget);
-            sub.Subscribe(_client.CurrentUser.Id + "_crdm.toggle", (ch, msg) =>
-            {
-                var obj = new { Id = 0, Value = false };
-                obj = JsonConvert.DeserializeAnonymousType(msg, obj);
-                var gcr = GlobalReactions.FirstOrDefault(x => x.Id == obj.Id);
-                if(gcr != null)
-                    gcr.DmResponse = obj.Value;
-            }, StackExchange.Redis.CommandFlags.FireAndForget);
-            sub.Subscribe(_client.CurrentUser.Id + "_crca.toggle", (ch, msg) =>
-            {
-                var obj = new { Id = 0, Value = false };
-                obj = JsonConvert.DeserializeAnonymousType(msg, obj);
-                var gcr = GlobalReactions.FirstOrDefault(x => x.Id == obj.Id);
-                if (gcr != null)
-                    gcr.ContainsAnywhere = obj.Value;
+                {
+                    gcr.Response = obj.Res;
+                    gcr.AutoDeleteTrigger = obj.Ad;
+                    gcr.DmResponse = obj.Dm;
+                    gcr.ContainsAnywhere = obj.Ca;
+                }
             }, StackExchange.Redis.CommandFlags.FireAndForget);
 
+            var items = uow.CustomReactions.GetGlobalAndFor(bot.AllGuildConfigs.Select(x => x.GuildId));
 
-            var items = uow.CustomReactions.GetAll();
-
-            GuildReactions = new ConcurrentDictionary<ulong, CustomReaction[]>(items.Where(g => g.GuildId != null && g.GuildId != 0).GroupBy(k => k.GuildId.Value).ToDictionary(g => g.Key, g => g.ToArray()));
+            GuildReactions = new ConcurrentDictionary<ulong, CustomReaction[]>(items
+                .Where(g => g.GuildId != null && g.GuildId != 0)
+                .GroupBy(k => k.GuildId.Value)
+                .ToDictionary(g => g.Key, g => g.ToArray()));
             GlobalReactions = items.Where(g => g.GuildId == null || g.GuildId == 0).ToArray();
+
+            bot.JoinedGuild += Bot_JoinedGuild;
+            _client.LeftGuild += _client_LeftGuild;
         }
 
-        public Task EditGcr(int id, string message)
+        private Task _client_LeftGuild(SocketGuild arg)
         {
-            var sub = _cache.Redis.GetSubscriber();
+            GuildReactions.TryRemove(arg.Id, out _);
+            return Task.CompletedTask;
+        }
 
-            return sub.PublishAsync(_client.CurrentUser.Id + "_gcr.edited", JsonConvert.SerializeObject(new
+        private Task Bot_JoinedGuild(GuildConfig gc)
+        {
+            var _ = Task.Run(() =>
             {
-                Id = id,
-                Message = message,
-            }));
+                using (var uow = _db.UnitOfWork)
+                {
+                    var crs = uow.CustomReactions.ForId(gc.GuildId);
+                    GuildReactions.AddOrUpdate(gc.GuildId, crs, (key, old) => crs);
+                }
+            });
+            return Task.CompletedTask;
         }
 
         public Task AddGcr(CustomReaction cr)
@@ -142,10 +149,10 @@ namespace NadekoBot.Modules.CustomReactions.Services
 
                         var hasTarget = cr.Response.ToLowerInvariant().Contains("%target%");
                         var trigger = cr.TriggerWithContext(umsg, _client).Trim().ToLowerInvariant();
-                        return ((cr.ContainsAnywhere && 
+                        return ((cr.ContainsAnywhere &&
                             (content.GetWordPosition(trigger) != WordPosition.None))
-                            || (hasTarget && content.StartsWith(trigger + " ")) 
-                            || (_bc.BotConfig.CustomReactionsStartWith && content.StartsWith(trigger + " "))  
+                            || (hasTarget && content.StartsWith(trigger + " ", StringComparison.InvariantCulture))
+                            || (_bc.BotConfig.CustomReactionsStartWith && content.StartsWith(trigger + " ", StringComparison.InvariantCulture))
                             || content == trigger);
                     }).ToArray();
 
@@ -168,9 +175,9 @@ namespace NadekoBot.Modules.CustomReactions.Services
                 var hasTarget = cr.Response.ToLowerInvariant().Contains("%target%");
                 var trigger = cr.TriggerWithContext(umsg, _client).Trim().ToLowerInvariant();
                 return ((cr.ContainsAnywhere &&
-                            (content.GetWordPosition(trigger) != WordPosition.None)) 
-                        || (hasTarget && content.StartsWith(trigger + " ")) 
-                        || (_bc.BotConfig.CustomReactionsStartWith && content.StartsWith(trigger + " ")) 
+                            (content.GetWordPosition(trigger) != WordPosition.None))
+                        || (hasTarget && content.StartsWith(trigger + " ", StringComparison.InvariantCulture))
+                        || (_bc.BotConfig.CustomReactionsStartWith && content.StartsWith(trigger + " ", StringComparison.InvariantCulture))
                         || content == trigger);
             }).ToArray();
             if (grs.Length == 0)
@@ -180,7 +187,7 @@ namespace NadekoBot.Modules.CustomReactions.Services
             return greaction;
         }
 
-        public async Task<bool> TryExecuteEarly(DiscordSocketClient client, IGuild guild, IUserMessage msg)
+        public async Task<bool> RunBehavior(DiscordSocketClient client, IGuild guild, IUserMessage msg)
         {
             // maybe this message is a custom reaction
             var cr = await Task.Run(() => TryGetCustomReaction(msg)).ConfigureAwait(false);
@@ -188,9 +195,14 @@ namespace NadekoBot.Modules.CustomReactions.Services
             {
                 try
                 {
+                    if (_gperm.BlockedModules.Contains("ActualCustomReactions"))
+                    {
+                        return true;
+                    }
+
                     if (guild is SocketGuild sg)
                     {
-                        var pc = _perms.GetCache(guild.Id);
+                        var pc = _perms.GetCacheFor(guild.Id);
                         if (!pc.Permissions.CheckPermissions(msg, cr.Trigger, "ActualCustomReactions",
                             out int index))
                         {
@@ -220,43 +232,54 @@ namespace NadekoBot.Modules.CustomReactions.Services
             return false;
         }
 
-        public Task SetCrDmAsync(int id, bool setValue)
+        public Task EditCrAsync(int id, bool setValue, CrField field)
         {
+            CustomReaction cr;
             using (var uow = _db.UnitOfWork)
             {
-                uow.CustomReactions.Get(id).DmResponse = setValue;
+                cr = uow.CustomReactions.GetById(id);
+                if (cr == null)
+                    return Task.CompletedTask;
+                if (field == CrField.AutoDelete)
+                    cr.AutoDeleteTrigger = setValue;
+                else if (field == CrField.ContainsAnywhere)
+                    cr.ContainsAnywhere = setValue;
+                else if (field == CrField.DmResponse)
+                    cr.DmResponse = setValue;
+
                 uow.Complete();
             }
-
-            var sub = _cache.Redis.GetSubscriber();
-            var data = new { Id = id, Value = setValue };
-            return sub.PublishAsync(_client.CurrentUser.Id + "_crdm.toggle", JsonConvert.SerializeObject(data));
+            return PublishEditedCr(cr);
         }
 
-        public Task SetCrAdAsync(int id, bool setValue)
+        public Task PublishEditedCr(CustomReaction cr)
         {
-            using (var uow = _db.UnitOfWork)
-            {
-                uow.CustomReactions.Get(id).AutoDeleteTrigger = setValue;
-                uow.Complete();
-            }
+            // don't publish changes of server-specific crs
+            // as other shards no longer have them, nor need them
+            if (cr.GuildId != 0 && cr.GuildId != null)
+                return Task.CompletedTask;
 
             var sub = _cache.Redis.GetSubscriber();
-            var data = new { Id = id, Value = setValue };
-            return sub.PublishAsync(_client.CurrentUser.Id + "_crad.toggle", JsonConvert.SerializeObject(data));
+            var data = new
+            {
+                Id = cr.Id,
+                Res = cr.Response,
+                Ad = cr.AutoDeleteTrigger,
+                Dm = cr.DmResponse,
+                Ca = cr.ContainsAnywhere
+            };
+            return sub.PublishAsync(_client.CurrentUser.Id + "_gcr.edited", JsonConvert.SerializeObject(data));
         }
 
-        public Task SetCrCaAsync(int id, bool setValue)
+        public int ClearCustomReactions(ulong id)
         {
             using (var uow = _db.UnitOfWork)
             {
-                uow.CustomReactions.Get(id).ContainsAnywhere = setValue;
+                var count = uow.CustomReactions.ClearFromGuild(id);
+                GuildReactions.TryRemove(id, out _);
                 uow.Complete();
+                return count;
             }
-
-            var sub = _cache.Redis.GetSubscriber();
-            var data = new { Id = id, Value = setValue };
-            return sub.PublishAsync(_client.CurrentUser.Id + "_crca.toggle", JsonConvert.SerializeObject(data));
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Modules.Utility.Services;
+using NadekoBot.Core.Common;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -25,14 +26,21 @@ namespace NadekoBot.Modules.Utility
                                                                          efb.WithName(g.Key.ToTitleCase())
                                                                          .WithValue(String.Join(", ", g.Select(x => x.Triggers.FirstOrDefault())
                                                                                                        .OrderBy(x => x)))));
-                await Context.Channel.EmbedAsync(res);
+                await Context.Channel.EmbedAsync(res).ConfigureAwait(false);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
+            [Priority(1)]
+            public Task Convert(string origin, string target, ShmartNumber value)
+                => Convert(origin, target, (decimal)value.Value);
+
+            [NadekoCommand, Usage, Description, Aliases]
+            [Priority(0)]
             public async Task Convert(string origin, string target, decimal value)
             {
-                var originUnit = _service.Units.FirstOrDefault(x => x.Triggers.Select(y => y.ToLowerInvariant()).Contains(origin.ToLowerInvariant()));
-                var targetUnit = _service.Units.FirstOrDefault(x => x.Triggers.Select(y => y.ToLowerInvariant()).Contains(target.ToLowerInvariant()));
+                //todo why am i selecting them every time?
+                var originUnit = _service.Units.FirstOrDefault(x => x.Triggers.Select(y => y.ToUpperInvariant()).Contains(origin.ToUpperInvariant()));
+                var targetUnit = _service.Units.FirstOrDefault(x => x.Triggers.Select(y => y.ToUpperInvariant()).Contains(target.ToUpperInvariant()));
                 if (originUnit == null || targetUnit == null)
                 {
                     await ReplyErrorLocalized("convert_not_found", Format.Bold(origin), Format.Bold(target)).ConfigureAwait(false);
@@ -82,7 +90,7 @@ namespace NadekoBot.Modules.Utility
                 }
                 res = Math.Round(res, 4);
 
-                await Context.Channel.SendConfirmAsync(GetText("convert", value, (originUnit.Triggers.First()).SnPl(value.IsInteger() ? (int)value : 2), res, (targetUnit.Triggers.First() + "s").SnPl(res.IsInteger() ? (int)res : 2)));
+                await Context.Channel.SendConfirmAsync(GetText("convert", value, (originUnit.Triggers.First()).SnPl(value.IsInteger() ? (int)value : 2), res, (targetUnit.Triggers.First() + "s").SnPl(res.IsInteger() ? (int)res : 2))).ConfigureAwait(false);
             }
         }
     }

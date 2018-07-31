@@ -1,51 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using NadekoBot.Common.Attributes;
-using NadekoBot.Common.Collections;
+using NadekoBot.Core.Modules.Administration.Services;
 using NadekoBot.Core.Services;
-using NadekoBot.Core.Services.Database.Models;
 using NadekoBot.Extensions;
-using NadekoBot.Modules.Xp.Common;
 
 namespace NadekoBot.Modules.Administration
 {
     public partial class Administration
     {
         [Group]
-        public class SelfAssignedRolesCommands : NadekoSubmodule
+        public class SelfAssignedRolesCommands : NadekoSubmodule<SelfAssignedRolesService>
         {
-            private readonly DbService _db;
-
-            public SelfAssignedRolesCommands(DbService db)
-            {
-                _db = db;
-            }
-
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageMessages)]
+            [RequireBotPermission(GuildPermission.ManageMessages)]
             public async Task AdSarm()
             {
-                bool newval;
-                using (var uow = _db.UnitOfWork)
-                {
-                    var config = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-                    newval = config.AutoDeleteSelfAssignedRoleMessages = !config.AutoDeleteSelfAssignedRoleMessages;
-                    await uow.CompleteAsync().ConfigureAwait(false);
-                }
+                var newVal = _service.ToggleAdSarm(Context.Guild.Id);
 
-                await Context.Channel.SendConfirmAsync($"ℹ️ Automatic deleting of `iam` and `iamn` confirmations has been {(newval ? "**enabled**" : "**disabled**")}.")
-                             .ConfigureAwait(false);
+                if (newVal)
+                {
+                    await ReplyConfirmLocalized("adsarm_enable", Prefix).ConfigureAwait(false);
+                }
+                else
+                {
+                    await ReplyConfirmLocalized("adsarm_disable", Prefix).ConfigureAwait(false);
+                }
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageRoles)]
+            [RequireBotPermission(GuildPermission.ManageRoles)]
             [Priority(1)]
             public Task Asar([Remainder] IRole role) =>
                 Asar(0, role);
@@ -53,42 +44,24 @@ namespace NadekoBot.Modules.Administration
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageRoles)]
+            [RequireBotPermission(GuildPermission.ManageRoles)]
             [Priority(0)]
             public async Task Asar(int group, [Remainder] IRole role)
             {
-                IEnumerable<SelfAssignedRole> roles;
-
                 var guser = (IGuildUser)Context.User;
                 if (Context.User.Id != guser.Guild.OwnerId && guser.GetRoles().Max(x => x.Position) <= role.Position)
                     return;
 
-                string msg;
-                var error = false;
-                using (var uow = _db.UnitOfWork)
+                var succ = _service.AddNew(Context.Guild.Id, role, group);
+
+                if (succ)
                 {
-                    roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id)
-                        .SelectMany(x => x);
-                    if (roles.Any(s => s.RoleId == role.Id && s.GuildId == role.Guild.Id))
-                    {
-                        msg = GetText("role_in_list", Format.Bold(role.Name));
-                        error = true;
-                    }
-                    else
-                    {
-                        uow.SelfAssignedRoles.Add(new SelfAssignedRole
-                        {
-                            Group = group,
-                            RoleId = role.Id,
-                            GuildId = role.Guild.Id
-                        });
-                        await uow.CompleteAsync();
-                        msg = GetText("role_added", Format.Bold(role.Name), Format.Bold(group.ToString()));
-                    }
+                    await ReplyConfirmLocalized("role_added", Format.Bold(role.Name), Format.Bold(group.ToString())).ConfigureAwait(false);
                 }
-                if (error)
-                    await Context.Channel.SendErrorAsync(msg).ConfigureAwait(false);
                 else
-                    await Context.Channel.SendConfirmAsync(msg).ConfigureAwait(false);
+                {
+                    await ReplyErrorLocalized("role_in_list", Format.Bold(role.Name)).ConfigureAwait(false);
+                }
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -100,18 +73,15 @@ namespace NadekoBot.Modules.Administration
                 if (Context.User.Id != guser.Guild.OwnerId && guser.GetRoles().Max(x => x.Position) <= role.Position)
                     return;
 
-                bool success;
-                using (var uow = _db.UnitOfWork)
-                {
-                    success = uow.SelfAssignedRoles.DeleteByGuildAndRoleId(role.Guild.Id, role.Id);
-                    await uow.CompleteAsync();
-                }
+                bool success = _service.RemoveSar(role.Guild.Id, role.Id);
                 if (!success)
                 {
                     await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
-                    return;
                 }
-                await ReplyConfirmLocalized("self_assign_rem", Format.Bold(role.Name)).ConfigureAwait(false);
+                else
+                {
+                    await ReplyConfirmLocalized("self_assign_rem", Format.Bold(role.Name)).ConfigureAwait(false);
+                }
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -121,87 +91,53 @@ namespace NadekoBot.Modules.Administration
                 if (--page < 0)
                     return;
 
-                var toRemove = new ConcurrentHashSet<SelfAssignedRole>();
-                var removeMsg = new StringBuilder();
-                var rolesStr = new StringBuilder();
-                var roleCnt = 0;
-                var exclusive = false;
-                using (var uow = _db.UnitOfWork)
+                var (exclusive, roles) = _service.GetRoles(Context.Guild);
+
+                await Context.SendPaginatedConfirmAsync(page, (cur) =>
                 {
-                    exclusive = uow.GuildConfigs.For(Context.Guild.Id, set => set)
-                        .ExclusiveSelfAssignedRoles;
-                    var roleModels = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id)
+                    var rolesStr = new StringBuilder();
+                    var roleGroups = roles
+                        .OrderBy(x => x.Model.Group)
+                        .Skip(cur * 20)
+                        .Take(20)
+                        .GroupBy(x => x.Model.Group)
                         .OrderBy(x => x.Key);
 
-                    var skip = page * 20;
-                    foreach (var kvp in roleModels)
+                    foreach (var kvp in roleGroups)
                     {
-                        var cnt = kvp.Count();
-                        if (skip >= cnt)
-                        {
-                            skip -= cnt;
-                            continue;
-                        }
-                        if (skip < -20)
-                            break;
                         rolesStr.AppendLine("\t\t\t\t『" + Format.Bold(GetText("self_assign_group", kvp.Key)) + "』");
-                        foreach (var roleModel in kvp.AsEnumerable())
+                        foreach (var (Model, Role) in kvp.AsEnumerable())
                         {
-                            if (skip-- > 0)
+                            if (Role == null)
                             {
                                 continue;
                             }
-                            if (skip < -20)
-                            {
-                                break;
-                            }
-
-                            var role = Context.Guild.Roles.FirstOrDefault(r => r.Id == roleModel.RoleId);
-                            if (role == null)
-                            {
-                                toRemove.Add(roleModel);
-                                uow.SelfAssignedRoles.Remove(roleModel);
-                            }
                             else
                             {
-                                if (roleModel.LevelRequirement == 0)
-                                    rolesStr.AppendLine(Format.Bold(role.Name));
+                                if (Model.LevelRequirement == 0)
+                                    rolesStr.AppendLine(Format.Bold(Role.Name));
                                 else
-                                    rolesStr.AppendLine(Format.Bold(role.Name) + $" (lvl {roleModel.LevelRequirement}+)");
-                                roleCnt++;
+                                    rolesStr.AppendLine(Format.Bold(Role.Name) + $" (lvl {Model.LevelRequirement}+)");
                             }
                         }
                     }
-                    if (toRemove.Any())
-                        rolesStr.AppendLine("\t\t\t\t『』");
-                    foreach (var role in toRemove)
-                    {
-                        rolesStr.AppendLine(GetText("role_clean", role.RoleId));
-                    }
-                    await uow.CompleteAsync();
-                }
 
-                await Context.Channel.SendConfirmAsync("",
-                    Format.Bold(GetText("self_assign_list", roleCnt))
-                    + "\n\n" + rolesStr.ToString(),
-                    footer: exclusive
-                    ? GetText("self_assign_are_exclusive")
-                    : GetText("self_assign_are_not_exclusive")).ConfigureAwait(false);
+                    return new EmbedBuilder().WithOkColor()
+                        .WithTitle(Format.Bold(GetText("self_assign_list", roles.Count())))
+                        .WithDescription(rolesStr.ToString())
+                        .WithFooter(exclusive
+                            ? GetText("self_assign_are_exclusive")
+                            : GetText("self_assign_are_not_exclusive"));
+                }, roles.Count(), 20).ConfigureAwait(false);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageRoles)]
+            [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task Tesar()
             {
-                bool areExclusive;
-                using (var uow = _db.UnitOfWork)
-                {
-                    var config = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-
-                    areExclusive = config.ExclusiveSelfAssignedRoles = !config.ExclusiveSelfAssignedRoles;
-                    await uow.CompleteAsync();
-                }
+                bool areExclusive = _service.ToggleEsar(Context.Guild.Id);
                 if (areExclusive)
                     await ReplyConfirmLocalized("self_assign_excl").ConfigureAwait(false);
                 else
@@ -211,28 +147,15 @@ namespace NadekoBot.Modules.Administration
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageRoles)]
+            [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task RoleLevelReq(int level, [Remainder] IRole role)
             {
                 if (level < 0)
                     return;
 
-                bool notExists = false;
-                using (var uow = _db.UnitOfWork)
-                {
-                    var roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id);
-                    var sar = roles.SelectMany(x => x).FirstOrDefault(x => x.RoleId == role.Id);
-                    if (sar != null)
-                    {
-                        sar.LevelRequirement = level;
-                        uow.Complete();
-                    }
-                    else
-                    {
-                        notExists = true;
-                    }
-                }
+                bool succ = _service.SetLevelReq(Context.Guild.Id, role, level);
 
-                if (notExists)
+                if (!succ)
                 {
                     await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
                     return;
@@ -249,74 +172,31 @@ namespace NadekoBot.Modules.Administration
             {
                 var guildUser = (IGuildUser)Context.User;
 
-                GuildConfig conf;
-                SelfAssignedRole[] roles;
-                LevelStats userLevelData;
-                using (var uow = _db.UnitOfWork)
-                {
-                    conf = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-                    roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id)
-                        .SelectMany(x => x)
-                        .ToArray();
+                var (result, autoDelete, extra) = await _service.Assign(guildUser, role).ConfigureAwait(false);
 
-                    var stats = uow.Xp.GetOrCreateUser(Context.Guild.Id, Context.User.Id);
-                    userLevelData = new LevelStats(stats.Xp + stats.AwardedXp);
-                }
-                var theRoleYouWant = roles.FirstOrDefault(r => r.RoleId == role.Id);
-                if (theRoleYouWant == null)
+                IUserMessage msg;
+                if (result == SelfAssignedRolesService.AssignResult.Err_Not_Assignable)
                 {
-                    await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
-                    return;
+                    msg = await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
                 }
-                if (theRoleYouWant.LevelRequirement > userLevelData.Level)
+                else if (result == SelfAssignedRolesService.AssignResult.Err_Lvl_Req)
                 {
-                    await ReplyErrorLocalized("self_assign_not_level", Format.Bold(theRoleYouWant.LevelRequirement.ToString())).ConfigureAwait(false);
-                    return;
+                    msg = await ReplyErrorLocalized("self_assign_not_level", Format.Bold(extra.ToString())).ConfigureAwait(false);
                 }
-                if (guildUser.RoleIds.Contains(role.Id))
+                else if (result == SelfAssignedRolesService.AssignResult.Err_Already_Have)
                 {
-                    await ReplyErrorLocalized("self_assign_already", Format.Bold(role.Name)).ConfigureAwait(false);
-                    return;
+                    msg = await ReplyErrorLocalized("self_assign_already", Format.Bold(role.Name)).ConfigureAwait(false);
+                }
+                else if (result == SelfAssignedRolesService.AssignResult.Err_Not_Perms)
+                {
+                    msg = await ReplyErrorLocalized("self_assign_perms").ConfigureAwait(false);
+                }
+                else
+                {
+                    msg = await ReplyConfirmLocalized("self_assign_success", Format.Bold(role.Name)).ConfigureAwait(false);
                 }
 
-                var roleIds = roles
-                    .Where(x => x.Group == theRoleYouWant.Group)
-                    .Select(x => x.RoleId).ToArray();
-                if (conf.ExclusiveSelfAssignedRoles)
-                {
-                    var sameRoles = guildUser.RoleIds
-                        .Where(r => roleIds.Contains(r));
-
-                    foreach (var roleId in sameRoles)
-                    {
-                        var sameRole = Context.Guild.GetRole(roleId);
-                        if (sameRole != null)
-                        {
-                            try
-                            {
-                                await guildUser.RemoveRoleAsync(sameRole).ConfigureAwait(false);
-                                await Task.Delay(300).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _log.Warn(ex);
-                            }
-                        }
-                    }
-                }
-                try
-                {
-                    await guildUser.AddRoleAsync(role).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    await ReplyErrorLocalized("self_assign_perms").ConfigureAwait(false);
-                    _log.Info(ex);
-                    return;
-                }
-                var msg = await ReplyConfirmLocalized("self_assign_success", Format.Bold(role.Name)).ConfigureAwait(false);
-
-                if (conf.AutoDeleteSelfAssignedRoleMessages)
+                if (autoDelete)
                 {
                     msg.DeleteAfter(3);
                     Context.Message.DeleteAfter(3);
@@ -329,37 +209,27 @@ namespace NadekoBot.Modules.Administration
             {
                 var guildUser = (IGuildUser)Context.User;
 
-                bool autoDeleteSelfAssignedRoleMessages;
-                IEnumerable<SelfAssignedRole> roles;
-                using (var uow = _db.UnitOfWork)
-                {
-                    autoDeleteSelfAssignedRoleMessages = uow.GuildConfigs.For(Context.Guild.Id, set => set).AutoDeleteSelfAssignedRoleMessages;
-                    roles = uow.SelfAssignedRoles.GetFromGuild(Context.Guild.Id)
-                        .SelectMany(x => x)
-                        .ToArray();
-                }
-                if (roles.FirstOrDefault(r => r.RoleId == role.Id) == null)
-                {
-                    await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
-                    return;
-                }
-                if (!guildUser.RoleIds.Contains(role.Id))
-                {
-                    await ReplyErrorLocalized("self_assign_not_have", Format.Bold(role.Name)).ConfigureAwait(false);
-                    return;
-                }
-                try
-                {
-                    await guildUser.RemoveRoleAsync(role).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    await ReplyErrorLocalized("self_assign_perms").ConfigureAwait(false);
-                    return;
-                }
-                var msg = await ReplyConfirmLocalized("self_assign_remove", Format.Bold(role.Name)).ConfigureAwait(false);
+                var (result, autoDelete) = await _service.Remove(guildUser, role).ConfigureAwait(false);
 
-                if (autoDeleteSelfAssignedRoleMessages)
+                IUserMessage msg;
+                if (result == SelfAssignedRolesService.RemoveResult.Err_Not_Assignable)
+                {
+                    msg = await ReplyErrorLocalized("self_assign_not").ConfigureAwait(false);
+                }
+                else if (result == SelfAssignedRolesService.RemoveResult.Err_Not_Have)
+                {
+                    msg = await ReplyErrorLocalized("self_assign_not_have", Format.Bold(role.Name)).ConfigureAwait(false);
+                }
+                else if (result == SelfAssignedRolesService.RemoveResult.Err_Not_Perms)
+                {
+                    msg = await ReplyErrorLocalized("self_assign_perms").ConfigureAwait(false);
+                }
+                else
+                {
+                    msg = await ReplyConfirmLocalized("self_assign_remove", Format.Bold(role.Name)).ConfigureAwait(false);
+                }
+
+                if (autoDelete)
                 {
                     msg.DeleteAfter(3);
                     Context.Message.DeleteAfter(3);

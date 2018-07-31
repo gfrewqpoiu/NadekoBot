@@ -12,7 +12,6 @@ using NadekoBot.Core.Services.Impl;
 using NadekoBot.Common;
 using NLog;
 using CommandLine;
-using CommandLine.Text;
 
 namespace NadekoBot.Modules.Help.Services
 {
@@ -53,18 +52,31 @@ namespace NadekoBot.Modules.Help.Services
         public EmbedBuilder GetCommandHelp(CommandInfo com, IGuild guild)
         {
             var prefix = _ch.GetPrefix(guild);
-
+            
             var str = string.Format("**`{0}`**", prefix + com.Aliases.First());
             var alias = com.Aliases.Skip(1).FirstOrDefault();
             if (alias != null)
                 str += string.Format(" **/ `{0}`**", prefix + alias);
             var em = new EmbedBuilder()
-                .AddField(fb => fb.WithName(str).WithValue($"{com.RealSummary(prefix)} {GetCommandRequirements(com, guild)}").WithIsInline(true))
-                .AddField(fb => fb.WithName(GetText("usage", guild)).WithValue(com.RealRemarks(prefix)).WithIsInline(false))
+                .AddField(fb => fb.WithName(str)
+                    .WithValue($"{com.RealSummary(prefix)}")
+                    .WithIsInline(true));
+
+            var reqs = GetCommandRequirements(com);
+            if(reqs.Any())
+            {
+                em.AddField(GetText("requires", guild),
+                    string.Join("\n", reqs));
+            }
+
+            em
+                .AddField(fb => fb.WithName(GetText("usage", guild))
+                    .WithValue(com.RealRemarks(prefix))
+                    .WithIsInline(false))
                 .WithFooter(efb => efb.WithText(GetText("module", guild, com.Module.GetTopLevelModule().Name)))
                 .WithColor(NadekoBot.OkColor);
 
-            var opt = ((NadekoOptions)com.Attributes.FirstOrDefault(x => x is NadekoOptions))?.OptionType;
+            var opt = ((NadekoOptionsAttribute)com.Attributes.FirstOrDefault(x => x is NadekoOptionsAttribute))?.OptionType;
             if (opt != null)
             {
                 var hs = GetCommandOptionHelp(opt);
@@ -75,7 +87,7 @@ namespace NadekoBot.Modules.Help.Services
             return em;
         }
 
-        private string GetCommandOptionHelp(Type opt)
+        public static string GetCommandOptionHelp(Type opt)
         {
             var strs = opt.GetProperties()
                 .Select(x => x.GetCustomAttributes(true).FirstOrDefault(a => a is OptionAttribute))
@@ -83,32 +95,39 @@ namespace NadekoBot.Modules.Help.Services
                 .Cast<OptionAttribute>()
                 .Select(x =>
                 {
-                    var toReturn = $"--{x.LongName}";
+                    var toReturn = $"`--{x.LongName}`";
 
                     if (!string.IsNullOrWhiteSpace(x.ShortName))
-                        toReturn += $" (-{x.ShortName})";
+                        toReturn += $" (`-{x.ShortName}`)";
 
-                    toReturn += $"   {x.HelpText}";
+                    toReturn += $"   {x.HelpText}  ";
                     return toReturn;
                 });
 
             return string.Join("\n", strs);
         }
 
-        public string GetCommandRequirements(CommandInfo cmd, IGuild guild) =>
-            string.Join(" ", cmd.Preconditions
+        public static string[] GetCommandRequirements(CommandInfo cmd) =>
+            cmd.Preconditions
                   .Where(ca => ca is OwnerOnlyAttribute || ca is RequireUserPermissionAttribute)
                   .Select(ca =>
                   {
                       if (ca is OwnerOnlyAttribute)
-                          return Format.Bold(GetText("bot_owner_only", guild));
+                      {
+                          return "Bot Owner Only";
+                      }
+
                       var cau = (RequireUserPermissionAttribute)ca;
                       if (cau.GuildPermission != null)
-                          return Format.Bold(GetText("server_permission", guild, cau.GuildPermission))
-                                       .Replace("Guild", "Server");
-                      return Format.Bold(GetText("channel_permission", guild, cau.ChannelPermission))
-                                       .Replace("Guild", "Server");
-                  }));
+                      {
+                          return (cau.GuildPermission.ToString() + " Server Permission")
+                                       .Replace("Guild", "Server", StringComparison.InvariantCulture);
+                      }
+
+                      return (cau.ChannelPermission + " Channel Permission")
+                                       .Replace("Guild", "Server", StringComparison.InvariantCulture);
+                  })
+                .ToArray();
 
         private string GetText(string text, IGuild guild, params object[] replacements) =>
             _strings.GetText(text, guild?.Id, "Help".ToLowerInvariant(), replacements);

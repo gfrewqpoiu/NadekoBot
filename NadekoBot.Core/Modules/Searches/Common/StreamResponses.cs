@@ -93,7 +93,7 @@ namespace NadekoBot.Modules.Searches.Common
     public class TwitchResponse : IStreamResponse
     {
         public string Error { get; set; } = null;
-        public bool IsLive => Stream != null;
+        public bool IsLive => Stream != null && Stream.Type == "live";
         public StreamInfo Stream { get; set; }
         public string Name => Stream?.Channel.Name;
 
@@ -104,6 +104,8 @@ namespace NadekoBot.Modules.Searches.Common
             public ChannelInfo Channel { get; set; }
             [JsonProperty("preview")]
             public TwitchPreview PreviewData { get; set; }
+            [JsonProperty("stream_type")]
+            public string Type { get; set; }
 
             public class ChannelInfo
             {
@@ -142,6 +144,7 @@ namespace NadekoBot.Modules.Searches.Common
         public class MixerUser
         {
             public string AvatarUrl { get; set; }
+            public string Name { get; set; }
         }
         public class MixerThumbnail
         {
@@ -155,7 +158,7 @@ namespace NadekoBot.Modules.Searches.Common
         [JsonProperty("online")]
         public bool IsLive { get; set; }
         public int ViewersCurrent { get; set; }
-        public string Name { get; set; }
+        public string Name => User.Name;
         public int NumFollowers { get; set; }
         public MixerType Type { get; set; }
         public MixerUser User { get; set; }

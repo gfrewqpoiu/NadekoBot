@@ -23,7 +23,7 @@ namespace NadekoBot.Core.Services.Impl
         private readonly IBotCredentials _creds;
         private readonly DateTime _started;
 
-        public const string BotVersion = "2.16.5";
+        public const string BotVersion = "2.26.5";
         public string Author => "Kwoth#2560";
         public string Library => "Discord.Net";
 
@@ -41,20 +41,19 @@ namespace NadekoBot.Core.Services.Impl
         public long CommandsRan => Interlocked.Read(ref _commandsRan);
 
         private readonly Timer _carbonitexTimer;
-#if GLOBAL_NADEKO
         private readonly Timer _botlistTimer;
-#endif
         private readonly Timer _dataTimer;
         private readonly ConnectionMultiplexer _redis;
+        private readonly IHttpClientFactory _httpFactory;
 
         public StatsService(DiscordSocketClient client, CommandHandler cmdHandler,
-            IBotCredentials creds, NadekoBot nadeko,
-            IDataCache cache)
+            IBotCredentials creds, NadekoBot nadeko, IDataCache cache, IHttpClientFactory factory)
         {
             _log = LogManager.GetCurrentClassLogger();
             _client = client;
             _creds = creds;
             _redis = cache.Redis;
+            _httpFactory = factory;
 
             _started = DateTime.UtcNow;
             _client.MessageReceived += _ => Task.FromResult(Interlocked.Increment(ref _messageCounter));
@@ -144,7 +143,7 @@ namespace NadekoBot.Core.Services.Impl
                         return;
                     try
                     {
-                        using (var http = new HttpClient())
+                        using (var http = _httpFactory.CreateClient())
                         {
                             using (var content = new FormUrlEncodedContent(
                                 new Dictionary<string, string> {
@@ -154,7 +153,7 @@ namespace NadekoBot.Core.Services.Impl
                                 content.Headers.Clear();
                                 content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                                await http.PostAsync("https://www.carbonitex.net/discord/data/botdata.php", content).ConfigureAwait(false);
+                                using (await http.PostAsync(new Uri("https://www.carbonitex.net/discord/data/botdata.php"), content).ConfigureAwait(false)) { }
                             }
                         }
                     }
@@ -164,14 +163,14 @@ namespace NadekoBot.Core.Services.Impl
                     }
                 }, null, TimeSpan.FromHours(1), TimeSpan.FromHours(1));
             }
-#if GLOBAL_NADEKO
+
             _botlistTimer = new Timer(async (state) =>
             {
                 if (string.IsNullOrWhiteSpace(_creds.BotListToken))
                     return;
                 try
                 {
-                    using (var http = new HttpClient())
+                    using (var http = _httpFactory.CreateClient())
                     {
                         using (var content = new FormUrlEncodedContent(
                             new Dictionary<string, string> {
@@ -184,7 +183,7 @@ namespace NadekoBot.Core.Services.Impl
                             content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
                             http.DefaultRequestHeaders.Add("Authorization", _creds.BotListToken);
 
-                            await http.PostAsync($"https://discordbots.org/api/bots/{client.CurrentUser.Id}/stats", content).ConfigureAwait(false);
+                            using (await http.PostAsync(new Uri($"https://discordbots.org/api/bots/{client.CurrentUser.Id}/stats"), content).ConfigureAwait(false)) { }
                         }
                     }
                 }
@@ -194,7 +193,6 @@ namespace NadekoBot.Core.Services.Impl
                     // ignored
                 }
             }, null, TimeSpan.FromMinutes(5), TimeSpan.FromHours(1));
-#endif
 
             var platform = "other";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -208,7 +206,7 @@ namespace NadekoBot.Core.Services.Impl
             {
                 try
                 {
-                    using (var http = new HttpClient())
+                    using (var http = _httpFactory.CreateClient())
                     {
                         using (var content = new FormUrlEncodedContent(
                             new Dictionary<string, string> {
@@ -220,7 +218,7 @@ namespace NadekoBot.Core.Services.Impl
                             content.Headers.Clear();
                             content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
-                            await http.PostAsync("https://selfstats.nadekobot.me/", content).ConfigureAwait(false);
+                            using (await http.PostAsync(new Uri("https://selfstats.nadekobot.me/"), content).ConfigureAwait(false)) { }
                         }
                     }
                 }
@@ -236,22 +234,6 @@ namespace NadekoBot.Core.Services.Impl
             var guilds = _client.Guilds.ToArray();
             _textChannels = guilds.Sum(g => g.Channels.Count(cx => cx is ITextChannel));
             _voiceChannels = guilds.Sum(g => g.Channels.Count(cx => cx is IVoiceChannel));
-        }
-
-        public Task<string> Print()
-        {
-            SocketSelfUser curUser;
-            while ((curUser = _client.CurrentUser) == null) Task.Delay(1000).ConfigureAwait(false);
-
-            return Task.FromResult($@"
-Author: [{Author}] | Library: [{Library}]
-Bot Version: [{BotVersion}]
-Bot ID: {curUser.Id}
-Owner ID(s): {string.Join(", ", _creds.OwnerIds)}
-Uptime: {GetUptimeString()}
-Servers: {_client.Guilds.Count} | TextChannels: {TextChannels} | VoiceChannels: {VoiceChannels}
-Commands Ran this session: {CommandsRan}
-Messages: {MessageCounter} [{MessagesPerSecond:F2}/sec] Heap: [{Heap} MB]");
         }
 
         public TimeSpan GetUptime() =>

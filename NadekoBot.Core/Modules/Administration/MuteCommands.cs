@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
-using NadekoBot.Core.Services;
 using System;
 using System.Threading.Tasks;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Modules.Administration.Services;
+using NadekoBot.Core.Common.TypeReaders.Models;
 
 namespace NadekoBot.Modules.Administration
 {
@@ -13,13 +13,6 @@ namespace NadekoBot.Modules.Administration
         [Group]
         public class MuteCommands : NadekoSubmodule<MuteService>
         {
-            private readonly DbService _db;
-
-            public MuteCommands(DbService db)
-            {
-                _db = db;
-            }
-
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageRoles)]
@@ -30,13 +23,8 @@ namespace NadekoBot.Modules.Administration
                 if (string.IsNullOrWhiteSpace(name))
                     return;
 
-                using (var uow = _db.UnitOfWork)
-                {
-                    var config = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-                    config.MuteRoleName = name;
-                    _service.GuildMuteRoles.AddOrUpdate(Context.Guild.Id, name, (id, old) => name);
-                    await uow.CompleteAsync().ConfigureAwait(false);
-                }
+                await _service.SetMuteRoleAsync(Context.Guild.Id, name).ConfigureAwait(false);
+
                 await ReplyConfirmLocalized("mute_role_set").ConfigureAwait(false);
             }
 
@@ -56,7 +44,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.MuteUser(user).ConfigureAwait(false);
+                    await _service.MuteUser(user, Context.User).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_muted", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch
@@ -70,14 +58,14 @@ namespace NadekoBot.Modules.Administration
             [RequireUserPermission(GuildPermission.ManageRoles)]
             [RequireUserPermission(GuildPermission.MuteMembers)]
             [Priority(1)]
-            public async Task Mute(int minutes, IGuildUser user)
+            public async Task Mute(StoopidTime time, IGuildUser user)
             {
-                if (minutes < 1 || minutes > 1440)
+                if (time.Time < TimeSpan.FromMinutes(1) || time.Time > TimeSpan.FromDays(1))
                     return;
                 try
                 {
-                    await _service.TimedMute(user, TimeSpan.FromMinutes(minutes)).ConfigureAwait(false);
-                    await ReplyConfirmLocalized("user_muted_time", Format.Bold(user.ToString()), minutes).ConfigureAwait(false);
+                    await _service.TimedMute(user, Context.User, time.Time).ConfigureAwait(false);
+                    await ReplyConfirmLocalized("user_muted_time", Format.Bold(user.ToString()), (int)time.Time.TotalMinutes).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -94,7 +82,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.UnmuteUser(user).ConfigureAwait(false);
+                    await _service.UnmuteUser(user.GuildId, user.Id, Context.User).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_unmuted", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch
@@ -110,7 +98,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.MuteUser(user, MuteType.Chat).ConfigureAwait(false);
+                    await _service.MuteUser(user, Context.User, MuteType.Chat).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_chat_mute", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch
@@ -126,7 +114,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.UnmuteUser(user, MuteType.Chat).ConfigureAwait(false);
+                    await _service.UnmuteUser(user.Guild.Id, user.Id, Context.User, MuteType.Chat).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_chat_unmute", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch
@@ -142,7 +130,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.MuteUser(user, MuteType.Voice).ConfigureAwait(false);
+                    await _service.MuteUser(user, Context.User, MuteType.Voice).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_voice_mute", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch
@@ -158,7 +146,7 @@ namespace NadekoBot.Modules.Administration
             {
                 try
                 {
-                    await _service.UnmuteUser(user, MuteType.Voice).ConfigureAwait(false);
+                    await _service.UnmuteUser(user.GuildId, user.Id, Context.User, MuteType.Voice).ConfigureAwait(false);
                     await ReplyConfirmLocalized("user_voice_unmute", Format.Bold(user.ToString())).ConfigureAwait(false);
                 }
                 catch

@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.WebSocket;
 using NadekoBot.Common.Collections;
 using NadekoBot.Extensions;
@@ -13,15 +13,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ImageSharp;
-using Image = ImageSharp.Image;
+using Image = SixLabors.ImageSharp.Image;
 using SixLabors.Fonts;
 using System.IO;
 using SixLabors.Primitives;
 using System.Net.Http;
-using ImageSharp.Drawing.Pens;
-using ImageSharp.Drawing.Brushes;
-using System.Diagnostics;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing.Drawing.Pens;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.ImageSharp.Processing.Text;
+using Newtonsoft.Json;
+using NadekoBot.Core.Modules.Xp.Common;
+using NadekoBot.Common;
+using SixLabors.ImageSharp.Formats;
 
 namespace NadekoBot.Modules.Xp.Services
 {
@@ -47,23 +55,24 @@ namespace NadekoBot.Modules.Xp.Services
         private readonly ConcurrentDictionary<ulong, ConcurrentHashSet<ulong>> _excludedChannels
             = new ConcurrentDictionary<ulong, ConcurrentHashSet<ulong>>();
 
-        private readonly ConcurrentHashSet<ulong> _excludedServers 
+        private readonly ConcurrentHashSet<ulong> _excludedServers
             = new ConcurrentHashSet<ulong>();
 
-        private readonly ConcurrentHashSet<ulong> _rewardedUsers 
+        private readonly ConcurrentHashSet<ulong> _rewardedUsers
             = new ConcurrentHashSet<ulong>();
 
-        private readonly ConcurrentQueue<UserCacheItem> _addMessageXp 
+        private readonly ConcurrentQueue<UserCacheItem> _addMessageXp
             = new ConcurrentQueue<UserCacheItem>();
 
         private readonly Timer _updateXpTimer;
         private readonly CancellationTokenSource _clearRewardTimerTokenSource;
         private readonly Task _clearRewardTimer;
-        private readonly HttpClient http = new HttpClient();
+        private readonly IHttpClientFactory _httpFactory;
+        private XpTemplate _template;
 
-        public XpService(CommandHandler cmd, IBotConfigProvider bc,
+        public XpService(DiscordSocketClient client, CommandHandler cmd, IBotConfigProvider bc,
             NadekoBot bot, DbService db, NadekoStrings strings, IDataCache cache,
-            FontProvider fonts, IBotCredentials creds, ICurrencyService cs)
+            FontProvider fonts, IBotCredentials creds, ICurrencyService cs, IHttpClientFactory http)
         {
             _db = db;
             _cmd = cmd;
@@ -75,7 +84,15 @@ namespace NadekoBot.Modules.Xp.Services
             _fonts = fonts;
             _creds = creds;
             _cs = cs;
+            _httpFactory = http;
+            InternalReloadXpTemplate();
 
+            if (client.ShardId == 0)
+            {
+                var sub = _cache.Redis.GetSubscriber();
+                sub.Subscribe(_creds.RedisKey() + "_reload_xp_template",
+                    (ch, val) => InternalReloadXpTemplate());
+            }
             //load settings
             var allGuildConfigs = bot.AllGuildConfigs.Where(x => x.XpSettings != null);
             _excludedChannels = allGuildConfigs
@@ -103,7 +120,8 @@ namespace NadekoBot.Modules.Xp.Services
                                .Select(x => x.GuildId));
 
             _cmd.OnMessageNoTrigger += _cmd_OnMessageNoTrigger;
-
+        
+#if !GLOBAL_NADEKO
             _updateXpTimer = new Timer(async _ =>
             {
                 try
@@ -116,7 +134,7 @@ namespace NadekoBot.Modules.Xp.Services
                     while (_addMessageXp.TryDequeue(out var usr))
                         toAddTo.Add(usr);
 
-                    var group = toAddTo.GroupBy(x => (GuildId: x.Guild.Id, User: x.User));
+                    var group = toAddTo.GroupBy(x => (GuildId: x.Guild.Id, x.User));
                     if (toAddTo.Count == 0)
                         return;
 
@@ -192,7 +210,7 @@ namespace NadekoBot.Modules.Xp.Services
                             }
                         }
 
-                        uow.Complete();
+                        await uow.CompleteAsync();
                     }
 
                     await Task.WhenAll(toNotify.Select(async x =>
@@ -201,14 +219,14 @@ namespace NadekoBot.Modules.Xp.Services
                         {
                             if (x.NotifyType == XpNotificationType.Dm)
                             {
-                                var chan = await x.User.GetOrCreateDMChannelAsync().ConfigureAwait(false);
+                                var chan = await x.User.GetOrCreateDMChannelAsync();
                                 if (chan != null)
                                     await chan.SendConfirmAsync(_strings.GetText("level_up_dm",
                                         (x.MessageChannel as ITextChannel)?.GuildId,
                                         "xp",
                                         x.User.Mention, Format.Bold(x.Level.ToString()),
                                         Format.Bold((x.MessageChannel as ITextChannel)?.Guild.ToString() ?? "-")))
-                                        .ConfigureAwait(false);
+                                        ;
                             }
                             else // channel
                             {
@@ -216,7 +234,7 @@ namespace NadekoBot.Modules.Xp.Services
                                           (x.MessageChannel as ITextChannel)?.GuildId,
                                           "xp",
                                           x.User.Mention, Format.Bold(x.Level.ToString())))
-                                          .ConfigureAwait(false);
+                                          ;
                             }
                         }
                         else
@@ -224,7 +242,7 @@ namespace NadekoBot.Modules.Xp.Services
                             IMessageChannel chan;
                             if (x.NotifyType == XpNotificationType.Dm)
                             {
-                                chan = await x.User.GetOrCreateDMChannelAsync().ConfigureAwait(false);
+                                chan = await x.User.GetOrCreateDMChannelAsync();
                             }
                             else // channel
                             {
@@ -234,7 +252,7 @@ namespace NadekoBot.Modules.Xp.Services
                                           (x.MessageChannel as ITextChannel)?.GuildId,
                                           "xp",
                                           x.User.Mention, Format.Bold(x.Level.ToString())))
-                                            .ConfigureAwait(false);
+                                            ;
                         }
                     }));
                 }
@@ -243,7 +261,8 @@ namespace NadekoBot.Modules.Xp.Services
                     _log.Warn(ex);
                 }
             }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
-            
+#endif
+
             _clearRewardTimerTokenSource = new CancellationTokenSource();
             var token = _clearRewardTimerTokenSource.Token;
             //just a first line, in order to prevent queries. But since other shards can try to do this too,
@@ -253,10 +272,37 @@ namespace NadekoBot.Modules.Xp.Services
                 while (!token.IsCancellationRequested)
                 {
                     _rewardedUsers.Clear();
-                    
+
                     await Task.Delay(TimeSpan.FromMinutes(_bc.BotConfig.XpMinutesTimeout));
                 }
             }, token);
+        }
+
+        private void InternalReloadXpTemplate()
+        {
+            try
+            {
+                var settings = new JsonSerializerSettings
+                {
+                    ContractResolver = new RequireObjectPropertiesContractResolver()
+                };
+                _template = JsonConvert.DeserializeObject<XpTemplate>(
+                    File.ReadAllText("./data/xp_template.json"), settings);
+            }
+            catch (Exception ex)
+            {
+                _log.Warn(ex);
+                _log.Error("Xp template is invalid. Loaded default values.");
+                _template = new XpTemplate();
+                File.WriteAllText("./data/xp_template_backup.json",
+                    JsonConvert.SerializeObject(_template, Formatting.Indented));
+            }
+        }
+
+        public void ReloadXpTemplate()
+        {
+            var sub = _cache.Redis.GetSubscriber();
+            sub.Publish(_creds.RedisKey() + "_reload_xp_template", "");
         }
 
         public void SetCurrencyReward(ulong guildId, int level, int amount)
@@ -369,7 +415,7 @@ namespace NadekoBot.Modules.Xp.Services
             {
                 var user = uow.Xp.GetOrCreateUser(guildId, userId);
                 user.NotifyOnLevelUp = type;
-                await uow.CompleteAsync().ConfigureAwait(false);
+                await uow.CompleteAsync();
             }
         }
 
@@ -379,7 +425,7 @@ namespace NadekoBot.Modules.Xp.Services
             {
                 var du = uow.DiscordUsers.GetOrCreate(user);
                 du.NotifyOnLevelUp = type;
-                await uow.CompleteAsync().ConfigureAwait(false);
+                await uow.CompleteAsync();
             }
         }
 
@@ -450,9 +496,9 @@ namespace NadekoBot.Modules.Xp.Services
             var r = _cache.Redis.GetDatabase();
             var key = $"{_creds.RedisKey()}_user_xp_gain_{userId}";
 
-            return r.StringSet(key, 
-                true, 
-                TimeSpan.FromMinutes(_bc.BotConfig.XpMinutesTimeout), 
+            return r.StringSet(key,
+                true,
+                TimeSpan.FromMinutes(_bc.BotConfig.XpMinutesTimeout),
                 StackExchange.Redis.When.NotExists);
         }
 
@@ -467,14 +513,10 @@ namespace NadekoBot.Modules.Xp.Services
             {
                 du = uow.DiscordUsers.GetOrCreate(user);
                 totalXp = du.TotalXp;
-
-                var t1 = Task.Run(() => stats = uow.Xp.GetOrCreateUser(user.GuildId, user.Id));
-                var ranks = await Task.WhenAll(
-                    uow.DiscordUsers.GetUserGlobalRankingAsync(user.Id),
-                    uow.Xp.GetUserGuildRankingAsync(user.Id, user.GuildId));
-                await t1;
-                globalRank = ranks[0];
-                guildRank = ranks[1];
+                globalRank = uow.DiscordUsers.GetUserGlobalRank(user.Id);
+                guildRank = await uow.Xp.GetUserGuildRankingAsync(user.Id, user.GuildId);
+                stats = uow.Xp.GetOrCreateUser(user.GuildId, user.Id);
+                await uow.CompleteAsync();
             }
 
             return new FullUserStats(du,
@@ -597,128 +639,191 @@ namespace NadekoBot.Modules.Xp.Services
             }
         }
 
-        public async Task<MemoryStream> GenerateImageAsync(IGuildUser user)
+        public async Task<(Stream Image, IImageFormat Format)> GenerateXpImageAsync(IGuildUser user)
         {
             var stats = await GetUserStatsAsync(user);
-            return await GenerateImageAsync(stats);
+            return await GenerateXpImageAsync(stats);
         }
 
 
-        public Task<MemoryStream> GenerateImageAsync(FullUserStats stats) => Task.Run(async () =>
+        public Task<(Stream Image, IImageFormat Format)> GenerateXpImageAsync(FullUserStats stats) => Task.Run(async () =>
         {
-            using (var img = Image.Load(_images.XpCard))
+            using (var img = Image.Load(_images.XpBackground, out var imageFormat))
             {
-                var username = stats.User.ToString();
-                var usernameFont = _fonts.UsernameFontFamily
-                    .CreateFont(username.Length <= 6
-                        ? 50
-                        : 50 - username.Length);
+                if (_template.User.Name.Show)
+                {
+                    var username = stats.User.ToString();
+                    var usernameFont = _fonts.NotoSans
+                        .CreateFont(username.Length <= 6
+                            ? _template.User.Name.FontSize
+                            : _template.User.Name.FontSize - username.Length, FontStyle.Bold);
 
-                img.DrawText("@" + username, usernameFont, Rgba32.White,
-                    new PointF(130, 5));
-                // level
+                    img.Mutate(x =>
+                    {
+                        x.DrawText("@" + username, usernameFont,
+                            _template.User.Name.Color,
+                            new PointF(_template.User.Name.Pos.X, _template.User.Name.Pos.Y));
+                    });
+                }
 
-                img.DrawText(stats.Global.Level.ToString(), _fonts.LevelFont, Rgba32.White,
-                    new PointF(47, 137));
+                if (_template.User.GlobalLevel.Show)
+                {
+                    img.Mutate(x =>
+                    {
+                        x.DrawText(stats.Global.Level.ToString(),
+                            _fonts.NotoSans.CreateFont(_template.User.GlobalLevel.FontSize, FontStyle.Bold),
+                            _template.User.GlobalLevel.Color,
+                            new PointF(_template.User.GlobalLevel.Pos.X, _template.User.GlobalLevel.Pos.Y)); //level
+                    });
+                }
 
-                img.DrawText(stats.Guild.Level.ToString(), _fonts.LevelFont, Rgba32.White,
-                    new PointF(47, 285));
+                if (_template.User.GuildLevel.Show)
+                {
+                    img.Mutate(x =>
+                    {
+                        x.DrawText(stats.Guild.Level.ToString(),
+                            _fonts.NotoSans.CreateFont(_template.User.GuildLevel.FontSize, FontStyle.Bold),
+                            _template.User.GuildLevel.Color,
+                            new PointF(_template.User.GuildLevel.Pos.X, _template.User.GuildLevel.Pos.Y));
+                    });
+                }
 
                 //club name
 
-                var clubName = stats.User.Club?.ToString() ?? "-";
+                if (_template.Club.Name.Show)
+                {
+                    var clubName = stats.User.Club?.ToString() ?? "-";
 
-                var clubFont = _fonts.ClubFontFamily
-                    .CreateFont(clubName.Length <= 8
-                        ? 35
-                        : 35 - (clubName.Length / 2));
+                    var clubFont = _fonts.NotoSans
+                        .CreateFont(clubName.Length <= 8
+                            ? _template.Club.Name.FontSize
+                            : _template.Club.Name.FontSize - (clubName.Length / 2), FontStyle.Bold);
 
-                img.DrawText(clubName, clubFont, Rgba32.White,
-                    new PointF(650 - clubName.Length * 10, 40));
+                    img.Mutate(x => x.DrawText(clubName, clubFont,
+                        _template.Club.Name.Color,
+                        new PointF(_template.Club.Name.Pos.X - clubName.Length * 10, _template.Club.Name.Pos.Y)));
+                }
+
 
                 var pen = new Pen<Rgba32>(Rgba32.Black, 1);
-                var brush = Brushes.Solid<Rgba32>(Rgba32.White);
-                var xpBgBrush = Brushes.Solid<Rgba32>(new Rgba32(0, 0, 0, 0.4f));
 
                 var global = stats.Global;
                 var guild = stats.Guild;
 
                 //xp bar
+                if (_template.User.Xp.Bar.Show)
+                {
+                    var xpPercent = (global.LevelXp / (float)global.RequiredXp);
+                    DrawXpBar(xpPercent, _template.User.Xp.Bar.Global, img);
+                    xpPercent = (guild.LevelXp / (float)guild.RequiredXp);
+                    DrawXpBar(xpPercent, _template.User.Xp.Bar.Guild, img);
+                }
 
-                img.FillPolygon(xpBgBrush, new[] {
-                    new PointF(321, 104),
-                    new PointF(321 + (450 * (global.LevelXp / (float)global.RequiredXp)), 104),
-                    new PointF(286 + (450 * (global.LevelXp / (float)global.RequiredXp)), 235),
-                    new PointF(286, 235),
-                });
-                img.DrawText($"{global.LevelXp}/{global.RequiredXp}", _fonts.XpFont, brush, pen,
-                    new PointF(430, 130));
-
-                img.FillPolygon(xpBgBrush, new[] {
-                    new PointF(282, 248),
-                    new PointF(282 + (450 * (guild.LevelXp / (float)guild.RequiredXp)), 248),
-                    new PointF(247 + (450 * (guild.LevelXp / (float)guild.RequiredXp)), 379),
-                    new PointF(247, 379),
-                });
-                img.DrawText($"{guild.LevelXp}/{guild.RequiredXp}", _fonts.XpFont, brush, pen,
-                    new PointF(400, 270));
-
-                if (stats.FullGuildStats.AwardedXp != 0)
+                if (_template.User.Xp.Global.Show)
+                {
+                    img.Mutate(x => x.DrawText($"{global.LevelXp}/{global.RequiredXp}",
+                        _fonts.NotoSans.CreateFont(_template.User.Xp.Global.FontSize, FontStyle.Bold),
+                        Brushes.Solid(_template.User.Xp.Global.Color),
+                        pen,
+                        new PointF(_template.User.Xp.Global.Pos.X, _template.User.Xp.Global.Pos.Y)));
+                }
+                if (_template.User.Xp.Guild.Show)
+                {
+                    img.Mutate(x => x.DrawText($"{guild.LevelXp}/{guild.RequiredXp}",
+                        _fonts.NotoSans.CreateFont(_template.User.Xp.Guild.FontSize, FontStyle.Bold),
+                        Brushes.Solid(_template.User.Xp.Guild.Color),
+                        pen,
+                        new PointF(_template.User.Xp.Guild.Pos.X, _template.User.Xp.Guild.Pos.Y)));
+                }
+                if (stats.FullGuildStats.AwardedXp != 0 && _template.User.Xp.Awarded.Show)
                 {
                     var sign = stats.FullGuildStats.AwardedXp > 0
                         ? "+ "
                         : "";
-                    img.DrawText($"({sign}{stats.FullGuildStats.AwardedXp})", _fonts.AwardedFont, brush, pen,
-                        new PointF(445 - (Math.Max(0, (stats.FullGuildStats.AwardedXp.ToString().Length - 2)) * 5), 335));
+                    var awX = _template.User.Xp.Awarded.Pos.X - (Math.Max(0, (stats.FullGuildStats.AwardedXp.ToString().Length - 2)) * 5);
+                    var awY = _template.User.Xp.Awarded.Pos.Y;
+                    img.Mutate(x => x.DrawText($"({sign}{stats.FullGuildStats.AwardedXp})",
+                        _fonts.NotoSans.CreateFont(_template.User.Xp.Awarded.FontSize, FontStyle.Bold),
+                        Brushes.Solid(_template.User.Xp.Awarded.Color),
+                        pen,
+                        new PointF(awX, awY)));
                 }
 
                 //ranking
+                if (_template.User.GlobalRank.Show)
+                {
+                    img.Mutate(x => x.DrawText(stats.GlobalRanking.ToString(),
+                        _fonts.RankFontFamily.CreateFont(_template.User.GlobalRank.FontSize, FontStyle.Bold),
+                        _template.User.GlobalRank.Color,
+                        new PointF(_template.User.GlobalRank.Pos.X, _template.User.GlobalRank.Pos.Y)));
+                }
 
-                img.DrawText(stats.GlobalRanking.ToString(), _fonts.RankFont, Rgba32.White,
-                    new PointF(148, 170));
-
-                img.DrawText(stats.GuildRanking.ToString(), _fonts.RankFont, Rgba32.White,
-                    new PointF(148, 317));
+                if (_template.User.GuildRank.Show)
+                {
+                    img.Mutate(x => x.DrawText(stats.GuildRanking.ToString(),
+                        _fonts.RankFontFamily.CreateFont(_template.User.GuildRank.FontSize, FontStyle.Bold),
+                        _template.User.GuildRank.Color,
+                        new PointF(_template.User.GuildRank.Pos.X, _template.User.GuildRank.Pos.Y)));
+                }
 
                 //time on this level
 
-                string GetTimeSpent(DateTime time)
+                string GetTimeSpent(DateTime time, string format)
                 {
                     var offset = DateTime.UtcNow - time;
-                    return $"{offset.Days}d{offset.Hours}h{offset.Minutes}m";
+                    return string.Format(format, offset.Days, offset.Hours, offset.Minutes);
                 }
 
-                img.DrawText(GetTimeSpent(stats.User.LastLevelUp), _fonts.TimeFont, Rgba32.White,
-                    new PointF(50, 197));
+                if (_template.User.TimeOnLevel.Global.Show)
+                {
+                    img.Mutate(x => x.DrawText(GetTimeSpent(stats.User.LastLevelUp, _template.User.TimeOnLevel.Format),
+                        _fonts.NotoSans.CreateFont(_template.User.TimeOnLevel.Global.FontSize, FontStyle.Bold),
+                        _template.User.TimeOnLevel.Global.Color,
+                        new PointF(_template.User.TimeOnLevel.Global.Pos.X, _template.User.TimeOnLevel.Global.Pos.Y)));
+                }
 
-                img.DrawText(GetTimeSpent(stats.FullGuildStats.LastLevelUp), _fonts.TimeFont, Rgba32.White,
-                    new PointF(50, 344));
+                if (_template.User.TimeOnLevel.Guild.Show)
+                {
+                    img.Mutate(x => x.DrawText(GetTimeSpent(stats.FullGuildStats.LastLevelUp, _template.User.TimeOnLevel.Format),
+                        _fonts.NotoSans.CreateFont(_template.User.TimeOnLevel.Guild.FontSize, FontStyle.Bold),
+                        _template.User.TimeOnLevel.Guild.Color,
+                        new PointF(_template.User.TimeOnLevel.Guild.Pos.X, _template.User.TimeOnLevel.Guild.Pos.Y)));
+                }
                 //avatar
 
-                if (stats.User.AvatarId != null)
+                if (stats.User.AvatarId != null && _template.User.Icon.Show)
                 {
                     try
                     {
-                        var avatarUrl = stats.User.RealAvatarUrl();
+                        var avatarUrl = stats.User.RealAvatarUrl(128);
 
                         var (succ, data) = await _cache.TryGetImageDataAsync(avatarUrl);
                         if (!succ)
                         {
-                            using (var temp = await http.GetStreamAsync(avatarUrl))
-                            using (var tempDraw = Image.Load(temp).Resize(69, 70))
+                            using (var http = _httpFactory.CreateClient())
                             {
-                                tempDraw.ApplyRoundedCorners(35);
-                                data = tempDraw.ToStream().ToArray();
+                                var avatarData = await http.GetByteArrayAsync(avatarUrl);
+                                using (var tempDraw = Image.Load(avatarData))
+                                {
+                                    tempDraw.Mutate(x => x.Resize(_template.User.Icon.Size.X, _template.User.Icon.Size.Y));
+                                    tempDraw.ApplyRoundedCorners(Math.Max(_template.User.Icon.Size.X, _template.User.Icon.Size.Y) / 2);
+                                    using (var stream = tempDraw.ToStream())
+                                    {
+                                        data = stream.ToArray();
+                                    }
+                                }
                             }
-
                             await _cache.SetImageDataAsync(avatarUrl, data);
                         }
                         using (var toDraw = Image.Load(data))
                         {
-                            img.DrawImage(toDraw,
-                                1,
-                                new Size(69, 70),
-                                new Point(32, 10));
+                            if (toDraw.Size() != new Size(_template.User.Icon.Size.X, _template.User.Icon.Size.Y))
+                            {
+                                toDraw.Mutate(x => x.Resize(_template.User.Icon.Size.X, _template.User.Icon.Size.Y));
+                            }
+                            img.Mutate(x => x.DrawImage(GraphicsOptions.Default,
+                                toDraw,
+                                new Point(_template.User.Icon.Pos.X, _template.User.Icon.Pos.Y)));
                         }
                     }
                     catch (Exception ex)
@@ -728,33 +833,89 @@ namespace NadekoBot.Modules.Xp.Services
                 }
 
                 //club image
-                await DrawClubImage(img, stats).ConfigureAwait(false);
-                var s = img.Resize(432, 211).ToStream();
-                return s;
+                if (_template.Club.Icon.Show)
+                {
+                    await DrawClubImage(img, stats);
+                }
+                img.Mutate(x => x.Resize(_template.OutputSize.X, _template.OutputSize.Y));
+                return ((Stream) img.ToStream(imageFormat), imageFormat);
             }
         });
 
+        void DrawXpBar(float percent, XpBar info, Image<Rgba32> img)
+        {
+            var x1 = info.PointA.X;
+            var y1 = info.PointA.Y;
+
+            var x2 = info.PointB.X;
+            var y2 = info.PointB.Y;
+
+            var length = info.Length * percent;
+
+            float x3 = 0, x4 = 0, y3 = 0, y4 = 0;
+
+            if (info.Direction == XpTemplateDirection.Down)
+            {
+                x3 = x1;
+                x4 = x2;
+                y3 = y1 + length;
+                y4 = y2 + length;
+            }
+            else if (info.Direction == XpTemplateDirection.Up)
+            {
+                x3 = x1;
+                x4 = x2;
+                y3 = y1 - length;
+                y4 = y2 - length;
+            }
+            else if (info.Direction == XpTemplateDirection.Left)
+            {
+                x3 = x1 - length;
+                x4 = x2 - length;
+                y3 = y1;
+                y4 = y2;
+            }
+            else
+            {
+                x3 = x1 + length;
+                x4 = x2 + length;
+                y3 = y1;
+                y4 = y2;
+            }
+
+            img.Mutate(x => x.FillPolygon(info.Color,
+                new[] {
+                            new PointF(x1, y1),
+                            new PointF(x3, y3),
+                            new PointF(x4, y4),
+                            new PointF(x2, y2),
+                }));
+        }
 
         private async Task DrawClubImage(Image<Rgba32> img, FullUserStats stats)
         {
             if (!string.IsNullOrWhiteSpace(stats.User.Club?.ImageUrl))
             {
-                var imgUrl = stats.User.Club.ImageUrl;
                 try
                 {
+                    var imgUrl = new Uri(stats.User.Club.ImageUrl);
                     var (succ, data) = await _cache.TryGetImageDataAsync(imgUrl);
                     if (!succ)
                     {
+                        using (var http = _httpFactory.CreateClient())
                         using (var temp = await http.GetAsync(imgUrl, HttpCompletionOption.ResponseHeadersRead))
                         {
-                            if (temp.Content.Headers.ContentType.MediaType != "image/png"
-                                && temp.Content.Headers.ContentType.MediaType != "image/jpeg"
-                                && temp.Content.Headers.ContentType.MediaType != "image/gif")
+                            if (!temp.IsImage() || temp.GetImageSize() > 11)
                                 return;
-                            using (var tempDraw = Image.Load(await temp.Content.ReadAsStreamAsync()).Resize(45, 45))
+                            var imgData = await temp.Content.ReadAsByteArrayAsync();
+                            using (var tempDraw = Image.Load(imgData))
                             {
-                                tempDraw.ApplyRoundedCorners(22.5f);
-                                data = tempDraw.ToStream().ToArray();
+                                tempDraw.Mutate(x => x.Resize(_template.Club.Icon.Size.X, _template.Club.Icon.Size.Y));
+                                tempDraw.ApplyRoundedCorners(Math.Max(_template.Club.Icon.Size.X, _template.Club.Icon.Size.Y) / 2.0f);
+                                using (var tds = tempDraw.ToStream())
+                                {
+                                    data = tds.ToArray();
+                                }
                             }
                         }
 
@@ -762,10 +923,13 @@ namespace NadekoBot.Modules.Xp.Services
                     }
                     using (var toDraw = Image.Load(data))
                     {
-                        img.DrawImage(toDraw,
-                            1,
-                            new Size(45, 45),
-                            new Point(722, 25));
+                        if (toDraw.Size() != new Size(_template.Club.Icon.Size.X, _template.Club.Icon.Size.Y))
+                        {
+                            toDraw.Mutate(x => x.Resize(_template.Club.Icon.Size.X, _template.Club.Icon.Size.Y));
+                        }
+                        img.Mutate(x => x.DrawImage(GraphicsOptions.Default,
+                            toDraw,
+                            new Point(_template.Club.Icon.Pos.X, _template.Club.Icon.Pos.Y)));
                     }
                 }
                 catch (Exception ex)

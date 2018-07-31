@@ -27,6 +27,7 @@ namespace NadekoBot.Modules.Utility
             
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.DM)]
+            [OwnerOnly]
             public async Task PatreonRewardsReload()
             {
                 if (string.IsNullOrWhiteSpace(_creds.PatreonAccessToken))
@@ -60,7 +61,7 @@ namespace NadekoBot.Modules.Utility
 
                 if (amount > 0)
                 {
-                    await ReplyConfirmLocalized("clpa_success", amount + _bc.BotConfig.CurrencySign).ConfigureAwait(false);
+                    await ReplyConfirmLocalized("clpa_success", amount + Bc.BotConfig.CurrencySign).ConfigureAwait(false);
                     return;
                 }
                 var rem = (_service.Interval - (DateTime.UtcNow - _service.LastUpdate));

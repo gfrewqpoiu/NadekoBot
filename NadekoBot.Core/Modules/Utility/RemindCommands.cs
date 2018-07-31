@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using NadekoBot.Common.Attributes;
+using NadekoBot.Core.Common.TypeReaders.Models;
 using NadekoBot.Core.Services;
 using NadekoBot.Core.Services.Database.Models;
 using NadekoBot.Extensions;
@@ -33,20 +34,22 @@ namespace NadekoBot.Modules.Utility
             }
 
             [NadekoCommand, Usage, Description, Aliases]
-            [RequireContext(ContextType.Guild)]
             [Priority(1)]
-            public async Task Remind(MeOrHere meorhere, string timeStr, [Remainder] string message)
+            public async Task Remind(MeOrHere meorhere, StoopidTime time, [Remainder] string message)
             {
                 ulong target;
                 target = meorhere == MeOrHere.Me ? Context.User.Id : Context.Channel.Id;
-                await RemindInternal(target, meorhere == MeOrHere.Me, timeStr, message).ConfigureAwait(false);
+                if (!await RemindInternal(target, meorhere == MeOrHere.Me || Context.Guild == null, time.Time, message).ConfigureAwait(false))
+                {
+                    await ReplyErrorLocalized("remind_too_long").ConfigureAwait(false);
+                }
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.ManageMessages)]
             [Priority(0)]
-            public async Task Remind(ITextChannel channel, string timeStr, [Remainder] string message)
+            public async Task Remind(ITextChannel channel, StoopidTime time, [Remainder] string message)
             {
                 var perms = ((IGuildUser)Context.User).GetPermissions((ITextChannel)channel);
                 if (!perms.SendMessages || !perms.ViewChannel)
@@ -56,7 +59,10 @@ namespace NadekoBot.Modules.Utility
                 }
                 else
                 {
-                    var _ = RemindInternal(channel.Id, false, timeStr, message).ConfigureAwait(false);
+                    if (!await RemindInternal(channel.Id, false, time.Time, message).ConfigureAwait(false))
+                    {
+                        await ReplyErrorLocalized("remind_too_long").ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -133,48 +139,12 @@ namespace NadekoBot.Modules.Utility
                 }
             }
 
-            public async Task RemindInternal(ulong targetId, bool isPrivate, string timeStr, [Remainder] string message)
+            public async Task<bool> RemindInternal(ulong targetId, bool isPrivate, TimeSpan ts, [Remainder] string message)
             {
-                var m = _service.Regex.Match(timeStr);
+                var time = DateTime.UtcNow + ts;
 
-                if (m.Length == 0)
-                {
-                    await ReplyErrorLocalized("remind_invalid_format").ConfigureAwait(false);
-                    return;
-                }
-
-                string output = "";
-                var namesAndValues = new Dictionary<string, int>();
-
-                foreach (var groupName in _service.Regex.GetGroupNames())
-                {
-                    if (groupName == "0") continue;
-                    int.TryParse(m.Groups[groupName].Value, out var value);
-
-                    if (string.IsNullOrEmpty(m.Groups[groupName].Value))
-                    {
-                        namesAndValues[groupName] = 0;
-                        continue;
-                    }
-                    if (value < 1 ||
-                        (groupName == "months" && value > 1) ||
-                        (groupName == "weeks" && value > 4) ||
-                        (groupName == "days" && value >= 7) ||
-                        (groupName == "hours" && value > 23) ||
-                        (groupName == "minutes" && value > 59))
-                    {
-                        await Context.Channel.SendErrorAsync($"Invalid {groupName} value.").ConfigureAwait(false);
-                        return;
-                    }
-                    namesAndValues[groupName] = value;
-                    output += m.Groups[groupName].Value + " " + groupName + " ";
-                }
-                var time = DateTime.UtcNow + new TimeSpan(30 * namesAndValues["months"] +
-                                                        7 * namesAndValues["weeks"] +
-                                                        namesAndValues["days"],
-                                                        namesAndValues["hours"],
-                                                        namesAndValues["minutes"],
-                                                        0);
+                if (ts > TimeSpan.FromDays(60))
+                    return false;
 
                 var rem = new Reminder
                 {
@@ -183,7 +153,7 @@ namespace NadekoBot.Modules.Utility
                     When = time,
                     Message = message,
                     UserId = Context.User.Id,
-                    ServerId = Context.Guild.Id
+                    ServerId = Context.Guild?.Id ?? 0
                 };
 
                 using (var uow = _db.UnitOfWork)
@@ -192,21 +162,24 @@ namespace NadekoBot.Modules.Utility
                     await uow.CompleteAsync();
                 }
 
-                var gTime = TimeZoneInfo.ConvertTime(time, _tz.GetTimeZoneOrUtc(Context.Guild.Id));
+                var gTime = Context.Guild == null ?
+                    time :
+                    TimeZoneInfo.ConvertTime(time, _tz.GetTimeZoneOrUtc(Context.Guild.Id));
                 try
                 {
                     await Context.Channel.SendConfirmAsync(
                         "⏰ " + GetText("remind",
                             Format.Bold(!isPrivate ? $"<#{targetId}>" : Context.User.Username),
                             Format.Bold(message.SanitizeMentions()),
-                            Format.Bold(output),
+                            $"{ts.Days}d {ts.Hours}h {ts.Minutes}min",
                             gTime, gTime)).ConfigureAwait(false);
                 }
                 catch
                 {
-                    // ignored
+
                 }
                 _service.StartReminder(rem);
+                return true;
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -219,7 +192,7 @@ namespace NadekoBot.Modules.Utility
                 using (var uow = _db.UnitOfWork)
                 {
                     uow.BotConfig.GetOrCreate(set => set).RemindMessageFormat = arg.Trim();
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
 
                 await ReplyConfirmLocalized("remind_template").ConfigureAwait(false);

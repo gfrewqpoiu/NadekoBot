@@ -1,4 +1,5 @@
 ﻿using Discord;
+using NadekoBot.Common.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -26,7 +27,7 @@ namespace NadekoBot.Core.Services.Database.Models
 
         public int TriviaCurrencyReward { get; set; } = 0;
         /// <summary> UNUSED </summary>
-        [Obsolete]
+        [Obsolete("Use MinBet instead.")]
         public int MinimumBetAmount { get; set; } = 2;
         public float BetflipMultiplier { get; set; } = 1.95f;
         public int CurrencyDropAmount { get; set; } = 1;
@@ -36,12 +37,9 @@ namespace NadekoBot.Core.Services.Database.Models
         public float Betroll100Multiplier { get; set; } = 10;
         public int TimelyCurrency { get; set; } = 0;
         public int TimelyCurrencyPeriod { get; set; } = 0;
+        public float DailyCurrencyDecay { get; set; } = 0;
+        public DateTime LastCurrencyDecay { get; set; } = DateTime.MinValue;
         public int MinWaifuPrice { get; set; } = 50;
-        //public HashSet<CommandCost> CommandCosts { get; set; } = new HashSet<CommandCost>();
-
-        /// <summary>I messed up, don't use</summary>
-        [Obsolete] public HashSet<CommandPrice> CommandPrices { get; set; } = new HashSet<CommandPrice>();
-
 
         public HashSet<EightBallResponse> EightBallResponses { get; set; } = new HashSet<EightBallResponse>();
         public HashSet<RaceAnimal> RaceAnimals { get; set; } = new HashSet<RaceAnimal>();
@@ -65,10 +63,10 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public string OkColor { get; set; } = "00e584";
         public string ErrorColor { get; set; } = "ee281f";
         public string Locale { get; set; } = null;
-        public List<StartupCommand> StartupCommands { get; set; }
+        public IndexedCollection<StartupCommand> StartupCommands { get; set; }
         public HashSet<BlockedCmdOrMdl> BlockedCommands { get; set; }
         public HashSet<BlockedCmdOrMdl> BlockedModules { get; set; }
-        public int PermissionVersion { get; set; }
+        public int PermissionVersion { get; set; } = 2;
         public string DefaultPrefix { get; set; } = ".";
         public bool CustomReactionsStartWith { get; set; } = false;
         public int XpPerMessage { get; set; } = 3;
@@ -81,6 +79,16 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public int MinBet { get; set; } = 0;
         public int MaxBet { get; set; } = 0;
         public ConsoleOutputType ConsoleOutputType { get; set; } = ConsoleOutputType.Normal;
+
+        public string UpdateString { get; set; } = "New update has been released.";
+        public UpdateCheckType CheckForUpdates { get; set; } = UpdateCheckType.Release;
+        public DateTime LastUpdate { get; set; } = new DateTime(2018, 5, 5, 0, 0, 0, DateTimeKind.Utc);
+        public bool CurrencyGenerationPassword { get; set; }
+    }
+
+    public enum UpdateCheckType
+    {
+        Release, Commit, None
     }
 
     public class BlockedCmdOrMdl : DbEntity
@@ -88,10 +96,10 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public string Name { get; set; }
 
         public override bool Equals(object obj) =>
-            (obj as BlockedCmdOrMdl)?.Name?.ToLowerInvariant() == Name.ToLowerInvariant();
+            (obj as BlockedCmdOrMdl)?.Name?.ToUpperInvariant() == Name.ToUpperInvariant();
 
         public override int GetHashCode() =>
-            Name.GetHashCode();
+            Name.GetHashCode(System.StringComparison.InvariantCulture);
     }
 
     public enum ConsoleOutputType
@@ -110,6 +118,7 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public string GuildName { get; set; }
         public ulong? VoiceChannelId { get; set; }
         public string VoiceChannelName { get; set; }
+        public int Interval { get; set; }
     }
 
     public class PlayingStatus : DbEntity
@@ -136,7 +145,7 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public string Text { get; set; }
 
         public override int GetHashCode() =>
-            Text.GetHashCode();
+            Text.GetHashCode(StringComparison.InvariantCulture);
 
         public override bool Equals(object obj) =>
             (obj is EightBallResponse response)
@@ -150,7 +159,7 @@ Nadeko Support Server: https://discord.gg/nadekobot";
         public string Name { get; set; }
 
         public override int GetHashCode() =>
-            Icon.GetHashCode();
+            Icon.GetHashCode(StringComparison.InvariantCulture);
 
         public override bool Equals(object obj) =>
             (obj is RaceAnimal animal)

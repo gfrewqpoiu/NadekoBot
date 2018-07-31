@@ -8,6 +8,7 @@ using NadekoBot.Common.Attributes;
 using NadekoBot.Extensions;
 using NadekoBot.Modules.Games.Common;
 using NadekoBot.Modules.Games.Services;
+using System.Net.Http;
 
 namespace NadekoBot.Modules.Games
 {
@@ -18,40 +19,15 @@ namespace NadekoBot.Modules.Games
     public partial class Games : NadekoTopLevelModule<GamesService>
     {
         private readonly IImageCache _images;
+        private readonly IHttpClientFactory _httpFactory;
+        private readonly Random _rng = new Random();
 
-        public Games(IDataCache data)
+        public Games(IDataCache data, IHttpClientFactory factory)
         {
             _images = data.LocalImages;
+            _httpFactory = factory;
         }
-//#if GLOBAL_NADEKO
-//        [NadekoCommand, Usage, Description, Aliases]
-//        [RequireContext(ContextType.Guild)]
-//        public async Task TrickOrTreat()
-//        {
-//            if (DateTime.UtcNow.Day != 31 ||
-//                DateTime.UtcNow.Month != 10
-//                || !_service.HalloweenAwardedUsers.Add(Context.User.Id)
-//        )
-//            {
-//                return;
-//            }
-//            if (await _service.GetTreat(Context.User.Id))
-//            {
-//                await Context.Channel
-//                    .SendConfirmAsync($"You've got a treat of 10🍬! Happy Halloween!")
-//                    .ConfigureAwait(false);
-//            }
-//            else
-//            {
-//                await Context.Channel
-//                    .EmbedAsync(new EmbedBuilder()
-//                    .WithDescription("No treat for you :c Happy Halloween!")
-//                    .WithImageUrl("http://tinyurl.com/ybntddbb")
-//                    .WithErrorColor())
-//                    .ConfigureAwait(false);
-//            }
-//        }
-//#endif
+
         [NadekoCommand, Usage, Description, Aliases]
         public async Task Choose([Remainder] string list = null)
         {
@@ -71,8 +47,9 @@ namespace NadekoBot.Modules.Games
                 return;
 
             await Context.Channel.EmbedAsync(new EmbedBuilder().WithColor(NadekoBot.OkColor)
-                               .AddField(efb => efb.WithName("❓ " + GetText("question") ).WithValue(question).WithIsInline(false))
-                               .AddField(efb => efb.WithName("🎱 " + GetText("8ball")).WithValue(_service.EightBallResponses[new NadekoRandom().Next(0, _service.EightBallResponses.Length)]).WithIsInline(false)));
+                .WithDescription(Context.User.ToString())
+                .AddField(efb => efb.WithName("❓ " + GetText("question")).WithValue(question).WithIsInline(false))
+                .AddField(efb => efb.WithName("🎱 " + GetText("8ball")).WithValue(_service.EightBallResponses[new NadekoRandom().Next(0, _service.EightBallResponses.Length)]).WithIsInline(false))).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -91,8 +68,7 @@ namespace NadekoBot.Modules.Games
 
         private double NextDouble(double x, double y)
         {
-            var rng = new Random();
-            return rng.NextDouble() * (y - x) + x;
+            return _rng.NextDouble() * (y - x) + x;
         }
 
         private GirlRating GetGirl(ulong uid)
@@ -101,11 +77,6 @@ namespace NadekoBot.Modules.Games
 
             var roll = rng.Next(1, 1001);
 
-            if ((uid == 185968432783687681 ||
-                 uid == 265642040950390784) && roll >= 900)
-                roll = 1000;
-
-
             double hot;
             double crazy;
             string advice;
@@ -113,7 +84,7 @@ namespace NadekoBot.Modules.Games
             {
                 hot = NextDouble(0, 5);
                 crazy = NextDouble(4, 10);
-                advice = 
+                advice =
                     "This is your NO-GO ZONE. We do not hang around, and date, and marry women who are at least, in our mind, a 5. " +
                     "So, this is your no-go zone. You don't go here. You just rule this out. Life is better this way, that's the way it is.";
             }
@@ -165,7 +136,7 @@ namespace NadekoBot.Modules.Games
                          "and maybe look at how to replicate that.";
             }
 
-            return new GirlRating(_images, crazy, hot, roll, advice);
+            return new GirlRating(_images, _httpFactory, crazy, hot, roll, advice);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
