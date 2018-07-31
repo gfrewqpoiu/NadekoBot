@@ -18,23 +18,20 @@ namespace NadekoBot.Modules.Games
         public class TriviaCommands : NadekoSubmodule<GamesService>
         {
             private readonly IDataCache _cache;
-            private readonly CurrencyService _cs;
+            private readonly ICurrencyService _cs;
             private readonly DiscordSocketClient _client;
-            private readonly IBotConfigProvider _bc;
 
-            public TriviaCommands(DiscordSocketClient client, IDataCache cache,
-                IBotConfigProvider bc, CurrencyService cs)
+            public TriviaCommands(DiscordSocketClient client, IDataCache cache, ICurrencyService cs)
             {
                 _cache = cache;
                 _cs = cs;
                 _client = client;
-                _bc = bc;
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [Priority(0)]
-            [NadekoOptions(typeof(TriviaOptions))]
+            [NadekoOptionsAttribute(typeof(TriviaOptions))]
             public Task Trivia(params string[] args)
                 => InternalTrivia(args);
 
@@ -42,9 +39,13 @@ namespace NadekoBot.Modules.Games
             {
                 var channel = (ITextChannel)Context.Channel;
 
-                var (opts, _) = OptionsParser.Default.ParseFrom(new TriviaOptions(), args);
+                var (opts, _) = OptionsParser.ParseFrom(new TriviaOptions(), args);
 
-                var trivia = new TriviaGame(_strings, _client, _bc, _cache, _cs, channel.Guild, channel, opts);
+                if (Bc.BotConfig.MinimumTriviaWinReq > 0 && Bc.BotConfig.MinimumTriviaWinReq > opts.WinRequirement)
+                {
+                    return;
+                }
+                var trivia = new TriviaGame(Strings, _client, Bc, _cache, _cs, channel.Guild, channel, opts);
                 if (_service.RunningTrivias.TryAdd(channel.Guild.Id, trivia))
                 {
                     try

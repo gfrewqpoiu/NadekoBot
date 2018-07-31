@@ -24,9 +24,14 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
                 }
             };
 
-        public IEnumerable<GuildConfig> GetAllGuildConfigs(List<long> availableGuilds) =>
-            _set
-                .Where(gc => availableGuilds.Contains((long)gc.GuildId))
+        public IEnumerable<GuildConfig> GetAllGuildConfigs(List<ulong> availableGuilds) =>
+            IncludeEverything()
+                .Where(gc => availableGuilds.Contains(gc.GuildId))
+                .ToList();
+
+        private IQueryable<GuildConfig> IncludeEverything()
+        {
+            return _set
                 .Include(gc => gc.LogSetting)
                     .ThenInclude(ls => ls.IgnoredChannels)
                 .Include(gc => gc.MutedUsers)
@@ -54,8 +59,8 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
                 .Include(gc => gc.MusicSettings)
                 .Include(gc => gc.DelMsgOnCmdChannels)
                 .Include(gc => gc.ReactionRoleMessages)
-                    .ThenInclude(x => x.ReactionRoles)
-                .ToList();
+                    .ThenInclude(x => x.ReactionRoles);
+        }
 
         /// <summary>
         /// Gets and creates if it doesn't exist a config for a guild.
@@ -63,21 +68,13 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
         /// <param name="guildId">For which guild</param>
         /// <param name="includes">Use to manipulate the set however you want</param>
         /// <returns>Config for the guild</returns>
-        public GuildConfig For(ulong guildId, Func<DbSet<GuildConfig>, IQueryable<GuildConfig>> includes = null)
+        public GuildConfig ForId(ulong guildId, Func<DbSet<GuildConfig>, IQueryable<GuildConfig>> includes = null)
         {
             GuildConfig config;
 
             if (includes == null)
             {
-                config = _set
-                    .Include(gc => gc.FollowedStreams)
-                    .Include(gc => gc.LogSetting)
-                        .ThenInclude(ls => ls.IgnoredChannels)
-                    .Include(gc => gc.FilterInvitesChannelIds)
-                    .Include(gc => gc.FilterWordsChannelIds)
-                    .Include(gc => gc.FilteredWords)
-                    .Include(gc => gc.GenerateCurrencyChannelIds)
-                    .Include(gc => gc.CommandCooldowns)
+                config = IncludeEverything()
                     .FirstOrDefault(c => c.GuildId == guildId);
             }
             else
@@ -133,24 +130,10 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
             return config;
         }
 
-        public IEnumerable<GuildConfig> OldPermissionsForAll()
+        public IEnumerable<GuildConfig> Permissionsv2ForAll(List<ulong> include)
         {
             var query = _set
-                .Where(gc => gc.RootPermission != null)
-                .Include(gc => gc.RootPermission);
-
-            for (int i = 0; i < 60; i++)
-            {
-                query = query.ThenInclude(gc => gc.Next);
-            }
-
-            return query.ToList();
-        }
-
-        public IEnumerable<GuildConfig> Permissionsv2ForAll(List<long> include)
-        {
-            var query = _set
-                .Where(x => include.Contains((long)x.GuildId))
+                .Where(x => include.Contains(x.GuildId))
                 .Include(gc => gc.Permissions);
 
             return query.ToList();
@@ -181,12 +164,22 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
             return config;
         }
 
-        public IEnumerable<FollowedStream> GetAllFollowedStreams(List<long> included) =>
-            _set
-                .Where(gc => included.Contains((long)gc.GuildId))
+        public IEnumerable<FollowedStream> GetFollowedStreams()
+        {
+            return _set
+                .Include(x => x.FollowedStreams)
+                .SelectMany(gc => gc.FollowedStreams)
+                .ToArray();
+        }
+
+        public IEnumerable<FollowedStream> GetFollowedStreams(List<ulong> included)
+        {
+            return _set
+                .Where(gc => included.Contains(gc.GuildId))
                 .Include(gc => gc.FollowedStreams)
                 .SelectMany(gc => gc.FollowedStreams)
                 .ToList();
+        }
 
         public void SetCleverbotEnabled(ulong id, bool cleverbotEnabled)
         {
@@ -200,7 +193,7 @@ namespace NadekoBot.Core.Services.Database.Repositories.Impl
 
         public XpSettings XpSettingsFor(ulong guildId)
         {
-            var gc = For(guildId,
+            var gc = ForId(guildId,
                 set => set.Include(x => x.XpSettings)
                           .ThenInclude(x => x.RoleRewards)
                           .Include(x => x.XpSettings)

@@ -15,20 +15,19 @@ namespace NadekoBot.Modules.Utility
         public class PatreonCommands : NadekoSubmodule<PatreonRewardsService>
         {
             private readonly IBotCredentials _creds;
-            private readonly IBotConfigProvider _config;
             private readonly DbService _db;
-            private readonly CurrencyService _currency;
+            private readonly ICurrencyService _currency;
 
-            public PatreonCommands(IBotCredentials creds, IBotConfigProvider config, DbService db, CurrencyService currency)
+            public PatreonCommands(IBotCredentials creds, DbService db, ICurrencyService currency)
             {
                 _creds = creds;
-                _config = config;
                 _db = db;
                 _currency = currency;
             }
             
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.DM)]
+            [OwnerOnly]
             public async Task PatreonRewardsReload()
             {
                 if (string.IsNullOrWhiteSpace(_creds.PatreonAccessToken))
@@ -39,6 +38,7 @@ namespace NadekoBot.Modules.Utility
             }
 
             [NadekoCommand, Usage, Description, Aliases]
+            [RequireContext(ContextType.DM)]
             public async Task ClaimPatreonRewards()
             {
                 if (string.IsNullOrWhiteSpace(_creds.PatreonAccessToken))
@@ -61,7 +61,7 @@ namespace NadekoBot.Modules.Utility
 
                 if (amount > 0)
                 {
-                    await ReplyConfirmLocalized("clpa_success", amount + _config.BotConfig.CurrencySign).ConfigureAwait(false);
+                    await ReplyConfirmLocalized("clpa_success", amount + Bc.BotConfig.CurrencySign).ConfigureAwait(false);
                     return;
                 }
                 var rem = (_service.Interval - (DateTime.UtcNow - _service.LastUpdate));
@@ -76,6 +76,5 @@ namespace NadekoBot.Modules.Utility
                     .ConfigureAwait(false);
             }
         }
-
     }
 }

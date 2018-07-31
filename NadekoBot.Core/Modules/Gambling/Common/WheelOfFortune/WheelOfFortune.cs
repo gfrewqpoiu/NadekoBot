@@ -1,14 +1,9 @@
-﻿using NadekoBot.Common;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Immutable;
+using NadekoBot.Common;
 
 namespace NadekoBot.Modules.Gambling.Common.WheelOfFortune
 {
-    public class WheelOfFortune
+    public class WheelOfFortuneGame
     {
         private static readonly NadekoRandom _rng = new NadekoRandom();
 
@@ -37,7 +32,7 @@ namespace NadekoBot.Modules.Gambling.Common.WheelOfFortune
         public string Emoji => _emojis[Result];
         public float Multiplier => Multipliers[Result];
 
-        public WheelOfFortune()
+        public WheelOfFortuneGame()
         {
             this.Result = _rng.Next(0, 8);
         }

@@ -5,9 +5,11 @@ using NadekoBot.Core.Services;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using NadekoBot.Common.Attributes;
-using NadekoBot.Modules.Gambling.Common;
 using NadekoBot.Modules.Gambling.Services;
-using NadekoBot.Modules.Gambling.Common.CurrencyEvents;
+using NadekoBot.Core.Common;
+using NadekoBot.Core.Services.Database.Models;
+using NadekoBot.Core.Modules.Gambling.Common.Events;
+using System;
 
 namespace NadekoBot.Modules.Gambling
 {
@@ -16,75 +18,83 @@ namespace NadekoBot.Modules.Gambling
         [Group]
         public class CurrencyEventsCommands : NadekoSubmodule<CurrencyEventsService>
         {
-            public enum CurrencyEvent
+            public enum OtherEvent
             {
-                Reaction,
-                SneakyGameStatus
+                BotListUpvoters
             }
 
             private readonly DiscordSocketClient _client;
-            private readonly IBotConfigProvider _bc;
-            private readonly CurrencyService _cs;
+            private readonly IBotCredentials _creds;
+            private readonly ICurrencyService _cs;
 
-            public CurrencyEventsCommands(DiscordSocketClient client, IBotConfigProvider bc, CurrencyService cs)
+            public CurrencyEventsCommands(DiscordSocketClient client, ICurrencyService cs, IBotCredentials creds)
             {
                 _client = client;
-                _bc = bc;
+                _creds = creds;
                 _cs = cs;
             }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
+            [NadekoOptionsAttribute(typeof(EventOptions))]
             [OwnerOnly]
-            public async Task StartEvent(CurrencyEvent e, int arg = -1)
+            public async Task EventStart(CurrencyEvent.Type ev, params string[] options)
             {
-                switch (e)
+                var (opts, _) = OptionsParser.ParseFrom(new EventOptions(), options);
+                if (!await _service.TryCreateEventAsync(Context.Guild.Id,
+                    Context.Channel.Id,
+                    ev,
+                    opts,
+                    GetEmbed
+                    ).ConfigureAwait(false))
                 {
-                    case CurrencyEvent.Reaction:
-                        await ReactionEvent(Context, arg).ConfigureAwait(false);
-                        break;
-                    case CurrencyEvent.SneakyGameStatus:
-                        await SneakyGameStatusEvent(Context, arg).ConfigureAwait(false);
-                        break;
-                }
-            }
-
-            private async Task SneakyGameStatusEvent(ICommandContext context, int num)
-            {
-                if (num < 10 || num > 600)
-                    num = 60;
-
-                var ev = new SneakyEvent(_cs, _client, _bc, num);
-                if (!await _service.StartSneakyEvent(ev, context.Message, context))
+                    await ReplyErrorLocalized("start_event_fail").ConfigureAwait(false);
                     return;
-                try
-                {
-                    var title = GetText("sneakygamestatus_title");
-                    var desc = GetText("sneakygamestatus_desc", 
-                        Format.Bold(100.ToString()) + _bc.BotConfig.CurrencySign,
-                        Format.Bold(num.ToString()));
-                    await context.Channel.SendConfirmAsync(title, desc)
-                        .ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignored
                 }
             }
 
-            public async Task ReactionEvent(ICommandContext context, int amount)
+            private EmbedBuilder GetEmbed(CurrencyEvent.Type type, EventOptions opts, long currentPot)
             {
-                if (amount <= 0)
-                    amount = 100;
+                switch (type)
+                {
+                    case CurrencyEvent.Type.Reaction:
+                        return new EmbedBuilder()
+                            .WithOkColor()
+                            .WithTitle(GetText("event_title", type.ToString()))
+                            .WithDescription(GetReactionDescription(opts.Amount, currentPot))
+                            .WithFooter(GetText("event_duration_footer", opts.Hours));
+                    case CurrencyEvent.Type.GameStatus:
+                        return new EmbedBuilder()
+                            .WithOkColor()
+                            .WithTitle(GetText("event_title", type.ToString()))
+                            .WithDescription(GetGameStatusDescription(opts.Amount, currentPot))
+                            .WithFooter(GetText("event_duration_footer", opts.Hours));
+                    default:
+                        break;
+                }
+                throw new ArgumentOutOfRangeException(nameof(type));
+            }
 
-                var title = GetText("reaction_title");
-                var desc = GetText("reaction_desc", _bc.BotConfig.CurrencySign, Format.Bold(amount.ToString()) + _bc.BotConfig.CurrencySign);
-                var footer = GetText("reaction_footer", 24);
-                var re = new ReactionEvent(_bc.BotConfig, _client, _cs, amount);
-                var msg = await context.Channel.SendConfirmAsync(title,
-                        desc, footer: footer)
-                    .ConfigureAwait(false);
-                await re.Start(msg, context);
+            private string GetReactionDescription(long amount, long potSize)
+            {
+                string potSizeStr = Format.Bold(potSize == 0
+                    ? "∞" + Bc.BotConfig.CurrencySign
+                    : potSize.ToString() + Bc.BotConfig.CurrencySign);
+                return GetText("new_reaction_event",
+                                   Bc.BotConfig.CurrencySign,
+                                   Format.Bold(amount + Bc.BotConfig.CurrencySign),
+                                   potSizeStr);
+            }
+
+            private string GetGameStatusDescription(long amount, long potSize)
+            {
+                string potSizeStr = Format.Bold(potSize == 0
+                    ? "∞" + Bc.BotConfig.CurrencySign
+                    : potSize.ToString() + Bc.BotConfig.CurrencySign);
+                return GetText("new_gamestatus_event",
+                                   Bc.BotConfig.CurrencySign,
+                                   Format.Bold(amount + Bc.BotConfig.CurrencySign),
+                                   potSizeStr);
             }
         }
     }

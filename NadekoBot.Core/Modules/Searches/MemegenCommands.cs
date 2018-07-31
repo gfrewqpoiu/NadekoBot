@@ -1,14 +1,14 @@
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Discord.Commands;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Extensions;
+using Newtonsoft.Json;
 
 namespace NadekoBot.Modules.Searches
 {
@@ -29,23 +29,23 @@ namespace NadekoBot.Modules.Searches
                 {'"', "''"}
 
             }.ToImmutableDictionary();
+            private readonly IHttpClientFactory _httpFactory;
+
+            public MemegenCommands(IHttpClientFactory factory)
+            {
+                _httpFactory = factory;
+            }
 
             [NadekoCommand, Usage, Description, Aliases]
             public async Task Memelist()
             {
-                var handler = new HttpClientHandler
-                {
-                    AllowAutoRedirect = false
-                };
-
-
-                using (var http = new HttpClient(handler))
+                using (var http = _httpFactory.CreateClient("memelist"))
                 {
                     var rawJson = await http.GetStringAsync("https://memegen.link/api/templates/").ConfigureAwait(false);
                     var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(rawJson)
                         .Select(kvp => Path.GetFileName(kvp.Value));
 
-                    await Context.Channel.SendTableAsync(data, x => $"{x,-17}", 3).ConfigureAwait(false);
+                    await Context.Channel.SendTableAsync(data, x => $"{x,-15}", 3).ConfigureAwait(false);
                 }
             }
 
@@ -64,8 +64,7 @@ namespace NadekoBot.Modules.Searches
 
                 foreach (var c in input)
                 {
-                    string tmp;
-                    if (_map.TryGetValue(c, out tmp))
+                    if (_map.TryGetValue(c, out var tmp))
                         sb.Append(tmp);
                     else
                         sb.Append(c);

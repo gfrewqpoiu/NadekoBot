@@ -76,15 +76,16 @@ namespace NadekoBot.Modules.Xp
             }
 
             [NadekoCommand, Usage, Description, Aliases]
-            public Task ClubIcon([Remainder]string url = null)
+            public async Task ClubIcon([Remainder]string url = null)
             {
                 if ((!Uri.IsWellFormedUriString(url, UriKind.Absolute) && url != null)
-                    || !_service.SetClubIcon(Context.User.Id, url))
+                    || !await _service.SetClubIcon(Context.User.Id, url == null ? null : new Uri(url)))
                 {
-                    return ReplyErrorLocalized("club_icon_error");
+                    await ReplyErrorLocalized("club_icon_error").ConfigureAwait(false);
+                    return;
                 }
 
-                return ReplyConfirmLocalized("club_icon_set");
+                await ReplyConfirmLocalized("club_icon_set").ConfigureAwait(false);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -120,7 +121,7 @@ namespace NadekoBot.Modules.Xp
 
                 var lvl = new LevelStats(club.Xp);
 
-                await Context.Channel.SendPaginatedConfirmAsync(_client, 0, (page) =>
+                await Context.SendPaginatedConfirmAsync(0, (page) =>
                 {
                     var embed = new EmbedBuilder()
                         .WithOkColor()
@@ -157,7 +158,7 @@ namespace NadekoBot.Modules.Xp
                         return embed.WithThumbnailUrl(club.ImageUrl);
 
                     return embed;
-                }, club.Users.Count, 10);
+                }, club.Users.Count, 10).ConfigureAwait(false);
             }
 
             [NadekoCommand, Usage, Description, Aliases]
@@ -175,7 +176,7 @@ namespace NadekoBot.Modules.Xp
                     .Select(x => x.User)
                     .ToArray();
 
-                return Context.Channel.SendPaginatedConfirmAsync(_client, page,
+                return Context.SendPaginatedConfirmAsync(page,
                     curPage =>
                     {
                         var toShow = string.Join("\n", bans
@@ -207,7 +208,7 @@ namespace NadekoBot.Modules.Xp
                     .Select(x => x.User)
                     .ToArray();
 
-                return Context.Channel.SendPaginatedConfirmAsync(_client, page,
+                return Context.SendPaginatedConfirmAsync(page,
                     curPage =>
                     {
                         var toShow = string.Join("\n", apps

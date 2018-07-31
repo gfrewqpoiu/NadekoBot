@@ -22,12 +22,13 @@ If you want to contribute, be sure to PR on the current **[default][repo]** bran
 	- [From Source](guides/From Source.md)
 - Commands
 	- [Readme](Readme.md)
-	- [Commands List](Commands List.md)
+	- [Commands List][cmd_list]
 - Features Explained
 	- [Permissions System](Permissions System.md)
 	- [JSON Explanations](JSON Explanations.md)
 	- [Custom Reactions](Custom Reactions.md)
 	- [Placeholders](Placeholders.md)
+	- [Bot Config](Bce Guide.md)
 - [Frequently Asked Questions](Frequently Asked Questions.md)
 - [Contribution Guide](Contribution Guide.md)
 - [Donate](Donate.md)
@@ -37,3 +38,4 @@ If you want to contribute, be sure to PR on the current **[default][repo]** bran
 [GitHub]: https://github.com/Kwoth/NadekoBot
 [Issues]: https://github.com/Kwoth/NadekoBot/issues
 [repo]: https://github.com/Kwoth/NadekoBot
+[cmd_list]: https://nadekobot.me/commands

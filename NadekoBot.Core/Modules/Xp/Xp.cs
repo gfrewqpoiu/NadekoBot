@@ -7,7 +7,6 @@ using NadekoBot.Modules.Xp.Common;
 using NadekoBot.Modules.Xp.Services;
 using NadekoBot.Core.Services;
 using NadekoBot.Core.Services.Database.Models;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,26 +16,23 @@ namespace NadekoBot.Modules.Xp
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;
-        private readonly IBotConfigProvider _bc;
 
-        public Xp(DiscordSocketClient client,DbService db, IBotConfigProvider bc)
+        public Xp(DiscordSocketClient client, DbService db)
         {
             _client = client;
             _db = db;
-            _bc = bc;
         }
-        
+
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
-        //todo add ratelimit attribute
-        //[Ratelimit(30)]
         public async Task Experience([Remainder]IUser user = null)
         {
             user = user ?? Context.User;
-            await Context.Channel.TriggerTypingAsync();
-            using (var img = await _service.GenerateImageAsync((IGuildUser)user))
+            await Context.Channel.TriggerTypingAsync().ConfigureAwait(false);
+            var (img, fmt) = await _service.GenerateXpImageAsync((IGuildUser)user).ConfigureAwait(false);
+            using (img)
             {
-                await Context.Channel.SendFileAsync(img, $"{user.Id}_xp.png")
+                await Context.Channel.SendFileAsync(img, $"{Context.Guild.Id}_{user.Id}_xp.{fmt.FileExtensions.FirstOrDefault()}")
                     .ConfigureAwait(false);
             }
         }
@@ -66,7 +62,7 @@ namespace NadekoBot.Modules.Xp
                 .Where(x => x.RoleStr != null)
                 .Concat(_service.GetCurrencyRewards(Context.Guild.Id)
                     .OrderBy(x => x.Level)
-                    .Select(x => (x.Level, Format.Bold(x.Amount + _bc.BotConfig.CurrencySign))))
+                    .Select(x => (x.Level, Format.Bold(x.Amount + Bc.BotConfig.CurrencySign))))
                     .GroupBy(x => x.Level)
                     .OrderBy(x => x.Key)
                     .Skip(page * 9)
@@ -89,7 +85,7 @@ namespace NadekoBot.Modules.Xp
 
             _service.SetRoleReward(Context.Guild.Id, level, role?.Id);
 
-            if(role == null)
+            if (role == null)
                 await ReplyConfirmLocalized("role_reward_cleared", level).ConfigureAwait(false);
             else
                 await ReplyConfirmLocalized("role_reward_added", level, Format.Bold(role.ToString())).ConfigureAwait(false);
@@ -98,7 +94,7 @@ namespace NadekoBot.Modules.Xp
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
         [OwnerOnly]
-        public async Task XpCurrencyReward(int level, int amount=0)
+        public async Task XpCurrencyReward(int level, int amount = 0)
         {
             if (level < 1 || amount < 0)
                 return;
@@ -106,9 +102,9 @@ namespace NadekoBot.Modules.Xp
             _service.SetCurrencyReward(Context.Guild.Id, level, amount);
 
             if (amount == 0)
-                await ReplyConfirmLocalized("cur_reward_cleared", level, _bc.BotConfig.CurrencySign).ConfigureAwait(false);
+                await ReplyConfirmLocalized("cur_reward_cleared", level, Bc.BotConfig.CurrencySign).ConfigureAwait(false);
             else
-                await ReplyConfirmLocalized("cur_reward_added", level, Format.Bold(amount + _bc.BotConfig.CurrencySign)).ConfigureAwait(false);
+                await ReplyConfirmLocalized("cur_reward_added", level, Format.Bold(amount + Bc.BotConfig.CurrencySign)).ConfigureAwait(false);
         }
 
         public enum NotifyPlace
@@ -123,9 +119,9 @@ namespace NadekoBot.Modules.Xp
         public async Task XpNotify(NotifyPlace place = NotifyPlace.Guild, XpNotificationType type = XpNotificationType.Channel)
         {
             if (place == NotifyPlace.Guild)
-                await _service.ChangeNotificationType(Context.User.Id, Context.Guild.Id, type);
+                await _service.ChangeNotificationType(Context.User.Id, Context.Guild.Id, type).ConfigureAwait(false);
             else
-                await _service.ChangeNotificationType(Context.User, type);
+                await _service.ChangeNotificationType(Context.User, type).ConfigureAwait(false);
             await Context.Channel.SendConfirmAsync("👌").ConfigureAwait(false);
         }
 
@@ -200,7 +196,7 @@ namespace NadekoBot.Modules.Xp
             if (--page < 0 || page > 100)
                 return Task.CompletedTask;
 
-            return Context.Channel.SendPaginatedConfirmAsync(_client, page, async (curPage) =>
+            return Context.SendPaginatedConfirmAsync(page, (curPage) =>
             {
                 var users = _service.GetUserXps(Context.Guild.Id, curPage);
 
@@ -215,7 +211,7 @@ namespace NadekoBot.Modules.Xp
                     for (int i = 0; i < users.Length; i++)
                     {
                         var levelStats = LevelStats.FromXp(users[i].Xp + users[i].AwardedXp);
-                        var user = await Context.Guild.GetUserAsync(users[i].UserId).ConfigureAwait(false);
+                        var user = ((SocketGuild)Context.Guild).GetUser(users[i].UserId);
 
                         var userXpData = users[i];
 
@@ -254,25 +250,42 @@ namespace NadekoBot.Modules.Xp
                 {
                     var user = users[i];
                     embed.AddField(
-                        $"#{(i + 1 + page * 9)} {(user.ToString())}", 
+                        $"#{(i + 1 + page * 9)} {(user.ToString())}",
                         $"{GetText("level_x", LevelStats.FromXp(users[i].TotalXp).Level)} - {users[i].TotalXp}xp");
                 }
             }
 
-            await Context.Channel.EmbedAsync(embed);
+            await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task XpAdd(int amount, [Remainder] IGuildUser user)
+        public async Task XpAdd(int amount, ulong userId)
         {
             if (amount == 0)
                 return;
 
-            _service.AddXp(user.Id, Context.Guild.Id, amount);
+            _service.AddXp(userId, Context.Guild.Id, amount);
+            var usr = ((SocketGuild)Context.Guild).GetUser(userId)?.ToString()
+                ?? userId.ToString();
+            await ReplyConfirmLocalized("modified", Format.Bold(usr), Format.Bold(amount.ToString())).ConfigureAwait(false);
+        }
 
-            await ReplyConfirmLocalized("modified", Format.Bold(user.ToString()), Format.Bold(amount.ToString())).ConfigureAwait(false);
+        [NadekoCommand, Usage, Description, Aliases]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public Task XpAdd(int amount, [Remainder] IGuildUser user)
+            => XpAdd(amount, user.Id);
+
+        [NadekoCommand, Usage, Description, Aliases]
+        [RequireContext(ContextType.Guild)]
+        [OwnerOnly]
+        public async Task XpTemplateReload()
+        {
+            _service.ReloadXpTemplate();
+            await Task.Delay(1000).ConfigureAwait(false);
+            await ReplyConfirmLocalized("template_reloaded").ConfigureAwait(false);
         }
     }
 }

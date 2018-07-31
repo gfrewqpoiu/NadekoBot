@@ -29,6 +29,15 @@ namespace NadekoBot.Modules.Utility
             }
 
             [NadekoCommand, Usage, Description, Aliases]
+            [RequireContext(ContextType.Guild)]
+            [RequireUserPermission(GuildPermission.Administrator)]
+            public async Task AliasesClear()
+            {
+                var count = _service.ClearAliases(Context.Guild.Id);
+                await ReplyConfirmLocalized("aliases_cleared", count).ConfigureAwait(false);
+            }
+
+            [NadekoCommand, Usage, Description, Aliases]
             [RequireUserPermission(GuildPermission.Administrator)]
             [RequireContext(ContextType.Guild)]
             public async Task Alias(string trigger, [Remainder] string mapping = null)
@@ -51,7 +60,7 @@ namespace NadekoBot.Modules.Utility
 
                     using (var uow = _db.UnitOfWork)
                     {
-                        var config = uow.GuildConfigs.For(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
+                        var config = uow.GuildConfigs.ForId(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
                         var toAdd = new CommandAlias()
                         {
                             Mapping = mapping,
@@ -68,7 +77,7 @@ namespace NadekoBot.Modules.Utility
                 {
                     using (var uow = _db.UnitOfWork)
                     {
-                        var config = uow.GuildConfigs.For(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
+                        var config = uow.GuildConfigs.ForId(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
                         config.CommandAliases.Add(new CommandAlias()
                         {
                             Mapping = mapping,
@@ -83,7 +92,7 @@ namespace NadekoBot.Modules.Utility
                 {
                     using (var uow = _db.UnitOfWork)
                     {
-                        var config = uow.GuildConfigs.For(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
+                        var config = uow.GuildConfigs.ForId(Context.Guild.Id, set => set.Include(x => x.CommandAliases));
                         var toAdd = new CommandAlias()
                         {
                             Mapping = mapping,
@@ -110,7 +119,7 @@ namespace NadekoBot.Modules.Utility
 
                 if (page < 0)
                     return;
-                
+
                 if (!_service.AliasMaps.TryGetValue(Context.Guild.Id, out var maps) || !maps.Any())
                 {
                     await ReplyErrorLocalized("aliases_none").ConfigureAwait(false);
@@ -119,7 +128,7 @@ namespace NadekoBot.Modules.Utility
 
                 var arr = maps.ToArray();
 
-                await Context.Channel.SendPaginatedConfirmAsync(_client, page, (curPage) =>
+                await Context.SendPaginatedConfirmAsync(page, (curPage) =>
                 {
                     return new EmbedBuilder().WithOkColor()
                     .WithTitle(GetText("alias_list"))

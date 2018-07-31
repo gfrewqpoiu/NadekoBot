@@ -37,7 +37,15 @@ namespace NadekoBot.Extensions
                 return string.Concat(str.Select(c => '.'));
             if (str.Length < maxLength)
                 return str;
-            return string.Concat(str.Take(maxLength - 3)) + (hideDots ? "" : "...");
+
+            if (hideDots)
+            {
+                return string.Concat(str.Take(maxLength));
+            }
+            else
+            {
+                return string.Concat(str.Take(maxLength - 3)) + "...";
+            }
         }
 
         public static string ToTitleCase(this string str)
@@ -46,7 +54,7 @@ namespace NadekoBot.Extensions
             for (var i = 0; i < tokens.Length; i++)
             {
                 var token = tokens[i];
-                tokens[i] = token.Substring(0, 1).ToUpper() + token.Substring(1);
+                tokens[i] = token.Substring(0, 1).ToUpperInvariant() + token.Substring(1);
             }
 
             return string.Join(" ", tokens);
@@ -118,8 +126,8 @@ namespace NadekoBot.Extensions
         {
             var ms = new MemoryStream();
             var sw = new StreamWriter(ms);
-            await sw.WriteAsync(str);
-            await sw.FlushAsync();
+            await sw.WriteAsync(str).ConfigureAwait(false);
+            await sw.FlushAsync().ConfigureAwait(false);
             ms.Position = 0;
             return ms;
         }
@@ -128,10 +136,11 @@ namespace NadekoBot.Extensions
         public static bool IsDiscordInvite(this string str)
             => filterRegex.IsMatch(str);
 
-        public static string Unmention(this string str) => str.Replace("@", "ම");
+        public static string Unmention(this string str) => str.Replace("@", "ම", StringComparison.InvariantCulture);
 
         public static string SanitizeMentions(this string str) =>
-            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
+            str.Replace("@everyone", "@everyοne", StringComparison.InvariantCultureIgnoreCase)
+               .Replace("@here", "@һere", StringComparison.InvariantCultureIgnoreCase);
 
         public static string ToBase64(this string plainText)
         {
@@ -141,5 +150,8 @@ namespace NadekoBot.Extensions
 
         public static string GetInitials(this string txt, string glue = "") =>
             string.Join(glue, txt.Split(' ').Select(x => x.FirstOrDefault()));
+
+        public static bool IsAlphaNumeric(this string txt) =>
+            txt.All(c => char.IsLetterOrDigit(c));
     }
 }

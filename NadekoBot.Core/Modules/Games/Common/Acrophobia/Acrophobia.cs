@@ -1,20 +1,17 @@
-﻿using CommandLine;
-using NadekoBot.Common;
-using NadekoBot.Core.Common;
-using NadekoBot.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using NadekoBot.Common;
+using NadekoBot.Core.Common;
+using NadekoBot.Extensions;
 
 namespace NadekoBot.Modules.Games.Common.Acrophobia
 {
-    /// <summary>
-    /// Platform-agnostic acrophobia game
-    /// </summary>
-    public class Acrophobia : IDisposable
+    public sealed class AcrophobiaGame : IDisposable
     {
         public class Options : INadekoCommandOptions
         {
@@ -57,14 +54,14 @@ namespace NadekoBot.Modules.Games.Common.Acrophobia
         public Options Opts { get; }
         private readonly NadekoRandom _rng;
 
-        public event Func<Acrophobia, Task> OnStarted = delegate { return Task.CompletedTask; };
-        public event Func<Acrophobia, ImmutableArray<KeyValuePair<AcrophobiaUser, int>>, Task> OnVotingStarted = delegate { return Task.CompletedTask; };
+        public event Func<AcrophobiaGame, Task> OnStarted = delegate { return Task.CompletedTask; };
+        public event Func<AcrophobiaGame, ImmutableArray<KeyValuePair<AcrophobiaUser, int>>, Task> OnVotingStarted = delegate { return Task.CompletedTask; };
         public event Func<string, Task> OnUserVoted = delegate { return Task.CompletedTask; };
-        public event Func<Acrophobia, ImmutableArray<KeyValuePair<AcrophobiaUser, int>>, Task> OnEnded = delegate { return Task.CompletedTask; };
+        public event Func<AcrophobiaGame, ImmutableArray<KeyValuePair<AcrophobiaUser, int>>, Task> OnEnded = delegate { return Task.CompletedTask; };
 
         private readonly HashSet<ulong> _usersWhoVoted = new HashSet<ulong>();
 
-        public Acrophobia(Options options)
+        public AcrophobiaGame(Options options)
         {
             Opts = options;
             _rng = new NadekoRandom();
@@ -74,7 +71,7 @@ namespace NadekoBot.Modules.Games.Common.Acrophobia
         public async Task Run()
         {
             await OnStarted(this).ConfigureAwait(false);
-            await Task.Delay(Opts.SubmissionTime * 1000);
+            await Task.Delay(Opts.SubmissionTime * 1000).ConfigureAwait(false);
             await locker.WaitAsync().ConfigureAwait(false);
             try
             {
@@ -97,12 +94,12 @@ namespace NadekoBot.Modules.Games.Common.Acrophobia
             }
             finally { locker.Release(); }
 
-            await Task.Delay(Opts.VoteTime * 1000);
+            await Task.Delay(Opts.VoteTime * 1000).ConfigureAwait(false);
             await locker.WaitAsync().ConfigureAwait(false);
             try
             {
                 CurrentPhase = Phase.Ended;
-                await OnEnded(this, submissions.ToArray().ToImmutableArray()).ConfigureAwait(false) ;
+                await OnEnded(this, submissions.ToArray().ToImmutableArray()).ConfigureAwait(false);
             }
             finally { locker.Release(); }
         }
@@ -125,7 +122,7 @@ namespace NadekoBot.Modules.Games.Common.Acrophobia
         {
             var user = new AcrophobiaUser(userId, userName, input.ToLowerInvariant().ToTitleCase());
 
-            await locker.WaitAsync();
+            await locker.WaitAsync().ConfigureAwait(false);
             try
             {
                 switch (CurrentPhase)
@@ -171,7 +168,7 @@ namespace NadekoBot.Modules.Games.Common.Acrophobia
             {
                 var letter = StartingLetters[i];
 
-                if (!inputWords[i].StartsWith(letter.ToString())) // all first letters must match
+                if (!inputWords[i].StartsWith(letter.ToString(), StringComparison.InvariantCulture)) // all first letters must match
                     return false;
             }
 

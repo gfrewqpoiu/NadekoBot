@@ -1,19 +1,19 @@
-﻿using NadekoBot.Common;
-using NadekoBot.Extensions;
-using NadekoBot.Modules.Gambling.Common.AnimalRacing.Exceptions;
-using NadekoBot.Core.Services;
-using NadekoBot.Core.Services.Database.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NadekoBot.Common;
 using NadekoBot.Core.Modules.Gambling.Common.AnimalRacing;
+using NadekoBot.Core.Services;
+using NadekoBot.Core.Services.Database.Models;
+using NadekoBot.Extensions;
+using NadekoBot.Modules.Gambling.Common.AnimalRacing.Exceptions;
 
 namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
 {
-    public class AnimalRace : IDisposable
+    public sealed class AnimalRace : IDisposable
     {
         public enum Phase
         {
@@ -22,9 +22,7 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
             Ended,
         }
 
-        private const int _startingDelayMiliseconds = 20_000;
-
-        public Phase CurrentPhase = Phase.WaitingForPlayers;
+        public Phase CurrentPhase { get; private set; } = Phase.WaitingForPlayers;
 
         public event Func<AnimalRace, Task> OnStarted = delegate { return Task.CompletedTask; };
         public event Func<AnimalRace, Task> OnStartingFailed = delegate { return Task.CompletedTask; };
@@ -36,12 +34,12 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
 
         private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
         private readonly HashSet<AnimalRacingUser> _users = new HashSet<AnimalRacingUser>();
-        private readonly CurrencyService _currency;
+        private readonly ICurrencyService _currency;
         private readonly RaceOptions _options;
         private readonly Queue<RaceAnimal> _animalsQueue;
         public int MaxUsers { get; }
 
-        public AnimalRace(RaceOptions options, CurrencyService currency, RaceAnimal[] availableAnimals)
+        public AnimalRace(RaceOptions options, ICurrencyService currency, RaceAnimal[] availableAnimals)
         {
             this._currency = currency;
             this._options = options;
@@ -70,7 +68,7 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
             });
         }
 
-        public async Task<AnimalRacingUser> JoinRace(ulong userId, string userName, int bet = 0)
+        public async Task<AnimalRacingUser> JoinRace(ulong userId, string userName, long bet = 0)
         {
             if (bet < 0)
                 throw new ArgumentOutOfRangeException(nameof(bet));
@@ -86,7 +84,7 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
                 if (CurrentPhase != Phase.WaitingForPlayers)
                     throw new AlreadyStartedException();
 
-                if (!_currency.Remove(userId, "BetRace", bet))
+                if (!await _currency.RemoveAsync(userId, "BetRace", bet).ConfigureAwait(false))
                     throw new NotEnoughFundsException();
 
                 if (_users.Contains(user))
@@ -95,7 +93,7 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
                 var animal = _animalsQueue.Dequeue();
                 user.Animal = animal;
                 _users.Add(user);
-                
+
                 if (_animalsQueue.Count == 0) //start if no more spots left
                     await Start().ConfigureAwait(false);
 
@@ -111,10 +109,10 @@ namespace NadekoBot.Modules.Gambling.Common.AnimalRacing
             {
                 foreach (var user in _users)
                 {
-                    if(user.Bet > 0)
+                    if (user.Bet > 0)
                         await _currency.AddAsync(user.UserId, "Race refund", user.Bet).ConfigureAwait(false);
                 }
-                
+
                 var _sf = OnStartingFailed?.Invoke(this);
                 CurrentPhase = Phase.Ended;
                 return;

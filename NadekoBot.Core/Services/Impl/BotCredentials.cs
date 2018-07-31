@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.IO;
-using Discord;
-using System.Linq;
-using NLog;
-using Microsoft.Extensions.Configuration;
+﻿using System;
 using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using Discord;
+using Microsoft.Extensions.Configuration;
 using NadekoBot.Common;
+using Newtonsoft.Json;
+using NLog;
 
 namespace NadekoBot.Core.Services.Impl
 {
@@ -36,13 +36,21 @@ namespace NadekoBot.Core.Services.Impl
         public int ShardRunPort { get; }
 
         public string PatreonCampaignId { get; }
+        public string MiningProxyUrl { get; }
+        public string MiningProxyCreds { get; }
+
+        public string TwitchClientId { get; }
+
+        public string VotesUrl { get; }
+        public string VotesToken { get; }
+        public string BotListToken { get; }
 
         public BotCredentials()
         {
             _log = LogManager.GetCurrentClassLogger();
 
             try { File.WriteAllText("./credentials_example.json", JsonConvert.SerializeObject(new CredentialsModel(), Formatting.Indented)); } catch { }
-            if(!File.Exists(_credsFileName))
+            if (!File.Exists(_credsFileName))
                 _log.Warn($"credentials.json is missing. Attempting to load creds from environment variables prefixed with 'NadekoBot_'. Example is in {Path.GetFullPath("./credentials_example.json")}");
             try
             {
@@ -69,6 +77,12 @@ namespace NadekoBot.Core.Services.Impl
                 ShardRunCommand = data[nameof(ShardRunCommand)];
                 ShardRunArguments = data[nameof(ShardRunArguments)];
                 CleverbotApiKey = data[nameof(CleverbotApiKey)];
+                MiningProxyUrl = data[nameof(MiningProxyUrl)];
+                MiningProxyCreds = data[nameof(MiningProxyCreds)];
+
+                VotesToken = data[nameof(VotesToken)];
+                VotesUrl = data[nameof(VotesUrl)];
+                BotListToken = data[nameof(BotListToken)];
 
                 var restartSection = data.GetSection(nameof(RestartCommand));
                 var cmd = restartSection["cmd"];
@@ -81,7 +95,7 @@ namespace NadekoBot.Core.Services.Impl
                     if (string.IsNullOrWhiteSpace(ShardRunCommand))
                         ShardRunCommand = "dotnet";
                     if (string.IsNullOrWhiteSpace(ShardRunArguments))
-                        ShardRunArguments = "run -c Release -- {0} {1}";
+                        ShardRunArguments = "run -c Release --no-build -- {0} {1}";
                 }
                 else //windows
                 {
@@ -90,28 +104,35 @@ namespace NadekoBot.Core.Services.Impl
                     if (string.IsNullOrWhiteSpace(ShardRunArguments))
                         ShardRunArguments = "{0} {1}";
                 }
-                
+
                 var portStr = data[nameof(ShardRunPort)];
                 if (string.IsNullOrWhiteSpace(portStr))
                     ShardRunPort = new NadekoRandom().Next(5000, 6000);
                 else
                     ShardRunPort = int.Parse(portStr);
 
-                int ts = 1;
-                int.TryParse(data[nameof(TotalShards)], out ts);
+                if (!int.TryParse(data[nameof(TotalShards)], out var ts))
+                    ts = 0;
                 TotalShards = ts < 1 ? 1 : ts;
 
-                ulong.TryParse(data[nameof(ClientId)], out ulong clId);
+                if (!ulong.TryParse(data[nameof(ClientId)], out ulong clId))
+                    clId = 0;
                 ClientId = clId;
 
                 CarbonKey = data[nameof(CarbonKey)];
                 var dbSection = data.GetSection("db");
-                Db = new DBConfig(string.IsNullOrWhiteSpace(dbSection["Type"]) 
-                                ? "sqlite" 
-                                : dbSection["Type"], 
-                            string.IsNullOrWhiteSpace(dbSection["ConnectionString"]) 
+                Db = new DBConfig(string.IsNullOrWhiteSpace(dbSection["Type"])
+                                ? "sqlite"
+                                : dbSection["Type"],
+                            string.IsNullOrWhiteSpace(dbSection["ConnectionString"])
                                 ? "Data Source=data/NadekoBot.db"
                                 : dbSection["ConnectionString"]);
+
+                TwitchClientId = data[nameof(TwitchClientId)];
+                if(string.IsNullOrWhiteSpace(TwitchClientId))
+                {
+                    TwitchClientId = "67w6z9i09xv2uoojdm9l0wsyph4hxo6";
+                }
             }
             catch (Exception ex)
             {
@@ -119,7 +140,7 @@ namespace NadekoBot.Core.Services.Impl
                 _log.Fatal(ex);
                 throw;
             }
-            
+
         }
 
         private class CredentialsModel
@@ -143,12 +164,13 @@ namespace NadekoBot.Core.Services.Impl
             public string ShardRunCommand { get; set; } = "";
             public string ShardRunArguments { get; set; } = "";
             public int? ShardRunPort { get; set; } = null;
-        }
+            public string MiningProxyUrl { get; set; } = null;
+            public string MiningProxyCreds { get; set; } = null;
 
-        private class DbModel
-        {
-            public string Type { get; set; }
-            public string ConnectionString { get; set; }
+            public string BotListToken { get; set; }
+            public string TwitchClientId { get; set; }
+            public string VotesToken { get; set; }
+            public string VotesUrl { get; set; }
         }
 
         public bool IsOwner(IUser u) => OwnerIds.Contains(u.Id);

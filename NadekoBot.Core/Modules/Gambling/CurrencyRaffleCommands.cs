@@ -2,42 +2,36 @@
 using NadekoBot.Core.Modules.Gambling.Services;
 using System.Threading.Tasks;
 using Discord;
-using NadekoBot.Core.Services;
 using NadekoBot.Extensions;
 using System.Linq;
 using Discord.Commands;
+using NadekoBot.Core.Modules.Gambling.Common;
+using NadekoBot.Core.Common;
 
 namespace NadekoBot.Modules.Gambling
 {
     public partial class Gambling
     {
-        public class CurrencyRaffleCommands : NadekoSubmodule<CurrencyRaffleService>
+        public class CurrencyRaffleCommands : GamblingSubmodule<CurrencyRaffleService>
         {
-            private readonly IBotConfigProvider _bc;
-
-            public CurrencyRaffleCommands(IBotConfigProvider bc)
-            {
-                _bc = bc;
-            }
-
             public enum Mixed { Mixed }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [Priority(0)]
-            public Task RaffleCur(Mixed _, int amount) =>
+            public Task RaffleCur(Mixed _, ShmartNumber amount) =>
                 RaffleCur(amount, true);
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [Priority(1)]
-            public async Task RaffleCur(int amount, bool mixed = false)
+            public async Task RaffleCur(ShmartNumber amount, bool mixed = false)
             {
-                if (amount < 1)
+                if (!await CheckBetMandatory(amount).ConfigureAwait(false))
                     return;
-                async Task OnEnded(IUser arg, int won)
+                async Task OnEnded(IUser arg, long won)
                 {
-                    await Context.Channel.SendConfirmAsync(GetText("rafflecur_ended", _bc.BotConfig.CurrencyName, Format.Bold(arg.ToString()), won + _bc.BotConfig.CurrencySign));
+                    await Context.Channel.SendConfirmAsync(GetText("rafflecur_ended", Bc.BotConfig.CurrencyName, Format.Bold(arg.ToString()), won + Bc.BotConfig.CurrencySign)).ConfigureAwait(false);
                 }
                 var res = await _service.JoinOrCreateGame(Context.Channel.Id,
                     Context.User, amount, mixed, OnEnded)
@@ -54,7 +48,7 @@ namespace NadekoBot.Modules.Gambling
                     if (res.Item2 == CurrencyRaffleService.JoinErrorType.AlreadyJoinedOrInvalidAmount)
                         await ReplyErrorLocalized("rafflecur_already_joined").ConfigureAwait(false);
                     else if (res.Item2 == CurrencyRaffleService.JoinErrorType.NotEnoughCurrency)
-                        await ReplyErrorLocalized("not_enough", _bc.BotConfig.CurrencySign).ConfigureAwait(false);
+                        await ReplyErrorLocalized("not_enough", Bc.BotConfig.CurrencySign).ConfigureAwait(false);
                 }
             }
         }

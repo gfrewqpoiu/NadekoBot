@@ -12,13 +12,6 @@ namespace NadekoBot.Modules.Administration
         [Group]
         public class GameChannelCommands : NadekoSubmodule<GameVoiceChannelService>
         {
-            private readonly DbService _db;
-
-            public GameChannelCommands(DbService db)
-            {
-                _db = db;
-            }
-
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.Administrator)]
@@ -32,26 +25,7 @@ namespace NadekoBot.Modules.Administration
                     await ReplyErrorLocalized("not_in_voice").ConfigureAwait(false);
                     return;
                 }
-                ulong? id;
-                using (var uow = _db.UnitOfWork)
-                {
-                    var gc = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-
-                    if (gc.GameVoiceChannel == vch.Id)
-                    {
-                        _service.GameVoiceChannels.TryRemove(vch.Id);
-                        id = gc.GameVoiceChannel = null;
-                    }
-                    else
-                    {
-                        if(gc.GameVoiceChannel != null)
-                            _service.GameVoiceChannels.TryRemove(gc.GameVoiceChannel.Value);
-                        _service.GameVoiceChannels.Add(vch.Id);
-                        id = gc.GameVoiceChannel = vch.Id;
-                    }
-
-                    uow.Complete();
-                }
+                var id = _service.ToggleGameVoiceChannel(Context.Guild.Id, vch.Id);
 
                 if (id == null)
                 {

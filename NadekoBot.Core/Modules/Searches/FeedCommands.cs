@@ -39,7 +39,7 @@ namespace NadekoBot.Modules.Searches
                         var reader = new RssFeedReader(xmlReader);
                         try
                         {
-                            await reader.Read();
+                            await reader.Read().ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -92,7 +92,7 @@ namespace NadekoBot.Modules.Searches
                     return;
                 }
 
-                await Context.Channel.SendPaginatedConfirmAsync(_client, 0, (cur) =>
+                await Context.SendPaginatedConfirmAsync(0, (cur) =>
                 {
                     var embed = new EmbedBuilder()
                        .WithOkColor();
@@ -103,7 +103,7 @@ namespace NadekoBot.Modules.Searches
 
                     return embed.WithDescription(fs);
 
-                }, feeds.Count, 10);
+                }, feeds.Count, 10).ConfigureAwait(false);
             }
         }
     }

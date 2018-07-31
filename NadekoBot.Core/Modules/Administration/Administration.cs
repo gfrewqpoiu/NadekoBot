@@ -1,29 +1,16 @@
-using Discord;
-using Discord.Commands;
-using NadekoBot.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NadekoBot.Common.Attributes;
-using NadekoBot.Core.Services;
-using NadekoBot.Modules.Administration.Services;
-using NadekoBot.Core.Services.Database.Models;
-using Microsoft.EntityFrameworkCore;
+using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using NadekoBot.Common.Attributes;
+using NadekoBot.Extensions;
+using NadekoBot.Modules.Administration.Services;
 
 namespace NadekoBot.Modules.Administration
 {
     public partial class Administration : NadekoTopLevelModule<AdministrationService>
     {
-        private IGuild _nadekoSupportServer;
-        private readonly DbService _db;
-
-        public Administration(DbService db)
-        {
-            _db = db;
-        }
-
         public enum List { List = 0, Ls = 0 }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -34,28 +21,19 @@ namespace NadekoBot.Modules.Administration
         public async Task Delmsgoncmd(List _)
         {
             var guild = (SocketGuild)Context.Guild;
-            GuildConfig conf;
-            using (var uow = _db.UnitOfWork)
-            {
-                conf = uow.GuildConfigs.For(Context.Guild.Id,
-                    set => set.Include(x => x.DelMsgOnCmdChannels));
-            }
+            var (enabled, channels) = _service.GetDelMsgOnCmdData(Context.Guild.Id);
 
             var embed = new EmbedBuilder()
                 .WithOkColor()
                 .WithTitle(GetText("server_delmsgoncmd"))
-                .WithDescription(conf.DeleteMessageOnCommand
-                    ? "✅"
-                    : "❌");
+                .WithDescription(enabled ? "✅" : "❌");
 
-            var str = string.Join("\n", conf.DelMsgOnCmdChannels
+            var str = string.Join("\n", channels
                 .Select(x =>
                 {
                     var ch = guild.GetChannel(x.ChannelId)?.ToString()
                         ?? x.ChannelId.ToString();
-                    var prefix = x.State
-                        ? "✅ "
-                        : "❌ ";
+                    var prefix = x.State ? "✅ " : "❌ ";
                     return prefix + ch;
                 }));
 
@@ -64,8 +42,7 @@ namespace NadekoBot.Modules.Administration
 
             embed.AddField(GetText("channel_delmsgoncmd"), str);
 
-            await Context.Channel.EmbedAsync(embed)
-                .ConfigureAwait(false);
+            await Context.Channel.EmbedAsync(embed).ConfigureAwait(false);
         }
 
         public enum Server { Server }
@@ -76,15 +53,7 @@ namespace NadekoBot.Modules.Administration
         [Priority(1)]
         public async Task Delmsgoncmd(Server _ = Server.Server)
         {
-            bool enabled;
-            using (var uow = _db.UnitOfWork)
-            {
-                var conf = uow.GuildConfigs.For(Context.Guild.Id, set => set);
-                enabled = conf.DeleteMessageOnCommand = !conf.DeleteMessageOnCommand;
-
-                await uow.CompleteAsync();
-            }
-            if (enabled)
+            if (_service.ToggleDeleteMessageOnCommand(Context.Guild.Id))
             {
                 _service.DeleteMessagesOnCommand.Add(Context.Guild.Id);
                 await ReplyConfirmLocalized("delmsg_on").ConfigureAwait(false);
@@ -111,39 +80,22 @@ namespace NadekoBot.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
-        [Priority(0)]
+        [Priority(1)]
         public async Task Delmsgoncmd(Channel _, State s, ulong? chId = null)
         {
-            chId = chId ?? Context.Channel.Id;
-            using (var uow = _db.UnitOfWork)
-            {
-                var conf = uow.GuildConfigs.For(Context.Guild.Id, 
-                    set => set.Include(x => x.DelMsgOnCmdChannels));
+            var actualChId = chId ?? Context.Channel.Id;
+            await _service.SetDelMsgOnCmdState(Context.Guild.Id, actualChId, s).ConfigureAwait(false);
 
-                var obj = new DelMsgOnCmdChannel()
-                {
-                    ChannelId = chId.Value,
-                    State = s == State.Enable,
-                };
-                conf.DelMsgOnCmdChannels.Remove(obj);
-                if (s != State.Inherit)
-                    conf.DelMsgOnCmdChannels.Add(obj);
-
-                await uow.CompleteAsync();
-            }
             if (s == State.Disable)
             {
-                _service.DeleteMessagesOnCommandChannels.AddOrUpdate(chId.Value, false, delegate { return false; });
                 await ReplyConfirmLocalized("delmsg_channel_off").ConfigureAwait(false);
             }
             else if (s == State.Enable)
             {
-                _service.DeleteMessagesOnCommandChannels.AddOrUpdate(chId.Value, true, delegate { return true; });
                 await ReplyConfirmLocalized("delmsg_channel_on").ConfigureAwait(false);
             }
             else
             {
-                _service.DeleteMessagesOnCommandChannels.TryRemove(chId.Value, out var _);
                 await ReplyConfirmLocalized("delmsg_channel_inherit").ConfigureAwait(false);
             }
         }
@@ -154,19 +106,7 @@ namespace NadekoBot.Modules.Administration
         [RequireBotPermission(GuildPermission.DeafenMembers)]
         public async Task Deafen(params IGuildUser[] users)
         {
-            if (!users.Any())
-                return;
-            foreach (var u in users)
-            {
-                try
-                {
-                    await u.ModifyAsync(usr => usr.Deaf = true).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
+            await _service.DeafenUsers(true, users).ConfigureAwait(false);
             await ReplyConfirmLocalized("deafen").ConfigureAwait(false);
 
         }
@@ -177,20 +117,7 @@ namespace NadekoBot.Modules.Administration
         [RequireBotPermission(GuildPermission.DeafenMembers)]
         public async Task UnDeafen(params IGuildUser[] users)
         {
-            if (!users.Any())
-                return;
-
-            foreach (var u in users)
-            {
-                try
-                {
-                    await u.ModifyAsync(usr => usr.Deaf = false).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
+            await _service.DeafenUsers(false, users).ConfigureAwait(false);
             await ReplyConfirmLocalized("undeafen").ConfigureAwait(false);
         }
 
@@ -242,7 +169,7 @@ namespace NadekoBot.Modules.Administration
         {
             var channel = (ITextChannel)Context.Channel;
             topic = topic ?? "";
-            await channel.ModifyAsync(c => c.Topic = topic);
+            await channel.ModifyAsync(c => c.Topic = topic).ConfigureAwait(false);
             await ReplyConfirmLocalized("set_topic").ConfigureAwait(false);
 
         }
@@ -258,38 +185,14 @@ namespace NadekoBot.Modules.Administration
         }
 
         [NadekoCommand, Usage, Description, Aliases]
-        public async Task Donators()
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task Edit(ulong messageId, [Remainder] string text)
         {
-            IEnumerable<Donator> donatorsOrdered;
-
-            using (var uow = _db.UnitOfWork)
-            {
-                donatorsOrdered = uow.Donators.GetDonatorsOrdered();
-            }
-            await Context.Channel.SendConfirmAsync(GetText("donators"), string.Join("⭐", donatorsOrdered.Select(d => d.Name))).ConfigureAwait(false);
-
-            _nadekoSupportServer = _nadekoSupportServer ?? (await Context.Client.GetGuildAsync(117523346618318850));
-
-            var patreonRole = _nadekoSupportServer?.GetRole(236667642088259585);
-            if (patreonRole == null)
+            if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            var usrs = (await _nadekoSupportServer.GetUsersAsync()).Where(u => u.RoleIds.Contains(236667642088259585u));
-            await Context.Channel.SendConfirmAsync("Patreon supporters", string.Join("⭐", usrs.Select(d => d.Username))).ConfigureAwait(false);
-        }
-
-
-        [NadekoCommand, Usage, Description, Aliases]
-        [OwnerOnly]
-        public async Task Donadd(IUser donator, int amount)
-        {
-            Donator don;
-            using (var uow = _db.UnitOfWork)
-            {
-                don = uow.Donators.AddOrUpdateDonator(donator.Id, donator.Username, amount);
-                await uow.CompleteAsync();
-            }
-            await ReplyConfirmLocalized("donadd", don.Amount).ConfigureAwait(false);
+            await _service.EditMessage(Context, messageId, text).ConfigureAwait(false);
         }
     }
 }

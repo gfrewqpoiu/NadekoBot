@@ -25,6 +25,12 @@ namespace NadekoBot.Core.Services
         string PatreonCampaignId { get; }
         string CleverbotApiKey { get; }
         RestartConfig RestartCommand { get; }
+        string MiningProxyUrl { get; }
+        string MiningProxyCreds { get; }
+        string VotesUrl { get; }
+        string VotesToken { get; }
+        string BotListToken { get; }
+        string TwitchClientId { get; }
     }
 
     public class RestartConfig

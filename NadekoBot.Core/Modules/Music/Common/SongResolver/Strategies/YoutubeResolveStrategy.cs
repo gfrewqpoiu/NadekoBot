@@ -1,9 +1,11 @@
-﻿using NadekoBot.Core.Services.Database.Models;
+﻿using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using NadekoBot.Core.Services.Database.Models;
 using NadekoBot.Core.Services.Impl;
 using NLog;
-using System;
-using System.Globalization;
-using System.Threading.Tasks;
+using YoutubeExplode;
 
 namespace NadekoBot.Modules.Music.Common.SongResolver.Strategies
 {
@@ -18,21 +20,79 @@ namespace NadekoBot.Modules.Music.Common.SongResolver.Strategies
 
         public async Task<SongInfo> ResolveSong(string query)
         {
-            _log.Info("Getting link");
+            try
+            {
+                SongInfo s = await ResolveWithYtExplode(query).ConfigureAwait(false);
+                if (s != null)
+                    return s;
+            }
+            catch { }
+            return await ResolveWithYtDl(query).ConfigureAwait(false);
+        }
+
+        private async Task<SongInfo> ResolveWithYtExplode(string query)
+        {
+            YoutubeExplode.Models.Video video;
+            var client = new YoutubeClient();
+            if (!YoutubeClient.TryParseVideoId(query, out var id))
+            {
+                _log.Info("Searching for video");
+                var videos = await client.SearchVideosAsync(query, 1).ConfigureAwait(false);
+
+                video = videos.FirstOrDefault();
+            }
+            else
+            {
+                _log.Info("Getting video with id");
+                video = await client.GetVideoAsync(id).ConfigureAwait(false);
+            }
+
+            if (video == null)
+                return null;
+
+            _log.Info("Video found");
+            var streamInfo = await client.GetVideoMediaStreamInfosAsync(video.Id).ConfigureAwait(false);
+            var stream = streamInfo.Audio
+                .OrderByDescending(x => x.Bitrate)
+                .FirstOrDefault();
+
+            _log.Info("Got stream info");
+
+            if (stream == null)
+                return null;
+
+            return new SongInfo
+            {
+                Provider = "YouTube",
+                ProviderType = MusicType.YouTube,
+                Query = "https://youtube.com/watch?v=" + video.Id,
+                Thumbnail = video.Thumbnails.MediumResUrl,
+                TotalTime = video.Duration,
+                Uri = async () =>
+                {
+                    await Task.Yield();
+                    return stream.Url;
+                },
+                VideoId = video.Id,
+                Title = video.Title,
+            };
+        }
+
+        private async Task<SongInfo> ResolveWithYtDl(string query)
+        {
             string[] data;
             try
             {
-                using (var ytdl = new YtdlOperation())
-                {
-                    data = (await ytdl.GetDataAsync(query)).Split('\n');
-                }
+                var ytdl = new YtdlOperation();
+                data = (await ytdl.GetDataAsync(query).ConfigureAwait(false)).Split('\n');
+
                 if (data.Length < 6)
                 {
                     _log.Info("No song found. Data less than 6");
                     return null;
                 }
-                TimeSpan time;
-                if (!TimeSpan.TryParseExact(data[4], new[] { "ss", "m\\:ss", "mm\\:ss", "h\\:mm\\:ss", "hh\\:mm\\:ss", "hhh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out time))
+
+                if (!TimeSpan.TryParseExact(data[4], new[] { "ss", "m\\:ss", "mm\\:ss", "h\\:mm\\:ss", "hh\\:mm\\:ss", "hhh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var time))
                     time = TimeSpan.FromHours(24);
 
                 return new SongInfo()
@@ -41,10 +101,8 @@ namespace NadekoBot.Modules.Music.Common.SongResolver.Strategies
                     VideoId = data[1],
                     Uri = async () =>
                     {
-                        using (var ytdl = new YtdlOperation())
-                        {
-                            data = (await ytdl.GetDataAsync(query)).Split('\n');
-                        }
+                        var ytdlo = new YtdlOperation();
+                        data = (await ytdlo.GetDataAsync(query).ConfigureAwait(false)).Split('\n');
                         if (data.Length < 6)
                         {
                             _log.Info("No song found. Data less than 6");
@@ -64,6 +122,7 @@ namespace NadekoBot.Modules.Music.Common.SongResolver.Strategies
                 _log.Warn(ex);
                 return null;
             }
+
         }
     }
 }

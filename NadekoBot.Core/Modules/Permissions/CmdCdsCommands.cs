@@ -45,7 +45,7 @@ namespace NadekoBot.Modules.Permissions
 
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set.Include(gc => gc.CommandCooldowns));
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set.Include(gc => gc.CommandCooldowns));
                     var localSet = CommandCooldowns.GetOrAdd(channel.Guild.Id, new ConcurrentHashSet<CommandCooldown>());
 
                     config.CommandCooldowns.RemoveWhere(cc => cc.CommandName == command.Aliases.First().ToLowerInvariant());
@@ -60,7 +60,7 @@ namespace NadekoBot.Modules.Permissions
                         config.CommandCooldowns.Add(cc);
                         localSet.Add(cc);
                     }
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
                 if (secs == 0)
                 {

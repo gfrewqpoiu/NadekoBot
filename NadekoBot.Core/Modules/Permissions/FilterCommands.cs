@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using NadekoBot.Extensions;
 using NadekoBot.Core.Services;
@@ -25,15 +24,14 @@ namespace NadekoBot.Modules.Permissions
                 _db = db;
             }
 
-            //[NadekoCommand, Usage, Description, Aliases]
-            //[RequireContext(ContextType.Guild)]
-            //public async Task SrvrFilterLinks()
-            //{
-            //    using (var uow = _db.UnitOfWork)
-            //    {
-            //        var config = 
-            //    }
-            //}
+            [NadekoCommand, Usage, Description, Aliases]
+            [RequireContext(ContextType.Guild)]
+            [RequireUserPermission(GuildPermission.Administrator)]
+            public async Task FwClear()
+            {
+                _service.ClearFilteredWords(Context.Guild.Id);
+                await ReplyConfirmLocalized("fw_cleared").ConfigureAwait(false);
+            }
 
             [NadekoCommand, Usage, Description, Aliases]
             [RequireContext(ContextType.Guild)]
@@ -44,9 +42,9 @@ namespace NadekoBot.Modules.Permissions
                 bool enabled;
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set);
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set);
                     enabled = config.FilterInvites = !config.FilterInvites;
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
                 
                 if (enabled)
@@ -70,7 +68,7 @@ namespace NadekoBot.Modules.Permissions
                 int removed;
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set.Include(gc => gc.FilterInvitesChannelIds));
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set.Include(gc => gc.FilterInvitesChannelIds));
                     removed = config.FilterInvitesChannelIds.RemoveWhere(fc => fc.ChannelId == channel.Id);
                     if (removed == 0)
                     {
@@ -79,7 +77,7 @@ namespace NadekoBot.Modules.Permissions
                             ChannelId = channel.Id
                         });
                     }
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
 
                 if (removed == 0)
@@ -103,9 +101,9 @@ namespace NadekoBot.Modules.Permissions
                 bool enabled;
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set);
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set);
                     enabled = config.FilterWords = !config.FilterWords;
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
 
                 if (enabled)
@@ -129,7 +127,7 @@ namespace NadekoBot.Modules.Permissions
                 int removed;
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set.Include(gc => gc.FilterWordsChannelIds));
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set.Include(gc => gc.FilterWordsChannelIds));
                     removed = config.FilterWordsChannelIds.RemoveWhere(fc => fc.ChannelId == channel.Id);
                     if (removed == 0)
                     {
@@ -138,7 +136,7 @@ namespace NadekoBot.Modules.Permissions
                             ChannelId = channel.Id
                         });
                     }
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
 
                 if (removed == 0)
@@ -167,14 +165,14 @@ namespace NadekoBot.Modules.Permissions
                 int removed;
                 using (var uow = _db.UnitOfWork)
                 {
-                    var config = uow.GuildConfigs.For(channel.Guild.Id, set => set.Include(gc => gc.FilteredWords));
+                    var config = uow.GuildConfigs.ForId(channel.Guild.Id, set => set.Include(gc => gc.FilteredWords));
 
                     removed = config.FilteredWords.RemoveWhere(fw => fw.Word.Trim().ToLowerInvariant() == word);
 
                     if (removed == 0)
                         config.FilteredWords.Add(new FilteredWord() { Word = word });
 
-                    await uow.CompleteAsync().ConfigureAwait(false);
+                    await uow.CompleteAsync();
                 }
 
                 var filteredWords = _service.ServerFilteredWords.GetOrAdd(channel.Guild.Id, new ConcurrentHashSet<string>());
@@ -205,12 +203,10 @@ namespace NadekoBot.Modules.Permissions
 
                 var fws = fwHash.ToArray();
 
-                await channel.SendPaginatedConfirmAsync((DiscordSocketClient)Context.Client,
-                    page,
-                    (curPage) =>
-                        new EmbedBuilder()
-                            .WithTitle(GetText("filter_word_list"))
-                            .WithDescription(string.Join("\n", fws.Skip(curPage * 10).Take(10)))
+                await Context.SendPaginatedConfirmAsync(page,
+                    (curPage) => new EmbedBuilder()
+                        .WithTitle(GetText("filter_word_list"))
+                        .WithDescription(string.Join("\n", fws.Skip(curPage * 10).Take(10)))
                 , fws.Length, 10).ConfigureAwait(false);
             }
         }

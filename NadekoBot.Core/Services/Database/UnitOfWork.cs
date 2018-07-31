@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NadekoBot.Core.Services.Database
 {
-    public class UnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork
     {
         public NadekoContext _context { get; }
 
@@ -15,9 +15,6 @@ namespace NadekoBot.Core.Services.Database
         private IGuildConfigRepository _guildConfigs;
         public IGuildConfigRepository GuildConfigs => _guildConfigs ?? (_guildConfigs = new GuildConfigRepository(_context));
 
-        private IDonatorsRepository _donators;
-        public IDonatorsRepository Donators => _donators ?? (_donators = new DonatorsRepository(_context));
-
         private IReminderRepository _reminders;
         public IReminderRepository Reminders => _reminders ?? (_reminders = new ReminderRepository(_context));
 
@@ -26,7 +23,7 @@ namespace NadekoBot.Core.Services.Database
 
         private IBotConfigRepository _botConfig;
         public IBotConfigRepository BotConfig => _botConfig ?? (_botConfig = new BotConfigRepository(_context));
-        
+
         private ICurrencyTransactionsRepository _currencyTransactions;
         public ICurrencyTransactionsRepository CurrencyTransactions => _currencyTransactions ?? (_currencyTransactions = new CurrencyTransactionsRepository(_context));
 
@@ -35,9 +32,6 @@ namespace NadekoBot.Core.Services.Database
 
         private ICustomReactionRepository _customReactions;
         public ICustomReactionRepository CustomReactions => _customReactions ?? (_customReactions = new CustomReactionsRepository(_context));
-
-        private IPokeGameRepository _pokegame;
-        public IPokeGameRepository PokeGame => _pokegame ?? (_pokegame = new PokeGameRepository(_context));
 
         private IWaifuRepository _waifus;
         public IWaifuRepository Waifus => _waifus ?? (_waifus = new WaifuRepository(_context));
@@ -57,6 +51,9 @@ namespace NadekoBot.Core.Services.Database
         private IPollsRepository _polls;
         public IPollsRepository Polls => _polls ?? (_polls = new PollsRepository(_context));
 
+        private IPlantedCurrencyRepository _planted;
+        public IPlantedCurrencyRepository PlantedCurrency => _planted ?? (_planted = new PlantedCurrencyRepository(_context));
+
         public UnitOfWork(NadekoContext context)
         {
             _context = context;
@@ -65,22 +62,12 @@ namespace NadekoBot.Core.Services.Database
         public int Complete() =>
             _context.SaveChanges();
 
-        public Task<int> CompleteAsync() => 
+        public Task<int> CompleteAsync() =>
             _context.SaveChangesAsync();
-
-        private bool disposed = false;
-
-        protected void Dispose(bool disposing)
-        {
-            if (!this.disposed)
-                if (disposing)
-                    _context.Dispose();
-            this.disposed = true;
-        }
 
         public void Dispose()
         {
-            Dispose(true);
+            _context.Dispose();
             GC.SuppressFinalize(this);
         }
     }
