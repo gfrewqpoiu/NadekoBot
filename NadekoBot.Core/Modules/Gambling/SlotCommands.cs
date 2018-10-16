@@ -226,7 +226,7 @@ namespace NadekoBot.Modules.Gambling
                                 msg = GetText("slot_two", Bc.BotConfig.CurrencySign, 4);
                             else if (result.Multiplier == 10)
                                 msg = GetText("slot_three", 10);
-                            else if (result.Multiplier == 30)
+                            else if (result.Multiplier == 32)
                                 msg = GetText("slot_jackpot", 30);
                         }
 
