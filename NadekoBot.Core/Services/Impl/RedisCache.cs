@@ -6,7 +6,7 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace NadekoBot.Core.Services.Impl
@@ -21,13 +21,16 @@ namespace NadekoBot.Core.Services.Impl
         public ILocalDataCache LocalData { get; }
 
         private readonly string _redisKey;
+        private readonly EndPoint _redisEndpoint;
 
         public RedisCache(IBotCredentials creds, int shardId)
         {
             _log = LogManager.GetCurrentClassLogger();
-            var conf = ConfigurationOptions.Parse("127.0.0.1");
-            conf.SyncTimeout = 3000;
+
+            var conf = ConfigurationOptions.Parse(creds.RedisOptions);
+
             Redis = ConnectionMultiplexer.Connect(conf);
+            _redisEndpoint = Redis.GetEndPoints().First();
             Redis.PreserveAsyncOrder = false;
             LocalImages = new RedisImagesCache(Redis, creds);
             LocalData = new RedisLocalDataCache(Redis, creds, shardId);
@@ -61,7 +64,7 @@ namespace NadekoBot.Core.Services.Impl
         public Task SetAnimeDataAsync(string key, string data)
         {
             var _db = Redis.GetDatabase();
-            return _db.StringSetAsync("anime_" + key, data);
+            return _db.StringSetAsync("anime_" + key, data, expiry: TimeSpan.FromHours(3));
         }
 
         public async Task<(bool Success, string Data)> TryGetNovelDataAsync(string key)
@@ -74,7 +77,7 @@ namespace NadekoBot.Core.Services.Impl
         public Task SetNovelDataAsync(string key, string data)
         {
             var _db = Redis.GetDatabase();
-            return _db.StringSetAsync("novel_" + key, data);
+            return _db.StringSetAsync("novel_" + key, data, expiry: TimeSpan.FromHours(3));
         }
 
         private readonly object timelyLock = new object();
@@ -97,7 +100,7 @@ namespace NadekoBot.Core.Services.Impl
 
         public void RemoveAllTimelyClaims()
         {
-            var server = Redis.GetServer("127.0.0.1", 6379);
+            var server = Redis.GetServer(_redisEndpoint);
             var _db = Redis.GetDatabase();
             foreach (var k in server.Keys(pattern: $"{_redisKey}_timelyclaim_*"))
             {
@@ -134,7 +137,7 @@ namespace NadekoBot.Core.Services.Impl
         public Task SetStreamDataAsync(string url, string data)
         {
             var _db = Redis.GetDatabase();
-            return _db.StringSetAsync($"{_redisKey}_stream_{url}", data);
+            return _db.StringSetAsync($"{_redisKey}_stream_{url}", data, expiry: TimeSpan.FromHours(6));
         }
 
         public bool TryGetStreamData(string url, out string dataStr)
@@ -163,7 +166,7 @@ namespace NadekoBot.Core.Services.Impl
         public async Task<StreamResponse[]> GetAllStreamDataAsync()
         {
             await Task.Yield();
-            var server = Redis.GetServer("127.0.0.1", 6379);
+            var server = Redis.GetServer(_redisEndpoint);
             var _db = Redis.GetDatabase();
             List<RedisValue> dataStrs = new List<RedisValue>();
             foreach (var k in server.Keys(pattern: $"{_redisKey}_stream_*"))
@@ -179,7 +182,7 @@ namespace NadekoBot.Core.Services.Impl
 
         public Task ClearAllStreamData()
         {
-            var server = Redis.GetServer("127.0.0.1", 6379);
+            var server = Redis.GetServer(_redisEndpoint);
             var _db = Redis.GetDatabase();
             return Task.WhenAll(server.Keys(pattern: $"{_redisKey}_stream_*")
                 .Select(x => _db.KeyDeleteAsync(x, CommandFlags.FireAndForget)));
@@ -197,6 +200,45 @@ namespace NadekoBot.Core.Services.Impl
             }
 
             return _db.KeyTimeToLive($"{_redisKey}_ratelimit_{id}_{name}");
+        }
+
+        public bool TryGetEconomy(out string data)
+        {
+            var _db = Redis.GetDatabase();
+            if ((data = _db.StringGet($"{_redisKey}_economy")) != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SetEconomy(string data)
+        {
+            var _db = Redis.GetDatabase();
+            _db.StringSet($"{_redisKey}_economy",
+                data,
+                expiry: TimeSpan.FromMinutes(3));
+        }
+
+        public async Task<TOut> GetOrAddCachedDataAsync<TParam, TOut>(string key, Func<TParam, Task<TOut>> factory, TParam param, TimeSpan expiry)
+        {
+            var _db = Redis.GetDatabase();
+
+            RedisValue data = await _db.StringGetAsync(key).ConfigureAwait(false);
+            if (!data.HasValue)
+            {
+                var obj = await factory(param).ConfigureAwait(false);
+
+                if (obj == default)
+                    return default;
+
+                await _db.StringSetAsync(key, JsonConvert.SerializeObject(obj),
+                    expiry: expiry).ConfigureAwait(false);
+
+                return obj;
+            }
+            return (TOut)JsonConvert.DeserializeObject(data, typeof(TOut));
         }
     }
 }

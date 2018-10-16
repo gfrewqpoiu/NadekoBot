@@ -3,29 +3,32 @@ using NLog;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace NadekoBot.Modules.Music.Common
 {
     public sealed class SongBuffer : IDisposable
     {
-        private Process p;
+        private readonly Process _p;
         private readonly PoopyBufferReborn _buffer;
         private Stream _outStream;
 
         private readonly Logger _log;
 
         public string SongUri { get; private set; }
+        public TaskCompletionSource<bool> PrebufferingCompleted { get; }
 
         public SongBuffer(string songUri, bool isLocal)
         {
             _log = LogManager.GetCurrentClassLogger();
             this.SongUri = songUri;
             this._isLocal = isLocal;
+            this.PrebufferingCompleted = new TaskCompletionSource<bool>();
 
             try
             {
-                this.p = StartFFmpegProcess(SongUri);
-                this._outStream = this.p.StandardOutput.BaseStream;
+                this._p = StartFFmpegProcess(SongUri);
+                this._outStream = this._p.StandardOutput.BaseStream;
                 this._buffer = new PoopyBufferReborn(this._outStream);
             }
             catch (System.ComponentModel.Win32Exception)
@@ -72,7 +75,7 @@ Check the guides for your platform on how to setup ffmpeg correctly:
         {
             try
             {
-                this.p.StandardOutput.Dispose();
+                this._p.StandardOutput.Dispose();
             }
             catch (Exception ex)
             {
@@ -80,20 +83,27 @@ Check the guides for your platform on how to setup ffmpeg correctly:
             }
             try
             {
-                if (!this.p.HasExited)
-                    this.p.Kill();
+                if (!this._p.HasExited)
+                    this._p.Kill();
             }
             catch
             {
             }
             _buffer.Stop();
             _outStream.Dispose();
-            this.p.Dispose();
+            this._p.Dispose();
+            this._buffer.PrebufferingCompleted -= OnPrebufferingCompleted;
         }
 
         public void StartBuffering()
         {
             this._buffer.StartBuffering();
+            this._buffer.PrebufferingCompleted += OnPrebufferingCompleted;
+        }
+
+        private void OnPrebufferingCompleted()
+        {
+            PrebufferingCompleted.SetResult(true);
         }
     }
 }

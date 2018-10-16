@@ -1,19 +1,19 @@
 using Discord;
 using Discord.Commands;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Text;
-using NadekoBot.Extensions;
-using NadekoBot.Core.Services.Impl;
-using System.Net.Http;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using Discord.WebSocket;
-using System.Diagnostics;
 using NadekoBot.Common;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Core.Services;
+using NadekoBot.Core.Services.Impl;
+using NadekoBot.Extensions;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -217,17 +217,6 @@ namespace NadekoBot.Modules.Utility
         }
 
         [NadekoCommand, Usage, Description, Aliases]
-        [RequireContext(ContextType.Guild)]
-        [RequireBotPermission(ChannelPermission.CreateInstantInvite)]
-        [RequireUserPermission(ChannelPermission.CreateInstantInvite)]
-        public async Task CreateInvite()
-        {
-            var invite = await ((ITextChannel)Context.Channel).CreateInviteAsync(0, null, isUnique: true).ConfigureAwait(false);
-
-            await Context.Channel.SendConfirmAsync($"{Context.User.Mention} https://discord.gg/{invite.Code}").ConfigureAwait(false);
-        }
-
-        [NadekoCommand, Usage, Description, Aliases]
         public async Task Stats()
         {
             var ownerIds = string.Join("\n", _creds.OwnerIds);
@@ -262,7 +251,7 @@ namespace NadekoBot.Modules.Utility
             if (string.IsNullOrWhiteSpace(result))
                 await ReplyErrorLocalized("showemojis_none").ConfigureAwait(false);
             else
-                await Context.Channel.SendMessageAsync(result).ConfigureAwait(false);
+                await Context.Channel.SendMessageAsync(result.TrimTo(2000)).ConfigureAwait(false);
         }
 
         [NadekoCommand, Usage, Description, Aliases]
@@ -285,7 +274,7 @@ namespace NadekoBot.Modules.Utility
             await Context.Channel.EmbedAsync(guilds.Aggregate(new EmbedBuilder().WithOkColor(),
                                      (embed, g) => embed.AddField(efb => efb.WithName(g.Name)
                                                                            .WithValue(
-                                             GetText("listservers", g.Id, g.Users.Count,
+                                             GetText("listservers", g.Id, g.MemberCount,
                                                  g.OwnerId))
                                                                            .WithIsInline(false))))
                          .ConfigureAwait(false);

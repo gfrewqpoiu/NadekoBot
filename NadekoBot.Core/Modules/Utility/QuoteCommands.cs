@@ -1,14 +1,14 @@
 using Discord;
 using Discord.Commands;
-using NadekoBot.Extensions;
-using NadekoBot.Core.Services;
-using NadekoBot.Core.Services.Database.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using NadekoBot.Common;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Common.Replacements;
+using NadekoBot.Core.Services;
+using NadekoBot.Core.Services.Database.Models;
+using NadekoBot.Extensions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace NadekoBot.Modules.Utility
 {
@@ -63,8 +63,13 @@ namespace NadekoBot.Modules.Utility
 
                 Quote quote;
                 using (var uow = _db.UnitOfWork)
-                {quote =
-                        await uow.Quotes.GetRandomQuoteByKeywordAsync(Context.Guild.Id, keyword);
+                {
+                    quote = await uow.Quotes.GetRandomQuoteByKeywordAsync(Context.Guild.Id, keyword);
+                    //if (quote != null)
+                    //{
+                    //    quote.UseCount += 1;
+                    //    uow.Complete();
+                    //}
                 }
                 if (quote == null)
                     return;
@@ -126,14 +131,19 @@ namespace NadekoBot.Modules.Utility
                 using (var uow = _db.UnitOfWork)
                 {
                     quote = uow.Quotes.GetById(id);
+                    if (quote.GuildId != Context.Guild.Id)
+                        quote = null;
                 }
 
-                var infoText = $"`#{quote.Id} added by {quote.AuthorName.SanitizeMentions()}` 🗯️ " + quote.Keyword.ToLowerInvariant().SanitizeMentions() + ":\n";
                 if (quote == null)
                 {
                     await Context.Channel.SendErrorAsync(GetText("quotes_notfound")).ConfigureAwait(false);
+                    return;
                 }
-                else if (CREmbed.TryParse(quote.Text, out var crembed))
+
+                var infoText = $"`#{quote.Id} added by {quote.AuthorName.SanitizeMentions()}` 🗯️ " + quote.Keyword.ToLowerInvariant().SanitizeMentions() + ":\n";
+
+                if (CREmbed.TryParse(quote.Text, out var crembed))
                 {
                     rep.Replace(crembed);
 

@@ -7,6 +7,8 @@ using NadekoBot.Common.Attributes;
 using NadekoBot.Common.Collections;
 using NadekoBot.Modules.Permissions.Services;
 using NadekoBot.Common.TypeReaders;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace NadekoBot.Modules.Permissions
 {
@@ -55,7 +57,7 @@ namespace NadekoBot.Modules.Permissions
 
             private async Task Blacklist(AddRemove action, ulong id, BlacklistType type)
             {
-                if(action == AddRemove.Add && _creds.OwnerIds.Contains(id))
+                if (action == AddRemove.Add && _creds.OwnerIds.Contains(id))
                     return;
 
                 using (var uow = _db.UnitOfWork)
@@ -75,11 +77,18 @@ namespace NadekoBot.Modules.Permissions
                         else if (type == BlacklistType.User)
                         {
                             BlacklistedUsers.Add(id);
-                        }                        
+                        }
                     }
                     else
                     {
-                        uow.BotConfig.GetOrCreate().Blacklist.RemoveWhere(bi => bi.ItemId == id && bi.Type == type);
+                        var objs = uow.BotConfig
+                            .GetOrCreate(set => set.Include(x => x.Blacklist))
+                            .Blacklist
+                            .Where(bi => bi.ItemId == id && bi.Type == type);
+
+                        if (objs.Any())
+                            uow._context.Set<BlacklistItem>().RemoveRange(objs);
+
                         if (type == BlacklistType.Server)
                         {
                             BlacklistedGuilds.TryRemove(id);
@@ -95,8 +104,8 @@ namespace NadekoBot.Modules.Permissions
                     }
                     await uow.CompleteAsync();
                 }
-                
-                if(action == AddRemove.Add)
+
+                if (action == AddRemove.Add)
                     await ReplyConfirmLocalized("blacklisted", Format.Code(type.ToString()), Format.Code(id.ToString())).ConfigureAwait(false);
                 else
                     await ReplyConfirmLocalized("unblacklisted", Format.Code(type.ToString()), Format.Code(id.ToString())).ConfigureAwait(false);

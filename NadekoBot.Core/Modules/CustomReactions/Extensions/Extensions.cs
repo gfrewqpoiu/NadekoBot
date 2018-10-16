@@ -49,7 +49,7 @@ namespace NadekoBot.Modules.CustomReactions.Extensions
         {
             var rep = new ReplacementBuilder()
                 .WithUser(ctx.Author)
-                .WithClient(client)
+                .WithMention(client)
                 .Build();
 
             str = rep.Replace(str.ToLowerInvariant());
@@ -77,11 +77,12 @@ namespace NadekoBot.Modules.CustomReactions.Extensions
                 .Build();
 
             str = rep.Replace(str);
-
+#if !GLOBAL_NADEKO
             foreach (var ph in regexPlaceholders)
             {
                 str = await ph.Key.ReplaceAsync(str, ph.Value).ConfigureAwait(false);
             }
+#endif
             return str;
         }
 
@@ -94,8 +95,6 @@ namespace NadekoBot.Modules.CustomReactions.Extensions
         public static async Task<IUserMessage> Send(this CustomReaction cr, IUserMessage ctx, DiscordSocketClient client, CustomReactionsService crs)
         {
             var channel = cr.DmResponse ? await ctx.Author.GetOrCreateDMChannelAsync().ConfigureAwait(false) : ctx.Channel;
-
-            crs.ReactionStats.AddOrUpdate(cr.Trigger, 1, (k, old) => ++old);
 
             if (CREmbed.TryParse(cr.Response, out CREmbed crembed))
             {

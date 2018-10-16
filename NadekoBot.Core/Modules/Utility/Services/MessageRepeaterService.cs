@@ -7,6 +7,7 @@ using NadekoBot.Core.Services;
 using NadekoBot.Core.Services.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System;
 
 namespace NadekoBot.Modules.Utility.Services
 {
@@ -48,8 +49,19 @@ namespace NadekoBot.Modules.Utility.Services
             using (var uow = _db.UnitOfWork)
             {
                 var gr = uow.GuildConfigs.ForId(r.GuildId, x => x.Include(y => y.GuildRepeaters)).GuildRepeaters;
-                gr.Remove(r);
+                var toDelete = gr.FirstOrDefault(x => x.Id == r.Id);
+                if (toDelete != null)
+                    uow._context.Set<Repeater>().Remove(toDelete);
                 await uow.CompleteAsync();
+            }
+        }
+
+        public void SetRepeaterLastMessage(int repeaterId, ulong lastMsgId)
+        {
+            using (var uow = _db.UnitOfWork)
+            {
+                uow._context.Database.ExecuteSqlCommand($@"UPDATE GuildRepeater SET 
+                    LastMessageId={lastMsgId} WHERE Id={repeaterId}");
             }
         }
     }

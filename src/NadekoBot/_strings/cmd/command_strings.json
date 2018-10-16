@@ -228,6 +228,14 @@
       "{0}lsar 2"
     ]
   },
+  "sargn": {
+    "Cmd": "sargn",
+    "Desc": "Sets a self assignable role group name. Provide no name to remove.",
+    "Usage": [
+      "{0}sargn 1 Faction",
+      "{0}sargn 2"
+    ]
+  },
   "tesar": {
     "Cmd": "togglexclsar tesar",
     "Desc": "Toggles whether the self-assigned roles are exclusive. While enabled, users can only have one self-assignable role per group.",
@@ -1131,6 +1139,13 @@
       "{0}gc"
     ]
   },
+  "gencurlist": {
+    "cmd": "gencurlist gclist",
+    "desc": "Shows the list of server and channel ids where gc is enabled. Paginated with 9 per page.",
+    "usage": [
+      "{0}gclist"
+    ]
+  },
   "leet": {
     "Cmd": "leet",
     "Desc": "Converts a text to leetspeak with 6 (1-6) severity levels",
@@ -1574,8 +1589,8 @@
       "{0}ani aquarion evol"
     ]
   },
-  "imdb": {
-    "Cmd": "imdb omdb",
+  "movie": {
+    "Cmd": "movie omdb imdb",
     "Desc": "Queries omdb for movies or series, show first result.",
     "Usage": [
       "{0}imdb Batman vs Superman"
@@ -1617,14 +1632,7 @@
     ]
   },
   "image": {
-    "Cmd": "image img",
-    "Desc": "Pulls the first image found using a search parameter. Use `{0}rimg` for different results.",
-    "Usage": [
-      "{0}img cute kitten"
-    ]
-  },
-  "randomimage": {
-    "Cmd": "randomimage rimg",
+    "Cmd": "image img rimg",
     "Desc": "Pulls a random image using a search parameter.",
     "Usage": [
       "{0}rimg cute kitten"
@@ -1752,7 +1760,7 @@
   },
   "hentai": {
     "Cmd": "hentai",
-    "Desc": "Shows a hentai image from a random website (gelbooru or danbooru or konachan or atfbooru or yandere) with a given tag. Tag is optional but preferred. Only 1 tag allowed.",
+    "Desc": "Shows a hentai image from a random website (gelbooru, danbooru, konachan or yandere) with a given tag. Tag is optional but preferred. Only 1 tag allowed.",
     "Usage": [
       "{0}hentai yuri"
     ]
@@ -2216,22 +2224,6 @@
       "{0}hangmanstop"
     ]
   },
-  "crstatsclear": {
-    "Cmd": "crstatsclear",
-    "Desc": "Resets the counters on `{0}crstats`. You can specify a trigger to clear stats only for that trigger.",
-    "Usage": [
-      "{0}crstatsclear",
-      "{0}crstatsclear rng"
-    ]
-  },
-  "crstats": {
-    "Cmd": "crstats",
-    "Desc": "Shows a list of custom reactions and the number of times they have been executed. Paginated with 10 per page. Use `{0}crstatsclear` to reset the counters.",
-    "Usage": [
-      "{0}crstats",
-      "{0}crstats 3"
-    ]
-  },
   "overwatch": {
     "Cmd": "overwatch ow",
     "Desc": "Show's basic stats on a player (competitive rank, playtime, level etc) Region codes are: `eu` `us` `cn` `kr`",
@@ -2322,11 +2314,26 @@
       "{0}rrc 0 MyLsdRole"
     ]
   },
-  "createinvite": {
-    "Cmd": "createinvite crinv",
+  "invitecreate": {
+    "Cmd": "invitecreate invcr",
     "Desc": "Creates a new invite which has infinite max uses and never expires.",
     "Usage": [
       "{0}crinv"
+    ]
+  },
+  "invitelist": {
+    "Cmd": "invitelist invlist invlst",
+    "Desc": "Lists all invites for this channel. Paginated with 9 per page.",
+    "Usage": [
+      "{0}invitelist",
+      "{0}invlist 3"
+    ]
+  },
+  "invitedelete": {
+    "Cmd": "invitedelete invrm invdel",
+    "Desc": "Deletes an invite on the specified index. Use `{0}invitelist` to see the list of invites.",
+    "Usage": [
+      "{0}invrm 2"
     ]
   },
   "pollstats": {
@@ -2499,7 +2506,7 @@
   },
   "botconfigreload": {
     "Cmd": "botconfigreload",
-    "Desc": "Reloads bot configuration in case you made changes to the BotConfig table either with .execsql or manually in the .db file.",
+    "Desc": "Reloads bot configuration in case you made changes to the BotConfig table either with .sqlexec or manually in the .db file.",
     "Usage": [
       "{0}botconfigreload"
     ]
@@ -2613,6 +2620,13 @@
     "Desc": "Toggles whether the custom reaction will trigger if the triggering message contains the keyword (instead of only starting with it).",
     "Usage": [
       "{0}crca 44"
+    ]
+  },
+  "crsreload": {
+    "Cmd": "crsreload",
+    "Desc": "Reloads all custom reactions on all shards. Use this if you've made changes to the database while the bot is running, or used `.deleteunusedcrnq`",
+    "Usage": [
+      "{0}crsreload"
     ]
   },
   "aliaslist": {
@@ -2772,7 +2786,7 @@
   },
   "shopadd": {
     "Cmd": "shopadd",
-    "Desc": "Adds an item to the shop by specifying type price and name. Available types are role and list.",
+    "Desc": "Adds an item to the shop by specifying type price and name. Available types are role and list. 90% of currency from each purchase will be received by the user who added the item to the shop.",
     "Usage": [
       "{0}shopadd role 1000 Rich"
     ]
@@ -3173,11 +3187,18 @@
       "{0}say hi"
     ]
   },
-  "execsql": {
-    "cmd": "execsql",
-    "desc": "Executes an sql command and returns the number of affected rows. Dangerous.",
+  "sqlexec": {
+    "cmd": "sqlexec",
+    "desc": "Executes provided sql command and returns the number of affected rows. Dangerous.",
     "usage": [
-      "{0}execsql UPDATE DiscordUser SET CurrencyAmount=CurrencyAmount+1234"
+      "{0}sqlexec UPDATE DiscordUser SET CurrencyAmount=CurrencyAmount+1234"
+    ]
+  },
+  "sqlselect": {
+    "cmd": "sqlselect",
+    "desc": "Executes provided sql query and returns the results. Dangerous.",
+    "usage": [
+      "{0}sqlselect SELECT * FROM DiscordUser LIMIT 5"
     ]
   },
   "deletewaifus": {
@@ -3192,6 +3213,13 @@
     "desc": "Deletes everything from WaifuUpdates, WaifuItem and WaifuInfo tables for the specified user. Also makes specified user's waifus free.",
     "usage": [
       "{0}deletewaifus"
+    ]
+  },
+  "deleteunusedcrnq": {
+    "cmd": "deleteunusedcrnq",
+    "desc": "Deletes all quotes and custom reactions which are older than a week and haven't been used a single time.",
+    "usage": [
+      "{0}deleteunusedcrnq"
     ]
   },
   "deletecurrency": {
@@ -3212,7 +3240,7 @@
     "cmd": "deletexp",
     "desc": "Deletes everything from UserXpStats, Clubs and sets users' TotalXP to 0.",
     "usage": [
-      "{0}execsql UPDATE Currency SET Amount=Amount+1234"
+      "{0}deletexp"
     ]
   },
   "rafflecur": {
@@ -3416,6 +3444,13 @@
     "usage": [
       "{0}updatescheck commit",
       "{0}updatescheck release"
+    ]
+  },
+  "economy": {
+    "cmd": "economy",
+    "desc": "Breakdown of the current state of the bot's economy. Updates every 3 minutes.",
+    "usage": [
+      "{0}economy"
     ]
   }
 }

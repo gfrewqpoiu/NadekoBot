@@ -1,35 +1,34 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
+using NadekoBot.Common;
+using NadekoBot.Common.Collections;
+using NadekoBot.Core.Services;
 using Newtonsoft.Json;
+using NLog;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.Primitives;
+using SixLabors.Shapes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Numerics;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using NadekoBot.Common.Collections;
-using SixLabors.Primitives;
-using NadekoBot.Common;
-using NadekoBot.Core.Services;
-using SixLabors.Shapes;
-using System.Numerics;
-using System.Diagnostics;
-using NLog;
-using System.Net.Http.Headers;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using SixLabors.ImageSharp.Formats;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace NadekoBot.Extensions
 {
@@ -199,10 +198,7 @@ namespace NadekoBot.Extensions
             var imageStream = new MemoryStream();
             if (format?.Name == "GIF")
             {
-                img.SaveAsGif(imageStream, new SixLabors.ImageSharp.Formats.Gif.GifEncoder()
-                {
-                    Quantizer = new SixLabors.ImageSharp.Processing.Quantization.OctreeQuantizer(false)
-                });
+                img.SaveAsGif(imageStream);
             }
             else
             {
@@ -323,15 +319,18 @@ namespace NadekoBot.Extensions
             sw.Reset();
         }
 
-        public static bool IsImage(this HttpResponseMessage msg)
+        public static bool IsImage(this HttpResponseMessage msg) => IsImage(msg, out _);
+
+        public static bool IsImage(this HttpResponseMessage msg, out string mimeType)
         {
-            if (msg.Content.Headers.ContentType.MediaType != "image/png"
-                                && msg.Content.Headers.ContentType.MediaType != "image/jpeg"
-                                && msg.Content.Headers.ContentType.MediaType != "image/gif")
+            mimeType = msg.Content.Headers.ContentType.MediaType;
+            if (mimeType == "image/png"
+                    || mimeType == "image/jpeg"
+                    || mimeType == "image/gif")
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         public static long? GetImageSize(this HttpResponseMessage msg)
@@ -359,7 +358,7 @@ namespace NadekoBot.Extensions
             }
             catch (ReflectionTypeLoadException ex)
             {
-                Console.WriteLine(ex.LoaderExceptions[0]);
+                _log.Warn(ex);
                 return Enumerable.Empty<Type>();
             }
             // all types which have INService implementation are services

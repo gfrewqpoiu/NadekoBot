@@ -71,6 +71,12 @@ namespace NadekoBot
             Credentials = new BotCredentials();
             Cache = new RedisCache(Credentials, shardId);
             _db = new DbService(Credentials);
+
+            if (shardId == 0)
+            {
+                _db.Setup();
+            }
+
             Client = new DiscordSocketClient(new DiscordSocketConfig
             {
 #if GLOBAL_NADEKO
@@ -78,12 +84,13 @@ namespace NadekoBot
 #else
                 MessageCacheSize = 50,
 #endif
-                LogLevel = LogSeverity.Info,
+                LogLevel = LogSeverity.Warning,
                 ConnectionTimeout = int.MaxValue,
                 TotalShards = Credentials.TotalShards,
                 ShardId = shardId,
                 AlwaysDownloadUsers = false,
             });
+
             CommandService = new CommandService(new CommandServiceConfig()
             {
                 CaseSensitiveCommands = false,
@@ -128,14 +135,31 @@ namespace NadekoBot
             });
         }
 
+        private List<ulong> GetCurrentGuildIds()
+        {
+            return Client.Guilds.Select(x => x.Id).ToList();
+        }
+
+        public IEnumerable<GuildConfig> GetCurrentGuildConfigs()
+        {
+            using (var uow = _db.UnitOfWork)
+            {
+                return uow.GuildConfigs.GetAllGuildConfigs(GetCurrentGuildIds()).ToImmutableArray();
+            }
+        }
+
         private void AddServices()
         {
-            var startingGuildIdList = Client.Guilds.Select(x => x.Id).ToList();
+            var startingGuildIdList = GetCurrentGuildIds();
 
             //this unit of work will be used for initialization of all modules too, to prevent multiple queries from running
             using (var uow = _db.UnitOfWork)
             {
                 var sw = Stopwatch.StartNew();
+
+                var _bot = Client.CurrentUser;
+
+                uow.DiscordUsers.EnsureCreated(_bot.Id, _bot.Username, _bot.Discriminator, _bot.AvatarId);
 
                 AllGuildConfigs = uow.GuildConfigs.GetAllGuildConfigs(startingGuildIdList).ToImmutableArray();
 
@@ -180,7 +204,7 @@ namespace NadekoBot
             }
             catch (ReflectionTypeLoadException ex)
             {
-                Console.WriteLine(ex.LoaderExceptions[0]);
+                _log.Warn(ex.LoaderExceptions[0]);
                 return Enumerable.Empty<object>();
             }
             var filteredTypes = allTypes
@@ -339,13 +363,16 @@ namespace NadekoBot
         {
             try
             {
-                File.WriteAllText("test", "test");
-                File.Delete("test");
+                var rng = new NadekoRandom().Next(100000, 1000000);
+                var str = rng.ToString();
+                File.WriteAllText(str, str);
+                File.Delete(str);
             }
             catch
             {
                 _log.Error("You must run the application as an ADMINISTRATOR.");
-                Console.ReadKey();
+                if (!Console.IsInputRedirected)
+                    Console.ReadKey();
                 Environment.Exit(2);
             }
         }

@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using NadekoBot.Common.Attributes;
 using NadekoBot.Modules.Games.Common.Hangman;
 using NadekoBot.Modules.Games.Services;
+using NadekoBot.Modules.Games.Common.Hangman.Exceptions;
 
 namespace NadekoBot.Modules.Games
 {
@@ -33,7 +34,15 @@ namespace NadekoBot.Modules.Games
             [RequireContext(ContextType.Guild)]
             public async Task Hangman([Remainder]string type = "random")
             {
-                var hm = new Hangman(type, _service.TermPool);
+                Hangman hm;
+                try
+                {
+                    hm = new Hangman(type, _service.TermPool);
+                }
+                catch (TermNotFoundException)
+                {
+                    return;
+                }
 
                 if (!_service.HangmanGames.TryAdd(Context.Channel.Id, hm))
                 {
@@ -80,7 +89,7 @@ namespace NadekoBot.Modules.Games
                 {
                     var loseEmbed = new EmbedBuilder().WithTitle($"Hangman Game ({game.TermType}) - Ended")
                                              .WithDescription(Format.Bold("You lose."))
-                                             .AddField(efb => efb.WithName("It was").WithValue(game.Term.Word.ToTitleCase()))
+                                             .AddField(efb => efb.WithName("It was").WithValue(game.Term.GetWord()))
                                              .WithFooter(efb => efb.WithText(string.Join(" ", game.PreviousGuesses)))
                                              .WithErrorColor();
 
@@ -92,7 +101,7 @@ namespace NadekoBot.Modules.Games
 
                 var winEmbed = new EmbedBuilder().WithTitle($"Hangman Game ({game.TermType}) - Ended")
                                              .WithDescription(Format.Bold($"{winner} Won."))
-                                             .AddField(efb => efb.WithName("It was").WithValue(game.Term.Word.ToTitleCase()))
+                                             .AddField(efb => efb.WithName("It was").WithValue(game.Term.GetWord()))
                                              .WithFooter(efb => efb.WithText(string.Join(" ", game.PreviousGuesses)))
                                              .WithOkColor();
 

@@ -182,11 +182,26 @@
     },
     {
       "Aliases": [
-        ".execsql"
+        ".sqlselect"
       ],
-      "Description": "Executes an sql command and returns the number of affected rows. Dangerous.",
+      "Description": "Executes provided sql query and returns the results. Dangerous.",
       "Usage": [
-        ".execsql UPDATE DiscordUser SET CurrencyAmount=CurrencyAmount+1234"
+        ".sqlselect SELECT * FROM DiscordUser LIMIT 5"
+      ],
+      "Submodule": "DangerousCommands",
+      "Module": "Administration",
+      "Options": null,
+      "Requirements": [
+        "Bot Owner Only"
+      ]
+    },
+    {
+      "Aliases": [
+        ".sqlexec"
+      ],
+      "Description": "Executes provided sql command and returns the number of affected rows. Dangerous.",
+      "Usage": [
+        ".sqlexec UPDATE DiscordUser SET CurrencyAmount=CurrencyAmount+1234"
       ],
       "Submodule": "DangerousCommands",
       "Module": "Administration",
@@ -262,6 +277,21 @@
       "Description": "deleteexp",
       "Usage": [
         "deleteexp"
+      ],
+      "Submodule": "DangerousCommands",
+      "Module": "Administration",
+      "Options": null,
+      "Requirements": [
+        "Bot Owner Only"
+      ]
+    },
+    {
+      "Aliases": [
+        ".deleteunusedcrnq"
+      ],
+      "Description": "Deletes all quotes and custom reactions which are older than a week and haven't been used a single time.",
+      "Usage": [
+        ".deleteunusedcrnq"
       ],
       "Submodule": "DangerousCommands",
       "Module": "Administration",
@@ -678,38 +708,6 @@
     },
     {
       "Aliases": [
-        ".slowmode"
-      ],
-      "Description": "Toggles slowmode. Slowmode deletes any excess messages users type over the specified limit of messages per X seconds. To enable, specify a number of messages (-m) each user can send, and an interval in seconds (-s).  Disable by specifying no parameters.",
-      "Usage": [
-        ".slowmode -m 1 -s 5",
-        ".slowmode"
-      ],
-      "Submodule": "SlowModeCommands",
-      "Module": "Administration",
-      "Options": "`--message-count` (`-m`)   Number of messages user can send.  \n`--seconds` (`-s`)   Interval in which the user can send the specified number of messages.  ",
-      "Requirements": [
-        "ManageMessages Server Permission"
-      ]
-    },
-    {
-      "Aliases": [
-        ".slowmodewl"
-      ],
-      "Description": "Ignores a role or a user from the slowmode feature.",
-      "Usage": [
-        ".slowmodewl SomeRole",
-        ".slowmodewl AdminDude"
-      ],
-      "Submodule": "SlowModeCommands",
-      "Module": "Administration",
-      "Options": null,
-      "Requirements": [
-        "ManageMessages Server Permission"
-      ]
-    },
-    {
-      "Aliases": [
         ".reactionroles",
         ".rero"
       ],
@@ -925,6 +923,22 @@
         ".asar Gamer",
         ".asar 1 Alliance",
         ".asar 1 Horde"
+      ],
+      "Submodule": "SelfAssignedRolesCommands",
+      "Module": "Administration",
+      "Options": null,
+      "Requirements": [
+        "ManageRoles Server Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".sargn"
+      ],
+      "Description": "Sets a self assignable role group name. Provide no name to remove.",
+      "Usage": [
+        ".sargn 1 Faction",
+        ".sargn 2"
       ],
       "Submodule": "SelfAssignedRolesCommands",
       "Module": "Administration",
@@ -1380,7 +1394,7 @@
       "Aliases": [
         ".botconfigreload"
       ],
-      "Description": "Reloads bot configuration in case you made changes to the BotConfig table either with .execsql or manually in the .db file.",
+      "Description": "Reloads bot configuration in case you made changes to the BotConfig table either with .sqlexec or manually in the .db file.",
       "Usage": [
         ".botconfigreload"
       ],
@@ -1512,6 +1526,38 @@
       "Options": null,
       "Requirements": [
         "ManageServer Server Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".slowmode"
+      ],
+      "Description": "Toggles slowmode. Slowmode deletes any excess messages users type over the specified limit of messages per X seconds. To enable, specify a number of messages (-m) each user can send, and an interval in seconds (-s).  Disable by specifying no parameters.",
+      "Usage": [
+        ".slowmode -m 1 -s 5",
+        ".slowmode"
+      ],
+      "Submodule": "SlowmodeCommands",
+      "Module": "Administration",
+      "Options": "`--message-count` (`-m`)   Number of messages user can send.  \n`--seconds` (`-s`)   Interval in which the user can send the specified number of messages.  ",
+      "Requirements": [
+        "ManageMessages Server Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".slowmodewl"
+      ],
+      "Description": "Ignores a role or a user from the slowmode feature.",
+      "Usage": [
+        ".slowmodewl SomeRole",
+        ".slowmodewl AdminDude"
+      ],
+      "Submodule": "SlowmodeCommands",
+      "Module": "Administration",
+      "Options": null,
+      "Requirements": [
+        "ManageMessages Server Permission"
       ]
     },
     {
@@ -1748,23 +1794,6 @@
       "Requirements": []
     }
   ],
-  "CryptoCommands": [
-    {
-      "Aliases": [
-        ".crypto",
-        ".c"
-      ],
-      "Description": "Shows basic stats about a cryptocurrency from coinmarketcap.com. You can use either a name or an abbreviation of the currency.",
-      "Usage": [
-        ".c btc",
-        ".c bitcoin"
-      ],
-      "Submodule": "CryptoCommands",
-      "Module": "CryptoCommands",
-      "Options": null,
-      "Requirements": []
-    }
-  ],
   "CustomReactions": [
     {
       "Aliases": [
@@ -1892,12 +1921,11 @@
     },
     {
       "Aliases": [
-        ".crstatsclear"
+        ".crsreload"
       ],
-      "Description": "Resets the counters on `.crstats`. You can specify a trigger to clear stats only for that trigger.",
+      "Description": "Reloads all custom reactions on all shards. Use this if you've made changes to the database while the bot is running, or used `.deleteunusedcrnq`",
       "Usage": [
-        ".crstatsclear",
-        ".crstatsclear rng"
+        ".crsreload"
       ],
       "Submodule": "CustomReactions",
       "Module": "CustomReactions",
@@ -1905,20 +1933,6 @@
       "Requirements": [
         "Bot Owner Only"
       ]
-    },
-    {
-      "Aliases": [
-        ".crstats"
-      ],
-      "Description": "Shows a list of custom reactions and the number of times they have been executed. Paginated with 10 per page. Use `.crstatsclear` to reset the counters.",
-      "Usage": [
-        ".crstats",
-        ".crstats 3"
-      ],
-      "Submodule": "CustomReactions",
-      "Module": "CustomReactions",
-      "Options": null,
-      "Requirements": []
     },
     {
       "Aliases": [
@@ -1937,6 +1951,19 @@
     }
   ],
   "Gambling": [
+    {
+      "Aliases": [
+        ".economy"
+      ],
+      "Description": "Breakdown of the current state of the bot's economy. Updates every 3 minutes.",
+      "Usage": [
+        ".economy"
+      ],
+      "Submodule": "Gambling",
+      "Module": "Gambling",
+      "Options": null,
+      "Requirements": []
+    },
     {
       "Aliases": [
         ".timely"
@@ -2415,7 +2442,7 @@
       "Aliases": [
         ".shopadd"
       ],
-      "Description": "Adds an item to the shop by specifying type price and name. Available types are role and list.",
+      "Description": "Adds an item to the shop by specifying type price and name. Available types are role and list. 90% of currency from each purchase will be received by the user who added the item to the shop.",
       "Usage": [
         ".shopadd role 1000 Rich"
       ],
@@ -2626,6 +2653,19 @@
       "Module": "Gambling",
       "Options": null,
       "Requirements": []
+    },
+    {
+      "Aliases": [
+        ".wheeltest"
+      ],
+      "Description": "wheeltest",
+      "Usage": [
+        "wheeltest"
+      ],
+      "Submodule": "WheelOfFortuneCommands",
+      "Module": "Gambling",
+      "Options": null,
+      "Requirements": []
     }
   ],
   "Games": [
@@ -2819,6 +2859,23 @@
       "Options": null,
       "Requirements": [
         "ManageMessages Server Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".gencurlist",
+        ".gclist"
+      ],
+      "Description": "Shows the list of server and channel ids where gc is enabled. Paginated with 9 per page.",
+      "Usage": [
+        ".gclist"
+      ],
+      "Submodule": "PlantPickCommands",
+      "Module": "Games",
+      "Options": null,
+      "Requirements": [
+        "ManageMessages Server Permission",
+        "Bot Owner Only"
       ]
     },
     {
@@ -4423,8 +4480,9 @@
     },
     {
       "Aliases": [
-        ".imdb",
-        ".omdb"
+        ".movie",
+        ".omdb",
+        ".imdb"
       ],
       "Description": "Queries omdb for movies or series, show first result.",
       "Usage": [
@@ -4495,20 +4553,7 @@
     {
       "Aliases": [
         ".image",
-        ".img"
-      ],
-      "Description": "Pulls the first image found using a search parameter. Use `.rimg` for different results.",
-      "Usage": [
-        ".img cute kitten"
-      ],
-      "Submodule": "Searches",
-      "Module": "Searches",
-      "Options": null,
-      "Requirements": []
-    },
-    {
-      "Aliases": [
-        ".randomimage",
+        ".img",
         ".rimg"
       ],
       "Description": "Pulls a random image using a search parameter.",
@@ -4713,19 +4758,6 @@
     },
     {
       "Aliases": [
-        ".videocall"
-      ],
-      "Description": "Creates a private <http://www.appear.in> video call link for you and other mentioned people. The link is sent to mentioned people via a private message.",
-      "Usage": [
-        ".videocall \"@the First\" \"@Xyz\""
-      ],
-      "Submodule": "Searches",
-      "Module": "Searches",
-      "Options": null,
-      "Requirements": []
-    },
-    {
-      "Aliases": [
         ".avatar",
         ".av"
       ],
@@ -4817,6 +4849,21 @@
         ".mq Shingeki no kyojin"
       ],
       "Submodule": "AnimeSearchCommands",
+      "Module": "Searches",
+      "Options": null,
+      "Requirements": []
+    },
+    {
+      "Aliases": [
+        ".crypto",
+        ".c"
+      ],
+      "Description": "Shows basic stats about a cryptocurrency from coinmarketcap.com. You can use either a name or an abbreviation of the currency.",
+      "Usage": [
+        ".c btc",
+        ".c bitcoin"
+      ],
+      "Submodule": "CryptoCommands",
       "Module": "Searches",
       "Options": null,
       "Requirements": []
@@ -5520,22 +5567,6 @@
     },
     {
       "Aliases": [
-        ".createinvite",
-        ".crinv"
-      ],
-      "Description": "Creates a new invite which has infinite max uses and never expires.",
-      "Usage": [
-        ".crinv"
-      ],
-      "Submodule": "Utility",
-      "Module": "Utility",
-      "Options": null,
-      "Requirements": [
-        "CreateInstantInvite Channel Permission"
-      ]
-    },
-    {
-      "Aliases": [
         ".stats"
       ],
       "Description": "Shows some basic stats for Nadeko.",
@@ -5752,6 +5783,57 @@
       "Options": null,
       "Requirements": [
         "Bot Owner Only"
+      ]
+    },
+    {
+      "Aliases": [
+        ".invitecreate",
+        ".invcr"
+      ],
+      "Description": "Creates a new invite which has infinite max uses and never expires.",
+      "Usage": [
+        ".crinv"
+      ],
+      "Submodule": "InviteCommands",
+      "Module": "Utility",
+      "Options": "`--max-uses` (`-m`)   Maximum number of times the invite can be used. Default 0 (never).  \n`--unique` (`-u`)   Not setting this flag will result in bot getting the existing invite with the same settings if it exists, instead of creating a new one.  \n`--temporary` (`-t`)   Setting this flag will make the link expire after 24h.  ",
+      "Requirements": [
+        "CreateInstantInvite Channel Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".invitelist",
+        ".invlist",
+        ".invlst"
+      ],
+      "Description": "Lists all invites for this channel. Paginated with 9 per page.",
+      "Usage": [
+        ".invitelist",
+        ".invlist 3"
+      ],
+      "Submodule": "InviteCommands",
+      "Module": "Utility",
+      "Options": null,
+      "Requirements": [
+        "ManageChannels Channel Permission"
+      ]
+    },
+    {
+      "Aliases": [
+        ".invitedelete",
+        ".invrm",
+        ".invdel"
+      ],
+      "Description": "Deletes an invite on the specified index. Use `.invitelist` to see the list of invites.",
+      "Usage": [
+        ".invrm 2"
+      ],
+      "Submodule": "InviteCommands",
+      "Module": "Utility",
+      "Options": null,
+      "Requirements": [
+        "ManageChannels Channel Permission"
       ]
     },
     {

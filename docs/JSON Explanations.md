@@ -25,11 +25,12 @@ If you do not see `credentials.json` you will need to rename `credentials_exampl
   "ShardRunArguments": "",
   "ShardRunPort": null,
   "TwitchClientId": null,
+  "RedisOptions": null
 }
 ```
 -----
 #### Creating Discord Bot application
-![img2](http://i.imgur.com/x3jWudH.gif)
+![img2](https://i.imgur.com/Vxxeh2n.gif)
 
 - Go to [the Discord developer application page][DiscordApp].
 - Log in with your Discord account.
@@ -42,7 +43,7 @@ If you do not see `credentials.json` you will need to rename `credentials_exampl
 
 
 #### Inviting your bot to your server 
-![img4](http://i.imgur.com/aFK7InR.gif)
+![img4](https://i.imgur.com/6beUSa5.gif)
 
 - [Invite Guide][Invite Guide]
 - Copy your `Client ID` from your [applications page][DiscordApp].
@@ -172,6 +173,9 @@ It should look like:
 - **TotalShards** 
 	- Required if the bot will be connected to more than 1500 servers. 
 	- Most likely unnecessary to change until your bot is added to more than 1500 servers.
+- **RedisOptions**
+	- Required if the Redis instance is not on localhost or on non-default port.
+	- You can find all available options [here](https://stackexchange.github.io/StackExchange.Redis/Configuration.html).
 - **RestartCommand**
 	- Required if you want to be able to use `.restart` command
 	- It requires command, and arguments to the command which to execute right before bot stops
