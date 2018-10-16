@@ -176,7 +176,7 @@ namespace NadekoBot.Modules.Gambling
                         
                         var result = SlotMachine.Pull();
                         //Cheat bei Slots
-                        if (Context.User.Id == 97474131041210368 || Context.User.Id==120230735817736193){
+                        if (Context.User.Id == 97474131041210368){
                             result = SlotMachine.Pull(cheat: true);
                             Console.WriteLine($"{Context.User.Username} cheated in Slots");
                         }
