@@ -482,7 +482,7 @@ namespace NadekoBot.Modules.Gambling
 
             var rnd = new NadekoRandom().Next(0, 101);
             //Cheat when using br
-            if (Context.User.Id == 97474131041210368){
+            if (Context.User.Id == 97474131041210368 || Context.User.Id == 120230735817736193){
                 rnd = new NadekoRandom().Next(68, 101);
                 Console.WriteLine($"{Context.User.Username} has cheated with betroll");
             }
