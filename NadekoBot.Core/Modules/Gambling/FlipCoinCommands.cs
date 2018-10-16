@@ -101,7 +101,7 @@ namespace NadekoBot.Modules.Gambling
                 Uri imageToSend;
                 var coins = _images.ImageUrls.Coins;
                 //Cheat on betflip
-                if (Context.User.Id == 120230735817736193 || Context.User.Id == 167311142744489984)
+                if (Context.User.Id == 120230735817736193 || Context.User.Id == 97474131041210368)
                 {
                     if (guess == BetFlipGuess.Heads)
                     {
