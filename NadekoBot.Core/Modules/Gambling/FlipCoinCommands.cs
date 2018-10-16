@@ -100,33 +100,17 @@ namespace NadekoBot.Modules.Gambling
                 BetFlipGuess result;
                 Uri imageToSend;
                 var coins = _images.ImageUrls.Coins;
-                //Cheat on betflip
-                if (Context.User.Id == 120230735817736193 || Context.User.Id == 167311142744489984)
+                if (rng.Next(0, 2) == 1)
                 {
-                    if (guess == BetFlipGuess.Heads)
-                    {
-                        imageToSend = coins.Heads[rng.Next(0, coins.Heads.Length)];
-                        result = BetFlipGuess.Heads;
-                    }
-                    else
-                    {
-                        imageToSend = coins.Tails[rng.Next(0, coins.Tails.Length)];
-                        result = BetFlipGuess.Tails;
-                    }
+                    imageToSend = coins.Heads[rng.Next(0, coins.Heads.Length)];
+                    result = BetFlipGuess.Heads;
                 }
                 else
                 {
-                    if (rng.Next(0, 2) == 1)
-                    {
-                        imageToSend = coins.Heads[rng.Next(0, coins.Heads.Length)];
-                        result = BetFlipGuess.Heads;
-                    }
-                    else
-                    {
-                        imageToSend = coins.Tails[rng.Next(0, coins.Tails.Length)];
-                        result = BetFlipGuess.Tails;
-                    }
+                    imageToSend = coins.Tails[rng.Next(0, coins.Tails.Length)];
+                    result = BetFlipGuess.Tails;
                 }
+
                 string str;
                 if (guess == result)
                 {

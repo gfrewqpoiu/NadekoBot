@@ -51,7 +51,7 @@ namespace NadekoBot.Modules.Gambling
                 static readonly List<Func<int[], int>> _winningCombos = new List<Func<int[], int>>()
                 {
                     //three flowers
-                    (arr) => arr.All(a=>a==MaxValue) ? 32 : 0,
+                    (arr) => arr.All(a=>a==MaxValue) ? 31 : 0,
                     //three of the same
                     (arr) => !arr.Any(a => a != arr[0]) ? 10 : 0,
                     //two flowers
@@ -60,21 +60,12 @@ namespace NadekoBot.Modules.Gambling
                     (arr) => arr.Any(a => a == MaxValue) ? 1 : 0,
                 };
 
-                public static SlotResult Pull(bool cheat=false)
+                public static SlotResult Pull()
                 {
                     var numbers = new int[3];
-                    if (cheat == false)
+                    for (var i = 0; i < numbers.Length; i++)
                     {
-                        for (var i = 0; i < numbers.Length; i++)
-                        {
-                            numbers[i] = new NadekoRandom().Next(0, MaxValue + 1);
-                        }
-                    }
-                    //Cheat
-                    else{
-                        numbers[0] = MaxValue;
-                        numbers[1] = MaxValue;
-                        numbers[2] = MaxValue;
+                        numbers[i] = new NadekoRandom().Next(0, MaxValue + 1);
                     }
                     var multi = 0;
                     foreach (var t in _winningCombos)
@@ -173,13 +164,7 @@ namespace NadekoBot.Modules.Gambling
                     Interlocked.Add(ref _totalBet, amount.Value);
                     using (var bgImage = Image.Load(_images.SlotBackground))
                     {
-                        
                         var result = SlotMachine.Pull();
-                        //Cheat bei Slots
-                        if (Context.User.Id == 167311142744489984 || Context.User.Id==120230735817736193){
-                            result = SlotMachine.Pull(cheat: true);
-                            Console.WriteLine($"{Context.User.Username} cheated in Slots");
-                        }
                         int[] numbers = result.Numbers;
 
                         for (int i = 0; i < 3; i++)
