@@ -482,10 +482,6 @@ namespace NadekoBot.Modules.Gambling
 
             var rnd = new NadekoRandom().Next(0, 101);
             Console.WriteLine(Context.User.Id);
-            if (Context.User.Id == 167311142744489984){
-                rnd = new NadekoRandom().Next(68, 101);
-                Console.WriteLine($"{Context.User.Username} has cheated with betroll");
-            }
             var str = Format.Bold(Context.User.ToString()) + Format.Code(GetText("roll", rnd));
             if (rnd < 1)
             {
